@@ -1,27 +1,11 @@
 import { LegendList } from "@legendapp/list";
 import { useLayoutEffect, useRef, useState } from "react";
-import {
-  LogBox,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  Text,
-} from "react-native";
+import { LogBox, ScrollView, StyleSheet, View, Text } from "react-native";
 import { Item, renderItem } from "./renderFixedItem";
 import { useNavigation } from "expo-router";
 
 const ITEM_HEIGHT = 400;
 const SEPARATOR_HEIGHT = 52;
-
-LogBox.ignoreLogs(["Open debugger"]);
-
-// @ts-ignore
-const uiManager = global?.nativeFabricUIManager ? "Fabric" : "Paper";
-
-console.log(`Using ${uiManager}`);
-
 const ESTIMATED_ITEM_LENGTH = 200;
 
 type RenderItem = Item & { type: "separator" | "item" };
