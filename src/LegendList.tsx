@@ -119,7 +119,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
                 if (estimatedItemLength) {
                     let offset = 0;
                     for (let i = 0; i < initialScrollIndex; i++) {
-                        offset += estimatedItemLength(i);
+                        offset += estimatedItemLength(i, data[i]);
                     }
                     return offset;
                 } else if (estimatedAverateItemLength) {
@@ -144,9 +144,8 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
 
         const allocateContainers = useCallback(() => {
             const scrollLength = refPositions.current!.scrollLength;
-            const providedEstimateLength = estimatedItemLength ? estimatedItemLength(0) : estimatedAverateItemLength;
             const numContainers =
-                initialContainers || Math.ceil((scrollLength + scrollBuffer * 2) / providedEstimateLength) + 4;
+                initialContainers || Math.ceil((scrollLength + scrollBuffer * 2) / estimatedAverateItemLength) + 4;
 
             const containers: ContainerInfo[] = [];
             for (let i = 0; i < numContainers; i++) {
@@ -197,7 +196,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             for (let i = 0; i < data!.length; i++) {
                 const id = getId(i)!;
                 const providedEstimateLength = estimatedItemLength
-                    ? estimatedItemLength(i)
+                    ? estimatedItemLength(i, data[i])
                     : estimatedAverateItemLength;
                 const length = lengths.get(id) ?? providedEstimateLength;
 
@@ -341,7 +340,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
                 const id = getId(i);
 
                 const providedEstimateLength = estimatedItemLength
-                    ? estimatedItemLength(i)
+                    ? estimatedItemLength(i, data[i])
                     : estimatedAverateItemLength;
                 totalLength += lengths.get(id) ?? providedEstimateLength;
             }
@@ -379,6 +378,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
         const containers = use$(containers$, { shallow: true });
 
         const updateItemLength = useCallback((index: number, length: number) => {
+            console.log('updateItemLength', index, length);
             const data = refPositions.current?.data;
             if (!data) {
                 return;
@@ -388,7 +388,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             const wasInFirstRender = refPositions.current?.idsInFirstRender.has(id);
 
             const providedEstimateLength = estimatedItemLength
-                ? estimatedItemLength(index)
+                ? estimatedItemLength(index, data[index])
                 : estimatedAverateItemLength;
 
             const prevLength = lengths.get(id) || (wasInFirstRender ? providedEstimateLength : 0);

@@ -13,7 +13,7 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     maintainScrollAtEndThreshold?: number;
     alignItemsAtEnd?: boolean;
     estimatedAverateItemLength: number;
-    estimatedItemLength?: (index: number) => number;
+    estimatedItemLength?: (index: number, item: T) => number;
     onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
     keyExtractor?: (item: T, index: number) => string;
     renderItem?: (props: LegendListRenderItemInfo<T>) => ReactNode;
