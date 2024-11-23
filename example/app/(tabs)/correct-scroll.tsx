@@ -46,8 +46,8 @@ export default function HomeScreen() {
                 data={data}
                 renderItem={RenderMultiItem}
                 keyExtractor={(item) => item.id}
-                estimatedItemLength={(index) => (data[index].type === 'separator' ? 52 : 400)}
-                estimatedAverateItemLength={300}
+                estimatedItemLength={(i, item) => (item.type === 'separator' ? 52 : 400)}
+                estimatedAverateItemLength={200}
                 drawDistance={1000}
                 recycleItems={true}
                 // alignItemsAtEnd
@@ -55,8 +55,8 @@ export default function HomeScreen() {
                 onEndReached={({ distanceFromEnd }) => {
                     console.log('onEndReached', distanceFromEnd);
                 }}
-                ListHeaderComponent={<View />}
-                ListHeaderComponentStyle={styles.listHeader}
+                //ListHeaderComponent={<View />}
+                //ListHeaderComponentStyle={styles.listHeader}
                 // initialScrollOffset={20000}
                 initialScrollIndex={50}
                 // inverted
