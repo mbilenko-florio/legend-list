@@ -42,10 +42,10 @@ export const Containers = React.memo(function Containers({
             $style={() =>
                 horizontal
                     ? {
-                          width: peek$('totalLength', ctx),
+                          width: peek$(ctx, 'totalLength'),
                       }
                     : {
-                          height: peek$('totalLength', ctx),
+                          height: peek$(ctx, 'totalLength'),
                       }
             }
         >

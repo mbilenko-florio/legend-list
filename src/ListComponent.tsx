@@ -63,6 +63,7 @@ export const ListComponent = React.memo(function ListComponent({
 
     return (
         <ScrollView
+            {...rest}
             style={style}
             contentContainerStyle={[
                 contentContainerStyle,
@@ -83,10 +84,9 @@ export const ListComponent = React.memo(function ListComponent({
                         : { x: 0, y: initialContentOffset }
                     : undefined
             }
-            {...rest}
             ref={refScroller}
         >
-            {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$('paddingTop', ctx) })} />}
+            {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$(ctx, 'paddingTop') })} />}
             {ListHeaderComponent && <View style={ListHeaderComponentStyle}>{getComponent(ListHeaderComponent)}</View>}
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View

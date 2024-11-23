@@ -1,5 +1,13 @@
 import * as React from 'react';
 
+// This is an implementation of a simple state management system, inspired by Legend State.
+// It stores values and listeners in Maps, with peek$ and set$ functions to get and set values.
+// The set$ function also triggers the listeners.
+//
+// This is definitely not general purpose and has one big optimization/caveat: use$ is only ever called
+// once for each unique name. So we don't need to manage a Set of listeners or dispose them,
+// which saves needing useEffect hooks or managing listeners in a Set.
+
 export type ListenerType =
     | 'numContainers'
     | `containerIndex${number}`
@@ -29,22 +37,19 @@ export function useStateContext() {
 
 export function use$<T>(signalName: ListenerType): T {
     const { listeners, values } = React.useContext(ContextListener)!;
-    const [_, setState] = React.useState(0);
-    React.useMemo(() => {
-        const render = () => setState((prev) => (prev > 10000 ? 0 : prev + 1));
-        listeners.set(signalName, render);
-    }, []);
+    const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
+    listeners.set(signalName, forceUpdate);
 
     return values.get(signalName);
 }
 
-export function peek$(signalName: ListenerType, ctx: ListenerContext) {
-    const { values } = ctx || React.useContext(ContextListener)!;
+export function peek$(ctx: ListenerContext, signalName: ListenerType) {
+    const { values } = ctx;
     return values.get(signalName);
 }
 
-export function set$(signalName: ListenerType, ctx: ListenerContext, value: any) {
-    const { listeners, values } = ctx || React.useContext(ContextListener)!;
+export function set$(ctx: ListenerContext, signalName: ListenerType, value: any) {
+    const { listeners, values } = ctx;
     if (values.get(signalName) !== value) {
         values.set(signalName, value);
         listeners.get(signalName)?.();
