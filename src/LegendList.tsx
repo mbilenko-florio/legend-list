@@ -47,6 +47,7 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             keyExtractor,
             renderItem,
             estimatedItemLength,
+            estimatedAverateItemLength,
             onEndReached,
             onViewableRangeChanged,
             ListHeaderComponent,
@@ -113,9 +114,23 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
         }
         refPositions.current.data = data;
 
+        const reconstructInitialOffset = () => {
+            if (initialScrollIndex) {
+                if (estimatedItemLength) {
+                    let offset = 0;
+                    for (let i = 0; i < initialScrollIndex; i++) {
+                        offset += estimatedItemLength(i);
+                    }
+                    return offset;
+                } else if (estimatedAverateItemLength) {
+                    return initialScrollIndex * estimatedAverateItemLength;
+                }
+            }
+            return undefined;
+        };
+
         const initialContentOffset =
-            initialScrollOffset ??
-            (initialScrollIndex ? initialScrollIndex * estimatedItemLength(initialScrollIndex) : undefined);
+            initialScrollOffset ?? useMemo(reconstructInitialOffset, [initialScrollIndex, estimatedItemLength]);
 
         const setTotalLength = (length: number) => {
             visibleRange$.totalLength.set(length as any);
@@ -129,8 +144,9 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
 
         const allocateContainers = useCallback(() => {
             const scrollLength = refPositions.current!.scrollLength;
+            const providedEstimateLength = estimatedItemLength ? estimatedItemLength(0) : estimatedAverateItemLength;
             const numContainers =
-                initialContainers || Math.ceil((scrollLength + scrollBuffer * 2) / estimatedItemLength(0)) + 4;
+                initialContainers || Math.ceil((scrollLength + scrollBuffer * 2) / providedEstimateLength) + 4;
 
             const containers: ContainerInfo[] = [];
             for (let i = 0; i < numContainers; i++) {
@@ -180,7 +196,10 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             // TODO: This could be optimized to not start at 0, to go backwards from previous start position
             for (let i = 0; i < data!.length; i++) {
                 const id = getId(i)!;
-                const length = lengths.get(id) ?? estimatedItemLength(i);
+                const providedEstimateLength = estimatedItemLength
+                    ? estimatedItemLength(i)
+                    : estimatedAverateItemLength;
+                const length = lengths.get(id) ?? providedEstimateLength;
 
                 if (positions.get(id) !== top) {
                     positions.set(id, top);
@@ -321,7 +340,10 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             for (let i = 0; i < data.length; i++) {
                 const id = getId(i);
 
-                totalLength += lengths.get(id) ?? estimatedItemLength(i);
+                const providedEstimateLength = estimatedItemLength
+                    ? estimatedItemLength(i)
+                    : estimatedAverateItemLength;
+                totalLength += lengths.get(id) ?? providedEstimateLength;
             }
             setTotalLength(totalLength);
         }, []);
@@ -364,7 +386,12 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Sc
             const lengths = refPositions.current?.lengths!;
             const id = getId(index);
             const wasInFirstRender = refPositions.current?.idsInFirstRender.has(id);
-            const prevLength = lengths.get(id) || (wasInFirstRender ? estimatedItemLength(index) : 0);
+
+            const providedEstimateLength = estimatedItemLength
+                ? estimatedItemLength(index)
+                : estimatedAverateItemLength;
+
+            const prevLength = lengths.get(id) || (wasInFirstRender ? providedEstimateLength : 0);
             // let scrollNeedsAdjust = 0;
 
             if (!prevLength || prevLength !== length) {
