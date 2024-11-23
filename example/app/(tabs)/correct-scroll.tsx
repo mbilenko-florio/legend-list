@@ -2,6 +2,7 @@ import { LegendList } from '@legendapp/list';
 import { useRef, useState } from 'react';
 import { LogBox, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { Item, renderItem } from '../renderItem';
+import Breathe from '@/components/Breathe';
 
 LogBox.ignoreLogs(['Open debugger']);
 
@@ -12,25 +13,29 @@ console.log(`Using ${uiManager}`);
 
 const ESTIMATED_ITEM_LENGTH = 200;
 
+type RenderItem = Item & { type: 'separator' | 'item' };
+
+const RenderMultiItem = ({ item, index }: { item: RenderItem; index: number }) => {
+    if (item.type === 'separator') {
+        return (
+            <View style={{ height: 52, backgroundColor: 'red', justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ color: 'white' }}>Separator {item.id}</Text>
+            </View>
+        );
+    }
+    return renderItem({ item, index });
+};
+
 export default function HomeScreen() {
     const scrollViewRef = useRef<ScrollView>(null);
 
-    const [data, setData] = useState<Item[]>(
+    const [data, setData] = useState<RenderItem[]>(
         () =>
             Array.from({ length: 500 }, (_, i) => ({
                 id: i.toString(),
+                type: i % 3 === 0 ? 'separator' : 'item',
             })) as any[],
     );
-
-    //   useEffect(() => {
-    //     let num = 0;
-    //     const interval = setInterval(() => {
-    //       setData((prev) => [prev[0], { id: "new" + num++ }, ...prev.slice(1)]);
-    //       if (num > 10) {
-    //         clearInterval(interval);
-    //       }
-    //     }, 2000);
-    //   }, []);
 
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
@@ -39,9 +44,10 @@ export default function HomeScreen() {
                 style={[StyleSheet.absoluteFill, styles.scrollContainer]}
                 contentContainerStyle={styles.listContainer}
                 data={data}
-                renderItem={renderItem}
+                renderItem={RenderMultiItem}
                 keyExtractor={(item) => item.id}
-                estimatedAverateItemLength={ESTIMATED_ITEM_LENGTH}
+                estimatedItemLength={(index) => (data[index].type === 'separator' ? 52 : 400)}
+                estimatedAverateItemLength={300}
                 drawDistance={1000}
                 recycleItems={true}
                 // alignItemsAtEnd
@@ -51,9 +57,8 @@ export default function HomeScreen() {
                 }}
                 ListHeaderComponent={<View />}
                 ListHeaderComponentStyle={styles.listHeader}
-
                 // initialScrollOffset={20000}
-                // initialScrollIndex={500}
+                initialScrollIndex={50}
                 // inverted
                 // horizontal
             />
@@ -81,6 +86,7 @@ const styles = StyleSheet.create({
     },
 
     itemContainer: {
+        height: 405,
         // padding: 4,
         // borderBottomWidth: 1,
         // borderBottomColor: "#ccc",
