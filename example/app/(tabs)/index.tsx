@@ -1,10 +1,8 @@
 import { LegendList } from '@legendapp/list';
 import { useRef, useState } from 'react';
 import { LogBox, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
-import { Item, renderItem } from '../renderFixedItem';
-
-const ITEM_HEIGHT = 400;
-const SEPARATOR_HEIGHT = 52;
+import { Item, renderItem } from '../renderItem';
+import { RECYCLE_ITEMS } from '@/constants';
 
 LogBox.ignoreLogs(['Open debugger']);
 
@@ -15,36 +13,25 @@ console.log(`Using ${uiManager}`);
 
 const ESTIMATED_ITEM_LENGTH = 200;
 
-type RenderItem = Item & { type: 'separator' | 'item' };
-
-const RenderMultiItem = ({ item, index }: { item: RenderItem; index: number }) => {
-    if (item.type === 'separator') {
-        return (
-            <View
-                style={{
-                    height: SEPARATOR_HEIGHT,
-                    backgroundColor: 'red',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-            >
-                <Text style={{ color: 'white' }}>Separator {item.id}</Text>
-            </View>
-        );
-    }
-    return renderItem({ item, index, height: ITEM_HEIGHT });
-};
-
 export default function HomeScreen() {
     const scrollViewRef = useRef<ScrollView>(null);
 
-    const [data, setData] = useState<RenderItem[]>(
+    const [data, setData] = useState<Item[]>(
         () =>
             Array.from({ length: 500 }, (_, i) => ({
                 id: i.toString(),
-                type: i % 3 === 0 ? 'separator' : 'item',
             })) as any[],
     );
+
+    //   useEffect(() => {
+    //     let num = 0;
+    //     const interval = setInterval(() => {
+    //       setData((prev) => [prev[0], { id: "new" + num++ }, ...prev.slice(1)]);
+    //       if (num > 10) {
+    //         clearInterval(interval);
+    //       }
+    //     }, 2000);
+    //   }, []);
 
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
@@ -53,21 +40,21 @@ export default function HomeScreen() {
                 style={[StyleSheet.absoluteFill, styles.scrollContainer]}
                 contentContainerStyle={styles.listContainer}
                 data={data}
-                renderItem={RenderMultiItem}
+                renderItem={renderItem}
                 keyExtractor={(item) => item.id}
-                getEstimatedItemSize={(i, item) => (data[i].type === 'separator' ? 52 : 400)}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={1000}
-                recycleItems={true}
+                recycleItems={RECYCLE_ITEMS}
                 // alignItemsAtEnd
                 // maintainScrollAtEnd
                 onEndReached={({ distanceFromEnd }) => {
                     console.log('onEndReached', distanceFromEnd);
                 }}
-                //ListHeaderComponent={<View />}
-                //ListHeaderComponentStyle={styles.listHeader}
+                ListHeaderComponent={<View />}
+                ListHeaderComponentStyle={styles.listHeader}
+
                 // initialScrollOffset={20000}
-                initialScrollIndex={50}
+                // initialScrollIndex={500}
                 // inverted
                 // horizontal
             />
@@ -94,6 +81,11 @@ const styles = StyleSheet.create({
         // paddingrVertical: 48,
     },
 
+    itemContainer: {
+        // padding: 4,
+        // borderBottomWidth: 1,
+        // borderBottomColor: "#ccc",
+    },
     listContainer: {
         // paddingHorizontal: 16,
         paddingTop: 48,
