@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ForwardedRef, forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Dimensions, LayoutChangeEvent, ScrollView, StyleSheet } from 'react-native';
+import { Dimensions, LayoutChangeEvent, NativeScrollEvent, ScrollView, StyleSheet } from 'react-native';
 import { ListComponent } from './ListComponent';
 import type { LegendListProps } from './types';
 import { StateProvider, peek$, set$, useStateContext } from './state';
@@ -88,6 +88,24 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             return ret + '';
         };
 
+        const calculateInitialOffset = () => {
+            if (initialScrollIndex) {
+                if (estimatedItemLength) {
+                    let offset = 0;
+                    for (let i = 0; i < initialScrollIndex; i++) {
+                        offset += estimatedItemLength(i, data[i]);
+                    }
+                    return offset;
+                } else if (estimatedAverateItemLength) {
+                    return initialScrollIndex * estimatedAverateItemLength;
+                }
+            }
+            return undefined;
+        };
+
+        const initialContentOffset =
+            initialScrollOffset ?? useMemo(calculateInitialOffset, [initialScrollIndex, estimatedItemLength]);
+
         if (!refState.current) {
             refState.current = {
                 lengths: new Map(),
@@ -105,31 +123,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 startNoBuffer: 0,
                 endBuffered: 0,
                 endNoBuffer: 0,
-                scroll: 0,
+                scroll: initialContentOffset || 0,
                 topPad: 0,
             };
             refState.current.idsInFirstRender = new Set(data.map((_: any, i: number) => getId(i)));
         }
         refState.current.data = data;
         set$(`numItems`, ctx, data.length);
-
-        const reconstructInitialOffset = () => {
-            if (initialScrollIndex) {
-                if (estimatedItemLength) {
-                    let offset = 0;
-                    for (let i = 0; i < initialScrollIndex; i++) {
-                        offset += estimatedItemLength(i, data[i]);
-                    }
-                    return offset;
-                } else if (estimatedAverateItemLength) {
-                    return initialScrollIndex * estimatedAverateItemLength;
-                }
-            }
-            return undefined;
-        };
-
-        const initialContentOffset =
-            initialScrollOffset ?? useMemo(reconstructInitialOffset, [initialScrollIndex, estimatedItemLength]);
 
         const setTotalLength = (length: number) => {
             set$(`totalLength`, ctx, length);
@@ -181,6 +181,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 endNoBuffer: endNoBufferState,
                 endBuffered: endBufferedState,
             } = refState.current!;
+            console.log('Calculate items in view', scrollState);
             if (!data) {
                 return;
             }
@@ -282,6 +283,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 // but it likely would have little impact. Remove this comment if not worth doing.
                 for (let i = 0; i < numContainers; i++) {
                     const itemIndex = peek$(`containerIndex${i}`, ctx);
+                    console.log('updating container index', i, itemIndex);
                     const item = data[itemIndex];
                     if (item) {
                         const id = getId(itemIndex);
@@ -389,10 +391,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             const providedEstimateLength = estimatedItemLength
                 ? estimatedItemLength(index, data[index])
                 : estimatedAverateItemLength;
+
             const prevLength = lengths.get(id) || (wasInFirstRender ? providedEstimateLength : 0);
             // let scrollNeedsAdjust = 0;
 
             if (!prevLength || prevLength !== length) {
+                console.log({ index, id, providedEstimateLength });
+                console.log('updateItemLength (measured)', length, '!=', prevLength, '(estimated)');
+                console.log('\n\n');
+
                 // TODO: Experimental scroll adjusting
                 // const diff = length - (prevLength || 0);
                 // const startNoBuffer = visibleRange$.startNoBuffer.peek();
@@ -457,7 +464,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             refState.current!.scrollLength = scrollLength;
         }, []);
 
-        const handleScroll = useCallback((event: any) => {
+        const handleScroll = useCallback((event: NativeScrollEvent) => {
+            if (event.nativeEvent.contentSize.height === 0 && event.nativeEvent.contentSize.width === 0) {
+                return;
+            }
             refState.current!.hasScrolled = true;
             const newScroll = event.nativeEvent.contentOffset[horizontal ? 'x' : 'y'];
             // Update the scroll position to use in checks
@@ -466,15 +476,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
             // Debounce  a calculate if no calculate is already pending
             if (refState.current && !refState.current.animFrame) {
                 refState.current.animFrame = requestAnimationFrame(handleScrollDebounced);
-            }
-        }, []);
-
-        useEffect(() => {
-            if (initialContentOffset) {
-                handleScroll({
-                    nativeEvent: { contentOffset: { y: initialContentOffset } },
-                });
-                calculateItemsInView();
             }
         }, []);
 
@@ -491,6 +492,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 handleScroll={handleScroll}
                 onLayout={onLayout}
                 recycleItems={recycleItems}
+                estimatedAverateItemLength={estimatedAverateItemLength}
                 alignItemsAtEnd={alignItemsAtEnd}
             />
         );

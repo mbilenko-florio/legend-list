@@ -51,6 +51,7 @@ const randomNames = [
 interface ItemCardProps {
     item: Item;
     index: number;
+    height: number;
 }
 
 // Array of lorem ipsum sentences to randomly choose from
@@ -112,13 +113,11 @@ const renderRightActions = () => {
     );
 };
 
-export const ItemCard = ({ item }: ItemCardProps) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-
+export const ItemCard = ({ item, height }: ItemCardProps) => {
     const indexForData = item.id.includes('new') ? 100 + +item.id.replace('new', '') : +item.id;
 
     // Generate 1-5 random sentences
-    const numSentences = ((indexForData * 7919) % loremSentences.length) + 2; // Using prime number 7919 for better distribution
+    const numSentences = 5;
     //   const indexForData =
     //     item.id === "0" ? 0 : item.id === "1" ? 1 : item.id === "new0" ? 2 : 3;
     //   const numSentences =
@@ -131,7 +130,7 @@ export const ItemCard = ({ item }: ItemCardProps) => {
     const timestamp = `${Math.max(1, indexForData % 24)}h ago`;
 
     return (
-        <View style={styles.itemOuterContainer}>
+        <View style={[styles.itemOuterContainer, { height }]}>
             <Swipeable
                 renderRightActions={renderRightActions}
                 overshootRight={true}
@@ -140,8 +139,6 @@ export const ItemCard = ({ item }: ItemCardProps) => {
                 <Pressable
                     onPress={() => {
                         //   LinearTransition.easing(Easing.ease);
-
-                        setIsExpanded(!isExpanded);
                     }}
                 >
                     <View
@@ -176,7 +173,6 @@ export const ItemCard = ({ item }: ItemCardProps) => {
                             //   numberOfLines={isExpanded ? undefined : 10}
                         >
                             {randomText}
-                            {isExpanded ? randomText : null}
                         </Text>
                         <View style={styles.itemFooter}>
                             <Text style={styles.footerText}>❤️ 42</Text>
@@ -190,7 +186,9 @@ export const ItemCard = ({ item }: ItemCardProps) => {
     );
 };
 
-export const renderItem = ({ item, index }: LegendListRenderItemInfo<Item>) => <ItemCard item={item} index={index} />;
+export const renderItem = ({ item, index, height }: LegendListRenderItemInfo<Item>) => (
+    <ItemCard item={item} index={index} height={height} />
+);
 
 const styles = StyleSheet.create({
     itemOuterContainer: {
