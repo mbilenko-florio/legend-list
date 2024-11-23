@@ -12,8 +12,7 @@ import {
 } from "react-native";
 
 import { RectButton } from "react-native-gesture-handler";
-
-import { LegendListRenderItemInfo } from "@legendapp/list";
+import { loremSentences, randomNames } from "../renderItem";
 
 export interface Item {
   id: string;
@@ -25,52 +24,11 @@ const randomAvatars = Array.from(
   (_, i) => `https://i.pravatar.cc/150?img=${i + 1}`,
 );
 
-const randomNames = [
-  "Alex Thompson",
-  "Jordan Lee",
-  "Sam Parker",
-  "Taylor Kim",
-  "Morgan Chen",
-  "Riley Zhang",
-  "Casey Williams",
-  "Quinn Anderson",
-  "Blake Martinez",
-  "Avery Rodriguez",
-  "Drew Campbell",
-  "Jamie Foster",
-  "Skylar Patel",
-  "Charlie Wright",
-  "Sage Mitchell",
-  "River Johnson",
-  "Phoenix Garcia",
-  "Jordan Taylor",
-  "Reese Cooper",
-  "Morgan Bailey",
-];
-
 interface ItemCardProps {
   item: Item;
   index: number;
   height: number;
 }
-
-// Array of lorem ipsum sentences to randomly choose from
-const loremSentences = [
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
-  "Duis aute irure dolor in reprehenderit in voluptate velit esse.",
-  "Excepteur sint occaecat cupidatat non proident, sunt in culpa.",
-  "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit.",
-  "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.",
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
-  "Duis aute irure dolor in reprehenderit in voluptate velit esse.",
-  "Excepteur sint occaecat cupidatat non proident, sunt in culpa.",
-  "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit.",
-  "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.",
-];
 
 if (Platform.OS === "android") {
   if (UIManager.setLayoutAnimationEnabledExperimental) {

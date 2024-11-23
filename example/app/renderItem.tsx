@@ -25,10 +25,10 @@ export interface Item {
 // Generate random metadata
 const randomAvatars = Array.from(
   { length: 20 },
-  (_, i) => `https://i.pravatar.cc/150?img=${i + 1}`
+  (_, i) => `https://i.pravatar.cc/150?img=${i + 1}`,
 );
 
-const randomNames = [
+export const randomNames = [
   "Alex Thompson",
   "Jordan Lee",
   "Sam Parker",
@@ -57,7 +57,7 @@ interface ItemCardProps {
 }
 
 // Array of lorem ipsum sentences to randomly choose from
-const loremSentences = [
+export const loremSentences = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
   "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
@@ -130,7 +130,7 @@ export const ItemCard = ({ item }: ItemCardProps) => {
   //     item.id === "0" ? 1 : item.id === "1" ? 2 : item.id === "new0" ? 4 : 8;
   const randomText = Array.from(
     { length: numSentences },
-    (_, i) => loremSentences[i]
+    (_, i) => loremSentences[i],
   ).join(" ");
 
   // Use randomIndex to deterministically select random data
