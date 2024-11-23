@@ -2,6 +2,7 @@ import { LegendList } from '@legendapp/list';
 import { useRef, useState } from 'react';
 import { LogBox, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { Item, renderItem } from '../renderItem';
+import { RECYCLE_ITEMS } from '@/constants';
 
 LogBox.ignoreLogs(['Open debugger']);
 
@@ -43,7 +44,7 @@ export default function HomeScreen() {
                 keyExtractor={(item) => item.id}
                 estimatedAverateItemLength={ESTIMATED_ITEM_LENGTH}
                 drawDistance={1000}
-                recycleItems={true}
+                recycleItems={RECYCLE_ITEMS}
                 // alignItemsAtEnd
                 // maintainScrollAtEnd
                 onEndReached={({ distanceFromEnd }) => {

@@ -1,6 +1,7 @@
 import renderItem from '@/app/renderItem';
-import { FlashList } from '@shopify/flash-list';
-import { useRef } from 'react';
+import { RECYCLE_ITEMS } from '@/constants';
+import { FlashList, ListRenderItemInfo } from '@shopify/flash-list';
+import { Fragment, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 export default function HomeScreen() {
@@ -21,12 +22,16 @@ export default function HomeScreen() {
     //     return () => clearInterval(interval);
     //   });
 
+    const renderItemFn = (info: ListRenderItemInfo<any>) => {
+        return RECYCLE_ITEMS ? renderItem(info) : <Fragment key={info.item.id}>{renderItem(info)}</Fragment>;
+    };
+
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
             <FlashList
                 // style={[StyleSheet.absoluteFill, styles.scrollContainer]}
                 data={data}
-                renderItem={renderItem as any}
+                renderItem={renderItemFn}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContainer}
                 estimatedItemSize={389}

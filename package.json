@@ -1,6 +1,6 @@
 {
     "name": "@legendapp/list",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "description": "legend-list",
     "sideEffects": false,
     "private": false,
@@ -30,9 +30,6 @@
         "react-native": "^0.76.2",
         "tsup": "^8.3.5",
         "typescript": "^5.5.2"
-    },
-    "dependencies": {
-        "@legendapp/state": "^3.0.0-beta.19"
     },
     "author": "Legend <contact@legendapp.com> (https://github.com/LegendApp)",
     "keywords": [
