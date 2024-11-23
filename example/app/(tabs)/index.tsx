@@ -55,8 +55,8 @@ export default function HomeScreen() {
                 data={data}
                 renderItem={RenderMultiItem}
                 keyExtractor={(item) => item.id}
-                estimatedItemLength={(i, item) => (data[i].type === 'separator' ? 52 : 400)}
-                estimatedAverateItemLength={ESTIMATED_ITEM_LENGTH}
+                getEstimatedItemSize={(i, item) => (data[i].type === 'separator' ? 52 : 400)}
+                estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={1000}
                 recycleItems={true}
                 // alignItemsAtEnd
