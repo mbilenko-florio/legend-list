@@ -515,6 +515,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             [],
         );
 
+        // @ts-ignore
         React.useImperativeHandle(forwardedRef, () => {
             return {
                 getScrollableNode: () => internalRef.current,
