@@ -18,7 +18,6 @@ export default function TabLayout() {
         headerShown: false,
         lazy: true,
         tabBarButton: HapticTab,
-        lazy: true,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
