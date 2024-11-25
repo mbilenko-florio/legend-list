@@ -35,8 +35,6 @@ const RenderMultiItem = ({
 };
 
 export default function ScrollIndexDemo() {
-  const scrollViewRef = useRef<ScrollView>(null);
-
   const [data, setData] = useState<RenderItem[]>(
     () =>
       Array.from({ length: 500 }, (_, i) => ({
@@ -55,7 +53,6 @@ export default function ScrollIndexDemo() {
   return (
     <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
       <LegendList
-        ref={scrollViewRef}
         style={[StyleSheet.absoluteFill, styles.scrollContainer]}
         contentContainerStyle={styles.listContainer}
         data={data}
