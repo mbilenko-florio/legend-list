@@ -19,7 +19,7 @@ import {
 } from './LegendListHelpers';
 import { ListComponent } from './ListComponent';
 import { set$, StateProvider, useStateContext } from './state';
-import type { InternalState, LegendListProps } from './types';
+import type { InternalState, LegendListProps, LegendListRef } from './types';
 
 export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
     forwardRef(function LegendList<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
@@ -30,8 +30,8 @@ export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Le
         );
     }) as any;
 
-const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<ScrollView> }) => ReactElement = forwardRef(
-    function LegendListInner<T>(props_: LegendListProps<T>, forwardedRef: ForwardedRef<ScrollView>) {
+const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
+    forwardRef(function LegendListInner<T>(props_: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {
         const props = applyDefaultProps(props_);
         const {
             data,
@@ -178,8 +178,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 scrollToEnd: refScroller.current!.scrollToEnd,
                 flashScrollIndicators: refScroller.current!.flashScrollIndicators,
                 scrollToIndex: (params) => {
-                    const offsetObj = calculateInitialOffsetHelper.bind(undefined, params.index);
+                    const offsetObj = calculateInitialOffsetHelper.bind(undefined, {
+                        ...props,
+                        initialScrollIndex: params.index,
+                    });
                     const offset = horizontal ? { x: offsetObj, y: 0 } : { x: 0, y: offsetObj };
+                    // @ts-ignore
                     refScroller.current!.scrollTo(offset);
                 },
             };
@@ -199,5 +203,4 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Scro
                 onLayout={onLayout}
             />
         );
-    },
-) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;
+    }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;
