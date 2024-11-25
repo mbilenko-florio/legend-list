@@ -1,4 +1,4 @@
-import { LegendList } from "@legendapp/list";
+import { LegendList, LegendListRef } from "@legendapp/list";
 import { useLayoutEffect, useRef, useState } from "react";
 import { LogBox, ScrollView, StyleSheet, View, Text } from "react-native";
 import { Item, renderItem } from "./renderFixedItem";
@@ -35,7 +35,7 @@ const RenderMultiItem = ({
 };
 
 export default function ScrollIndexDemo() {
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<LegendListRef>(null);
 
   const [data, setData] = useState<RenderItem[]>(
     () =>

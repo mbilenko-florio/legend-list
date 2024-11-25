@@ -213,7 +213,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 contentContainerStyle={contentContainerStyle}
                 style={style}
                 horizontal={horizontal!}
-                refScroller={refScroller as React.MutableRefObject<ScrollView>}
+                refScroller={refScroller}
                 initialContentOffset={initialContentOffset}
                 getRenderedItem={getRenderedItem}
                 updateItemSize={updateItemSize}
