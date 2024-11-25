@@ -9,6 +9,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import { enableFreeze } from "react-native-screens";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -17,6 +18,7 @@ import { configureReanimatedLogger } from "react-native-reanimated";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+enableFreeze(); // freeze inactive tabs in the tabbar, to improve benchmarking accuracy
 
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,

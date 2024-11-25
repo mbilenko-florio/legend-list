@@ -1,18 +1,8 @@
-import renderItem, { Item } from "@/app/renderItem";
-import { useEffect, useState } from "react";
+import renderItem from "@/app/renderItem";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
 export default function HomeScreen() {
-  const [data, setData] = useState<Item[]>(() => []);
-  useEffect(() => {
-    setTimeout(() => {
-      setData(
-        Array.from({ length: 500 }, (_, i) => ({
-          id: i.toString(),
-        })) as any[],
-      );
-    }, 2000);
-  }, []);
+  const data = Array.from({ length: 1000 }, (_, i) => ({ id: i.toString() }));
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
@@ -24,12 +14,6 @@ export default function HomeScreen() {
         contentContainerStyle={styles.listContainer}
         ListHeaderComponent={<View />}
         ListHeaderComponentStyle={styles.listHeader}
-        initialScrollIndex={50}
-        getItemLayout={(data, index) => ({
-          length: 400,
-          offset: 400 * index,
-          index,
-        })}
       />
     </View>
   );

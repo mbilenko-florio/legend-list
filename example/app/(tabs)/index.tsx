@@ -19,7 +19,7 @@ const uiManager = global?.nativeFabricUIManager ? "Fabric" : "Paper";
 
 console.log(`Using ${uiManager}`);
 
-const ESTIMATED_ITEM_LENGTH = 200;
+const ESTIMATED_ITEM_LENGTH = 389;
 
 export default function HomeScreen() {
   const scrollViewRef = useRef<LegendListRef>(null);
@@ -27,9 +27,9 @@ export default function HomeScreen() {
   useEffect(() => {
     console.log(scrollViewRef.current);
     setTimeout(() => {
-      scrollViewRef.current?.scrollToIndex({
-        index: 20,
-      });
+      //   scrollViewRef.current?.scrollToIndex({
+      //     index: 200,
+      //   });
     }, 1000);
   }, []);
 

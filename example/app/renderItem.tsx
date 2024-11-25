@@ -11,6 +11,7 @@ import {
   UIManager,
   Platform,
   LayoutAnimation,
+  ImageBackground,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { RectButton } from "react-native-gesture-handler";
@@ -168,7 +169,12 @@ export const ItemCard = ({ item }: ItemCardProps) => {
               },
             ]}
           >
-            <View style={styles.headerContainer}>
+            <ImageBackground
+              source={{
+                uri: "https://live.staticflickr.com/7151/6760135001_58b1c5c5f0_b.jpg",
+              }}
+              style={styles.headerContainer}
+            >
               <Image source={{ uri: avatarUrl }} style={styles.avatar} />
               <View style={styles.headerText}>
                 <Text style={styles.authorName}>
@@ -176,7 +182,7 @@ export const ItemCard = ({ item }: ItemCardProps) => {
                 </Text>
                 <Text style={styles.timestamp}>{timestamp}</Text>
               </View>
-            </View>
+            </ImageBackground>
 
             <Text style={styles.itemTitle}>Item #{item.id}</Text>
             <Text
@@ -187,12 +193,14 @@ export const ItemCard = ({ item }: ItemCardProps) => {
               {isExpanded ? randomText : null}
             </Text>
             <View style={styles.itemFooter}>
+              {Array.from({ length: 1000 }).map((_, i) => (
+                <View key={i} style={{ width: 0, height: 0 }} />
+              ))}
               <Text style={styles.footerText}>❤️ 42</Text>
               <Text style={styles.footerText}>💬 12</Text>
               <Text style={styles.footerText}>🔄 8</Text>
             </View>
           </View>
-          <Breathe />
         </Pressable>
       </Swipeable>
     </View>
@@ -209,6 +217,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     // marginTop: 16,
     maxWidth: 360,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    elevation: 5,
   },
   itemContainer: {
     padding: 16,
