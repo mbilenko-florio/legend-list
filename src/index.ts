@@ -1,2 +1,2 @@
 export { LegendList } from './LegendList';
-export type { LegendListProps, LegendListRenderItemInfo, ViewableRange } from './types';
+export type { LegendListProps, LegendListRef, LegendListRenderItemInfo, ViewableRange } from './types';

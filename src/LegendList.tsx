@@ -46,7 +46,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const ctx = useStateContext();
 
-        const refScroller = (forwardedRef || useRef<ScrollView>(null)) as React.MutableRefObject<ScrollView>;
+        const refScroller = useRef<ScrollView>(null) as React.MutableRefObject<ScrollView>;
         const scrollBuffer = drawDistance ?? DEFAULT_SCROLL_BUFFER;
         // Experimental: It works ok on iOS when scrolling up, but is doing weird things when sizes are changing.
         // And it doesn't work at all on Android because it uses contentInset. I'll try it again later.
@@ -170,22 +170,35 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             checkAtBottom();
         }, [data]);
 
-        // @ts-ignore
         React.useImperativeHandle(forwardedRef, () => {
+            const scrollToIndex = ({ index, animated }: Parameters<LegendListRef['scrollToIndex']>[0]) => {
+                // naive implementation to search element by index
+                // create some accurate search algorithm
+                // FlashList seems to be able to find index in the dynamic size list with some search
+                const offsetObj = calculateInitialOffsetHelper.call(undefined, {
+                    ...props,
+                    initialScrollIndex: index,
+                });
+                const offset = horizontal ? { x: offsetObj, y: 0 } : { x: 0, y: offsetObj };
+                refScroller.current!.scrollTo({ ...offset, animated });
+            };
             return {
-                getScrollableNode: () => refScroller.current,
-                scrollTo: refScroller.current!.scrollTo,
-                scrollToEnd: refScroller.current!.scrollToEnd,
+                getNativeScrollRef: () => refScroller.current!,
+                getScrollableNode: refScroller.current!.getScrollableNode,
+                getScrollResponder: refScroller.current!.getScrollResponder,
                 flashScrollIndicators: refScroller.current!.flashScrollIndicators,
-                scrollToIndex: (params) => {
-                    const offsetObj = calculateInitialOffsetHelper.bind(undefined, {
-                        ...props,
-                        initialScrollIndex: params.index,
-                    });
-                    const offset = horizontal ? { x: offsetObj, y: 0 } : { x: 0, y: offsetObj };
-                    // @ts-ignore
-                    refScroller.current!.scrollTo(offset);
+                scrollToIndex,
+                scrollToOffset: ({ offset, animated }) => {
+                    const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
+                    refScroller.current!.scrollTo({ ...offsetObj, animated });
                 },
+                scrollToItem: ({ item, animated }) => {
+                    const index = data.indexOf(item);
+                    if (index !== -1) {
+                        scrollToIndex({ index, animated });
+                    }
+                },
+                scrollToEnd: refScroller.current!.scrollToEnd,
             };
         }, []);
 
