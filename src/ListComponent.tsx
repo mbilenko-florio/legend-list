@@ -17,7 +17,7 @@ import type { LegendListProps } from './types';
 interface ListComponentProps
     extends Omit<
         LegendListProps<any>,
-        'data' | 'estimatedItemLength' | 'drawDistance' | 'maintainScrollAtEnd' | 'maintainScrollAtEndThreshold'
+        'data' | 'estimatedItemSize' | 'drawDistance' | 'maintainScrollAtEnd' | 'maintainScrollAtEndThreshold'
     > {
     style: StyleProp<ViewStyle>;
     contentContainerStyle: StyleProp<ViewStyle>;
@@ -25,7 +25,7 @@ interface ListComponentProps
     initialContentOffset: number | undefined;
     refScroller: React.MutableRefObject<ScrollView>;
     getRenderedItem: (index: number) => ReactNode;
-    updateItemLength: (index: number, length: number) => void;
+    updateItemSize: (index: number, length: number) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onLayout: (event: LayoutChangeEvent) => void;
 }
@@ -55,7 +55,7 @@ export const ListComponent = React.memo(function ListComponent({
     ListFooterComponent,
     ListFooterComponentStyle,
     getRenderedItem,
-    updateItemLength,
+    updateItemSize,
     refScroller,
     ...rest
 }: ListComponentProps) {
@@ -102,7 +102,7 @@ export const ListComponent = React.memo(function ListComponent({
                 recycleItems={recycleItems!}
                 getRenderedItem={getRenderedItem}
                 ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
-                updateItemLength={updateItemLength}
+                updateItemSize={updateItemSize}
             />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
         </ScrollView>

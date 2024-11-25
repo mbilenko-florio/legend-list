@@ -1,10 +1,11 @@
 import * as React from 'react';
 import type { ViewProps, ViewStyle } from 'react-native';
 import { LeanView } from './LeanView';
-import { type ListenerType, use$ } from './state';
+import { use$ } from './state';
+import type { StateType } from './types';
 
 interface ContainerStyleProps extends ViewProps {
-    $key: ListenerType;
+    $key: StateType;
     $style: () => ViewStyle;
 }
 

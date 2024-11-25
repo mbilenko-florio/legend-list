@@ -1,8 +1,8 @@
-import renderItem from "@/app/renderItem";
-import { RECYCLE_ITEMS } from "@/constants";
-import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
-import { Fragment, useEffect, useRef } from "react";
-import { StyleSheet, View } from "react-native";
+import renderItem from '@/app/renderItem';
+import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants';
+import { FlashList, ListRenderItemInfo } from '@shopify/flash-list';
+import { Fragment, useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 export default function HomeScreen() {
   const data = Array.from({ length: 1000 }, (_, i) => ({ id: i.toString() }));
@@ -22,11 +22,45 @@ export default function HomeScreen() {
   //     return () => clearInterval(interval);
   //   });
 
-  const renderItemFn = (info: ListRenderItemInfo<any>) => {
-    return RECYCLE_ITEMS ? (
-      renderItem(info)
-    ) : (
-      <Fragment key={info.item.id}>{renderItem(info)}</Fragment>
+    const renderItemFn = (info: ListRenderItemInfo<any>) => {
+        return RECYCLE_ITEMS ? renderItem(info) : <Fragment key={info.item.id}>{renderItem(info)}</Fragment>;
+    };
+
+    if (DO_SCROLL_TEST) {
+        useEffect(() => {
+            let num = 0;
+            let start = 0;
+            let inc = 2000;
+            const interval = setInterval(() => {
+                //   setData((prev) => [prev[0], { id: "new" + num++ }, ...prev.slice(1)]);
+                //   if (num > 10) {
+                //     clearInterval(interval);
+                //   }
+                scrollRef.current?.scrollToOffset({
+                    offset: (start += inc),
+                    animated: true,
+                });
+            }, 60);
+            return () => clearInterval(interval);
+        }, []);
+    }
+
+    return (
+        <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
+            <FlashList
+                // style={[StyleSheet.absoluteFill, styles.scrollContainer]}
+                data={data}
+                renderItem={renderItemFn}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={styles.listContainer}
+                estimatedItemSize={ESTIMATED_ITEM_LENGTH}
+                drawDistance={DRAW_DISTANCE}
+                // initialScrollIndex={500}
+                ref={scrollRef}
+                ListHeaderComponent={<View />}
+                ListHeaderComponentStyle={styles.listHeader}
+            />
+        </View>
     );
   };
 

@@ -11,13 +11,13 @@ import {
   UIManager,
   Platform,
   LayoutAnimation,
-  ImageBackground,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { RectButton } from "react-native-gesture-handler";
 import Animated, { Easing, LinearTransition } from "react-native-reanimated";
 import Breathe from "@/components/Breathe";
 import { LegendListRenderItemInfo } from "@legendapp/list";
+import { EMULATE_SLOW_RENDER } from "@/constants";
 
 export interface Item {
   id: string;
@@ -117,6 +117,12 @@ const renderRightActions = () => {
 };
 
 export const ItemCard = ({ item }: ItemCardProps) => {
+  let now = performance.now();
+  if (EMULATE_SLOW_RENDER) {
+    while (performance.now() - now < EMULATE_SLOW_RENDER) {
+      // Just wait
+    }
+  }
   const [isExpanded, setIsExpanded] = useState(false);
 
   const indexForData = item.id.includes("new")
@@ -169,12 +175,7 @@ export const ItemCard = ({ item }: ItemCardProps) => {
               },
             ]}
           >
-            <ImageBackground
-              source={{
-                uri: "https://live.staticflickr.com/7151/6760135001_58b1c5c5f0_b.jpg",
-              }}
-              style={styles.headerContainer}
-            >
+            <View style={styles.headerContainer}>
               <Image source={{ uri: avatarUrl }} style={styles.avatar} />
               <View style={styles.headerText}>
                 <Text style={styles.authorName}>
@@ -182,7 +183,7 @@ export const ItemCard = ({ item }: ItemCardProps) => {
                 </Text>
                 <Text style={styles.timestamp}>{timestamp}</Text>
               </View>
-            </ImageBackground>
+            </View>
 
             <Text style={styles.itemTitle}>Item #{item.id}</Text>
             <Text
@@ -193,14 +194,12 @@ export const ItemCard = ({ item }: ItemCardProps) => {
               {isExpanded ? randomText : null}
             </Text>
             <View style={styles.itemFooter}>
-              {Array.from({ length: 1000 }).map((_, i) => (
-                <View key={i} style={{ width: 0, height: 0 }} />
-              ))}
               <Text style={styles.footerText}>❤️ 42</Text>
               <Text style={styles.footerText}>💬 12</Text>
               <Text style={styles.footerText}>🔄 8</Text>
             </View>
           </View>
+          {/* <Breathe /> */}
         </Pressable>
       </Swipeable>
     </View>
@@ -217,15 +216,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     // marginTop: 16,
     maxWidth: 360,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-
-    elevation: 5,
   },
   itemContainer: {
     padding: 16,

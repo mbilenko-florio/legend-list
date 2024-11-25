@@ -1,5 +1,5 @@
 import { ComponentProps, ReactNode } from 'react';
-import { ScrollResponderMixin, ScrollView, ScrollViewComponent, StyleProp, ViewStyle } from 'react-native';
+import { ScrollResponderMixin, ScrollView, ScrollViewComponent, StyleProp, ViewStyle, ViewToken } from 'react-native';
 
 export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'contentOffset'> & {
     data: ArrayLike<any> & T[];
@@ -28,13 +28,10 @@ export type LegendListProps<T> = Omit<ComponentProps<typeof ScrollView>, 'conten
     ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined;
     ItemSeparatorComponent?: React.ComponentType<any>;
     //   TODO:
-    //   onViewableItemsChanged?:
-    //     | ((info: {
-    //         viewableItems: Array<ViewToken<T>>;
-    //         changed: Array<ViewToken<T>>;
-    //       }) => void)
-    //     | null
-    //     | undefined;
+    onViewableItemsChanged?:
+        | ((info: { viewableItems: Array<ViewToken<T>>; changed: Array<ViewToken<T>> }) => void)
+        | null
+        | undefined;
 };
 
 export interface ViewableRange<T> {
@@ -78,3 +75,40 @@ export type LegendListRef = {
 
     scrollToOffset(params: { offset: number; animated?: boolean }): void;
 };
+// Internal type after this line
+export type StateType =
+    | 'numContainers'
+    | `containerIndex${number}`
+    | `containerPosition${number}`
+    | `numItems`
+    | 'totalLength'
+    | 'paddingTop';
+
+export interface StateContext {
+    listeners: Map<StateType, () => void>;
+    values: Map<StateType, any>;
+}
+
+export interface InternalState<T = any> {
+    positions: Map<string, number>;
+    lengths: Map<String, number>;
+    pendingAdjust: number;
+    animFrameScroll: number | null;
+    isStartReached: boolean;
+    isEndReached: boolean;
+    isAtBottom: boolean;
+    idsInFirstRender: Set<string>;
+    hasScrolled: boolean;
+    scrollLength: number;
+    startBuffered: number;
+    startNoBuffer: number;
+    endBuffered: number;
+    endNoBuffer: number;
+    scrollPrevious: number;
+    scroll: number;
+    topPad: number;
+    previousViewableItems: Set<number>;
+    scrollBuffer: number;
+    props: LegendListProps<T>;
+    ctx: StateContext;
+}

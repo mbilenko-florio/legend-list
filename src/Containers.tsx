@@ -7,7 +7,7 @@ interface ContainersProps {
     horizontal: boolean;
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ReactNode;
-    updateItemLength: (index: number, length: number) => void;
+    updateItemSize: (index: number, length: number) => void;
     getRenderedItem: (index: number) => React.ReactNode;
 }
 
@@ -15,7 +15,7 @@ export const Containers = React.memo(function Containers({
     horizontal,
     recycleItems,
     ItemSeparatorComponent,
-    updateItemLength,
+    updateItemSize,
     getRenderedItem,
 }: ContainersProps) {
     const ctx = useStateContext();
@@ -30,7 +30,7 @@ export const Containers = React.memo(function Containers({
                 recycleItems={recycleItems}
                 horizontal={horizontal}
                 getRenderedItem={getRenderedItem}
-                onLayout={updateItemLength}
+                onLayout={updateItemSize}
                 ItemSeparatorComponent={ItemSeparatorComponent}
             />,
         );
