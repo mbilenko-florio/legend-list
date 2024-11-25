@@ -1,23 +1,11 @@
-import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { MaterialIcons } from '@expo/vector-icons';
-
-import {
-    StyleSheet,
-    Text,
-    View,
-    Image,
-    TouchableOpacity,
-    Pressable,
-    UIManager,
-    Platform,
-    LayoutAnimation,
-} from 'react-native';
-import { useEffect, useState } from 'react';
-import { RectButton } from 'react-native-gesture-handler';
-import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Breathe from '@/components/Breathe';
+import { EMULATE_SLOW_RENDER } from '@/constants/constants';
 import { LegendListRenderItemInfo } from '@legendapp/list';
-import { EMULATE_SLOW_RENDER } from '@/constants';
+import { useState } from 'react';
+import { Image, Platform, Pressable, StyleSheet, Text, UIManager, View } from 'react-native';
+import { RectButton } from 'react-native-gesture-handler';
 
 export interface Item {
     id: string;
@@ -114,12 +102,13 @@ const renderRightActions = () => {
 };
 
 export const ItemCard = ({ item }: ItemCardProps) => {
-    let now = performance.now();
-    if (EMULATE_SLOW_RENDER) {
-        while (performance.now() - now < EMULATE_SLOW_RENDER) {
-            // Just wait
-        }
-    }
+    // let now = performance.now();
+    // if (EMULATE_SLOW_RENDER) {
+    //     let result = 0;
+    //     for (let i = 0; i < EMULATE_SLOW_RENDER * 100000; i++) {
+    //         result += Math.sin(i) * Math.cos(i);
+    //     }
+    // }
     const [isExpanded, setIsExpanded] = useState(false);
 
     const indexForData = item.id.includes('new') ? 100 + +item.id.replace('new', '') : +item.id;
@@ -191,7 +180,7 @@ export const ItemCard = ({ item }: ItemCardProps) => {
                             <Text style={styles.footerText}>🔄 8</Text>
                         </View>
                     </View>
-                    {/* <Breathe /> */}
+                    {EMULATE_SLOW_RENDER > 0 && <Breathe />}
                 </Pressable>
             </Swipeable>
         </View>

@@ -1,8 +1,9 @@
+import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants/constants';
+import { useScrollTest } from '@/constants/useScrollTest';
 import { LegendList } from '@legendapp/list';
-import { useEffect, useRef, useState } from 'react';
-import { LogBox, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
+import { useRef, useState } from 'react';
+import { LogBox, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Item, renderItem } from '../renderItem';
-import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH, RECYCLE_ITEMS } from '@/constants';
 
 LogBox.ignoreLogs(['Open debugger']);
 
@@ -22,22 +23,12 @@ export default function HomeScreen() {
     );
 
     if (DO_SCROLL_TEST) {
-        useEffect(() => {
-            let num = 0;
-            let start = 0;
-            let inc = 2000;
-            const interval = setInterval(() => {
-                //   setData((prev) => [prev[0], { id: "new" + num++ }, ...prev.slice(1)]);
-                //   if (num > 10) {
-                //     clearInterval(interval);
-                //   }
-                scrollViewRef.current?.scrollTo({
-                    y: (start += inc),
-                    animated: true,
-                });
-            }, 60);
-            return () => clearInterval(interval);
-        }, []);
+        useScrollTest((offset) => {
+            scrollViewRef.current?.scrollTo({
+                y: offset,
+                animated: true,
+            });
+        });
     }
     //   useEffect(() => {
     //     let num = 0;

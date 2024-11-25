@@ -21,7 +21,6 @@
     },
     "dependencies": {
         "@expo/vector-icons": "^14.0.2",
-        "@legendapp/list": "file:legendapp-list.tgz",
         "@legendapp/motion": "^2.4.0",
         "@legendapp/state": "^3.0.0-beta.19",
         "@react-navigation/bottom-tabs": "^7.0.0",

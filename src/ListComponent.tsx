@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { $View } from './$View';
 import { Containers } from './Containers';
-import { peek$, useStateContext } from './state';
+import { peek$, set$, useStateContext } from './state';
 import type { LegendListProps } from './types';
 
 interface ListComponentProps
@@ -28,6 +28,7 @@ interface ListComponentProps
     updateItemSize: (index: number, length: number) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onLayout: (event: LayoutChangeEvent) => void;
+    addTotalLength: (totalLength: number) => void;
 }
 
 const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {
@@ -56,6 +57,7 @@ export const ListComponent = React.memo(function ListComponent({
     ListFooterComponentStyle,
     getRenderedItem,
     updateItemSize,
+    addTotalLength,
     refScroller,
     ...rest
 }: ListComponentProps) {
@@ -75,7 +77,6 @@ export const ListComponent = React.memo(function ListComponent({
             ]}
             onScroll={handleScroll}
             onLayout={onLayout}
-            scrollEventThrottle={32}
             horizontal={horizontal}
             contentOffset={
                 initialContentOffset
@@ -87,7 +88,21 @@ export const ListComponent = React.memo(function ListComponent({
             ref={refScroller}
         >
             {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$(ctx, 'paddingTop') })} />}
-            {ListHeaderComponent && <View style={ListHeaderComponentStyle}>{getComponent(ListHeaderComponent)}</View>}
+            {ListHeaderComponent && (
+                <View
+                    style={ListHeaderComponentStyle}
+                    onLayout={(event) => {
+                        const size = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
+                        const prevSize = peek$(ctx, 'headerSize') || 0;
+                        if (size !== prevSize) {
+                            set$(ctx, 'headerSize', size);
+                            addTotalLength(size - prevSize);
+                        }
+                    }}
+                >
+                    {getComponent(ListHeaderComponent)}
+                </View>
+            )}
             {/* {supportsEstimationAdjustment && (
                 <Reactive.View
                     $style={() => ({
@@ -104,7 +119,21 @@ export const ListComponent = React.memo(function ListComponent({
                 ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
                 updateItemSize={updateItemSize}
             />
-            {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
+            {ListFooterComponent && (
+                <View
+                    style={ListFooterComponentStyle}
+                    onLayout={(event) => {
+                        const size = event.nativeEvent.layout[horizontal ? 'width' : 'height'];
+                        const prevSize = peek$(ctx, 'footerSize') || 0;
+                        if (size !== prevSize) {
+                            set$(ctx, 'footerSize', size);
+                            addTotalLength(size - prevSize);
+                        }
+                    }}
+                >
+                    {getComponent(ListFooterComponent)}
+                </View>
+            )}
         </ScrollView>
     );
 });

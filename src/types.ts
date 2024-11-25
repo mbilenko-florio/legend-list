@@ -82,7 +82,10 @@ export type StateType =
     | `containerPosition${number}`
     | `numItems`
     | 'totalLength'
-    | 'paddingTop';
+    | 'paddingTop'
+    | 'stylePaddingTop'
+    | 'headerSize'
+    | 'footerSize';
 
 export interface StateContext {
     listeners: Map<StateType, () => void>;
@@ -94,6 +97,7 @@ export interface InternalState<T = any> {
     lengths: Map<String, number>;
     pendingAdjust: number;
     animFrameScroll: number | null;
+    animFrameLayout: number | null;
     isStartReached: boolean;
     isEndReached: boolean;
     isAtBottom: boolean;
@@ -106,7 +110,6 @@ export interface InternalState<T = any> {
     endNoBuffer: number;
     scrollPrevious: number;
     scroll: number;
-    topPad: number;
     previousViewableItems: Set<number>;
     scrollBuffer: number;
     props: LegendListProps<T>;

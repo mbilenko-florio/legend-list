@@ -59,14 +59,14 @@ export function calculateInitialOffset(props: LegendListProps<any>) {
     return undefined;
 }
 
-export function setTotalLength(state: InternalState, totalLength: number) {
+export function addTotalLength(state: InternalState, add: number) {
     const { ctx, props } = state;
+    const totalLength = (peek$(ctx, `totalLength`) || 0) + add;
     set$(ctx, `totalLength`, totalLength);
     const screenLength = state.scrollLength;
     if (props.alignItemsAtEnd) {
-        const listPaddingTop =
-            ((props.style as any)?.paddingTop || 0) + ((props.contentContainerStyle as any)?.paddingTop || 0);
-        set$(ctx, `paddingTop`, Math.max(0, screenLength - length - listPaddingTop));
+        const listPaddingTop = peek$(ctx, `stylePaddingTop`);
+        set$(ctx, `paddingTop`, Math.max(0, screenLength - totalLength - listPaddingTop));
     }
 }
 
@@ -96,7 +96,6 @@ export function calculateItemsInView(state: InternalState) {
             props: { data, onViewableRangeChanged },
             scrollLength,
             scroll: scrollState,
-            topPad,
             startNoBuffer: startNoBufferState,
             startBuffered: startBufferedState,
             endNoBuffer: endNoBufferState,
@@ -110,18 +109,19 @@ export function calculateItemsInView(state: InternalState) {
         if (!data) {
             return;
         }
+        const topPad = (peek$(ctx, `stylePaddingTop`) || 0) + (peek$(ctx, `headerSize`) || 0);
         const scroll = scrollState - topPad;
         const direction = scroll > state.scrollPrevious ? 1 : -1;
         const optimizeDirection = OPTIMIZE_DIRECTION;
         const scrollBufferTop = optimizeDirection
             ? direction > 0
-                ? scrollBuffer * 0.25
-                : scrollBuffer * 1.75
+                ? scrollBuffer * 0.5
+                : scrollBuffer * 1.5
             : scrollBuffer;
         const scrollBufferBottom = optimizeDirection
             ? direction > 0
-                ? scrollBuffer * 1.75
-                : scrollBuffer * 0.25
+                ? scrollBuffer * 1.5
+                : scrollBuffer * 0.5
             : scrollBuffer;
 
         let startNoBuffer: number | null = null;
@@ -148,6 +148,8 @@ export function calculateItemsInView(state: InternalState) {
                 }
             }
         }
+
+        let scrollUpDistanceToChange = 0;
 
         let top = loopStart > 0 ? positions.get(getId(state, loopStart))! : 0;
 
@@ -201,27 +203,43 @@ export function calculateItemsInView(state: InternalState) {
                 }
                 // If it's not in a container, then we need to recycle a container out of view
                 if (!isContained) {
-                    let didRecycle = false;
+                    const id = getId(state, i)!;
+                    const top = positions.get(id) || 0;
+                    let furthestIndex = -1;
+                    let furthestDistance = 0;
+                    // Find the furthest container so we can recycle a container from the other side of scroll
+                    // to reduce empty container flashing when switching directions
+                    // Note that since this is only checking top it may not be 100% accurate but that's fine.
                     for (let u = 0; u < numContainers; u++) {
                         const index = peek$(ctx, `containerIndex${u}`);
-
-                        if (index < startBuffered || index > endBuffered) {
-                            set$(ctx, `containerIndex${u}`, i);
-                            didRecycle = true;
+                        if (index < 0) {
+                            furthestIndex = u;
                             break;
                         }
+
+                        const pos = peek$(ctx, `containerPosition${u}`);
+                        if (index < startBuffered || index > endBuffered) {
+                            const distance = Math.abs(pos - top);
+                            if (index < 0 || distance > furthestDistance) {
+                                furthestDistance = distance;
+                                furthestIndex = u;
+                        }
                     }
-                    if (!didRecycle) {
+                    }
+
+                    if (furthestIndex >= 0) {
+                        set$(ctx, `containerIndex${furthestIndex}`, i);
+                    } else {
                         if (__DEV__) {
                             console.warn(
                                 '[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemLength',
                                 i,
                             );
                         }
-                        const id = numContainers;
+                        const containerId = numContainers;
                         numContainers++;
-                        set$(ctx, `containerIndex${id}`, i);
-                        set$(ctx, `containerPosition${id}`, POSITION_OUT_OF_VIEW);
+                        set$(ctx, `containerIndex${containerId}`, i);
+                        set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
                     }
                 }
             }
@@ -239,7 +257,10 @@ export function calculateItemsInView(state: InternalState) {
                 if (item) {
                     const id = getId(state, itemIndex);
                     if (itemIndex < startBuffered || itemIndex > endBuffered) {
-                        set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                        // TODO: I think this was needed to fix initialScrollOffset.
+                        // Maybe we need to reset containers out of view
+                        // when data changes. Or maybe it was when adding items?
+                        // set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                     } else {
                         const pos = positions.get(id) ?? -1;
                         const prevPos = peek$(ctx, `containerPosition${i}`);
@@ -302,8 +323,7 @@ export function updateItemSize(
         // }
 
         lengths.set(id, length);
-        const totalLength = peek$(ctx, 'totalLength');
-        setTotalLength(state, totalLength + (length - prevLength));
+        addTotalLength(state, length - prevLength);
 
         if (isAtBottom && maintainScrollAtEnd) {
             // TODO: This kinda works, but with a flash. Since setNativeProps is less ideal we'll favor the animated one for now.
@@ -332,8 +352,13 @@ export function updateItemSize(
         // TODO: Could this be optimized to only calculate items in view that have changed?
 
         // Calculate positions if not currently scrolling and have a calculate already pending
+        if (!state.animFrameScroll && !state.animFrameLayout) {
+            state.animFrameLayout = requestAnimationFrame(() => {
+                state.animFrameLayout = null;
         if (!state.animFrameScroll) {
             calculateItemsInView(state);
+        }
+            });
         }
 
         // TODO: Experimental

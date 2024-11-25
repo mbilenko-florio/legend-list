@@ -49,7 +49,6 @@ export const Container = ({
         const position = peek$(ctx, `containerPosition${id}`);
         return horizontal
             ? {
-                  flexDirection: 'row',
                   position: 'absolute',
                   top: 0,
                   bottom: 0,

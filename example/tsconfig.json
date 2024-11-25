@@ -5,6 +5,9 @@
         "paths": {
             "@/*": [
                 "./*"
+            ],
+            "@legendapp/list": [
+                "../src/index"
             ]
         }
     },
