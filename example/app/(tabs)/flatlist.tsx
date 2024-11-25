@@ -1,28 +1,12 @@
 import renderItem from "@/app/renderItem";
-import { useEffect, useRef } from "react";
-import {
-  FlatList,
-  ScrollViewComponent,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 
 export default function HomeScreen() {
-  const ref = useRef<FlatList>(null);
   const data = Array.from({ length: 1000 }, (_, i) => ({ id: i.toString() }));
 
-  useEffect(() => {
-    setTimeout(() => {
-      const scrollview =
-        ref.current!.getNativeScrollRef()! as ScrollViewComponent;
-      scrollview.scrollTo({ y: 1000 });
-    }, 1000);
-  }, []);
   return (
     <View style={[StyleSheet.absoluteFill, styles.outerContainer]}>
       <FlatList
-        ref={ref}
         style={[StyleSheet.absoluteFill, styles.scrollContainer]}
         data={data}
         renderItem={renderItem}
