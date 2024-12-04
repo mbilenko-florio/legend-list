@@ -390,7 +390,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
                             if (furthestIndex >= 0) {
                                 set$(ctx, `containerItemIndex${furthestIndex}`, i);
+                                set$(ctx,`containerMeasured${furthestIndex}`, false);
                                 set$(ctx, `containerItemKey${furthestIndex}`, id);
+                                
                             } else {
                                 if (__DEV__) {
                                     console.warn(
@@ -402,6 +404,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                                 numContainers++;
                                 set$(ctx, `containerItemIndex${containerId}`, i);
+                                set$(ctx,`containerMeasured${containerId}`, false);
                                 set$(ctx, `containerItemKey${containerId}`, id);
 
                                 // TODO: This may not be necessary as it'll get st in the next loop?
@@ -478,6 +481,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             for (let i = 0; i < numContainers; i++) {
                 set$(ctx, `containerItemIndex${i}`, -1);
+                set$(ctx, `containerMeasured${i}`, false);
                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
             }
 
@@ -525,6 +529,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const itemIndex = peek$(ctx, `containerItemIndex${i}`);
                     if (itemIndex >= data.length) {
                         set$(ctx, `containerItemIndex${i}`, -1);
+                        set$(ctx, `containerMeasured${i}`, false);
                     }
                 }
             }
@@ -545,6 +550,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             const prevSize = sizes.get(id) || (wasInFirstRender ? getItemSize(index, data[index]) : 0);
             // let scrollNeedsAdjust = 0;
+
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 // TODO: Experimental scroll adjusting

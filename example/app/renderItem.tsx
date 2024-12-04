@@ -1,3 +1,4 @@
+import Breathe from "@/components/Breathe";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LegendList, type LegendListRenderItemProps } from "@legendapp/list";
 import { useRef, useState } from "react";
@@ -151,6 +152,8 @@ export const ItemCard = ({
     const authorName = randomNames[indexForData % randomNames.length];
     const timestamp = `${Math.max(1, indexForData % 24)}h ago`;
 
+
+
     if (index === 1 && demoNestedList) {
         return (
             <Animated.View style={[styles.nestedListContainer, { opacity }]}>
@@ -239,7 +242,7 @@ export const ItemCard = ({
                             <Text style={styles.footerText}>🔄 8</Text>
                         </View>
                     </View>
-                    {/* <Breathe /> */}
+                    <Breathe /> 
                 </Pressable>
             </Swipeable>
         </Animated.View>

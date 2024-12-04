@@ -14,6 +14,7 @@ export type ListenerType =
     | `containerItemIndex${number}`
     | `containerItemKey${number}`
     | `containerPosition${number}`
+    | `containerMeasured${number}`
     | `numItems`
     | "totalSize"
     | "paddingTop"

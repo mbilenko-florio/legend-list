@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { LayoutChangeEvent, ViewStyle } from "react-native";
-import { $View } from "./$View";
-import { peek$, use$, useStateContext } from "./state";
+import { $$View } from "./$View";
+import { peek$, set$, use$, useStateContext } from "./state";
 
 interface InnerContainerProps {
     id: number;
@@ -59,6 +59,9 @@ export const Container = ({
 
     const createStyle = (): ViewStyle => {
         const position = peek$(ctx, `containerPosition${id}`);
+        const opacity =  position < 0 ? 0 : 1
+        const isMeasured = peek$(ctx, `containerMeasured${id}`);
+        console.log("isMeasured", isMeasured, id);
         return horizontal
             ? {
                   flexDirection: "row",
@@ -66,29 +69,37 @@ export const Container = ({
                   top: 0,
                   bottom: 0,
                   left: position,
-                  opacity: position < 0 ? 0 : 1,
+                  opacity: isMeasured ? opacity:0,
               }
             : {
                   position: "absolute",
                   left: 0,
                   right: 0,
                   top: position,
-                  opacity: position < 0 ? 0 : 1,
+                  opacity: isMeasured ? opacity:0,
               };
     };
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
+
     return (
-        <$View
+        <$$View
             $key={`containerPosition${id}`}
+            $subKey={`containerMeasured${id}`}
             $style={createStyle}
             onLayout={(event: LayoutChangeEvent) => {
                 const index = peek$(ctx, `containerItemIndex${id}`);
+                const measured = peek$(ctx, `containerMeasured${id}`);
+                if (!measured) {
+                    requestAnimationFrame(() => {
+                        set$(ctx,`containerMeasured${id}`, true);
+                    });
+                }
+                console.log("onLayout",id);
                 if (index >= 0) {
                     const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
-
                     onLayout(index, size);
                 }
             }}
@@ -99,6 +110,6 @@ export const Container = ({
                 recycleItems={recycleItems!}
                 ItemSeparatorComponent={ItemSeparatorComponent}
             />
-        </$View>
+        </$$View>
     );
 };
