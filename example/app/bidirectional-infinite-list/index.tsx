@@ -1,9 +1,8 @@
 import { type Item, renderItem } from "@/app/cards-renderItem";
-import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constants/constants";
-import { useScrollTest } from "@/constants/useScrollTest";
+import { DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constants/constants";
 import { LegendList, type LegendListRef } from "@legendapp/list";
 import { useRef, useState } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 
 export default function BidirectionalInfiniteList() {
     const listRef = useRef<LegendListRef>(null);
@@ -15,19 +14,33 @@ export default function BidirectionalInfiniteList() {
             })) as any[],
     );
 
-    if (DO_SCROLL_TEST) {
-        useScrollTest((offset) => {
-            listRef.current?.scrollToOffset({
-                offset: offset,
-                animated: true,
+    const [refreshing, setRefreshing] = useState(false);
+
+    const onRefresh = () => {
+        console.log("onRefresh");
+        setRefreshing(true);
+        setTimeout(() => {
+            setData((prevData) => {
+                const initialIndex = Number.parseInt(prevData[0].id);
+                const newData = [
+                    ...Array.from({ length: 10 }, (_, i) => ({
+                        id: (initialIndex - i - 1).toString(),
+                    })).reverse(),
+                    ...prevData,
+                ];
+                console.log(newData);
+                return newData;
             });
-        });
-    }
+            setRefreshing(false);
+        }, 500);
+    };
 
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
             <LegendList
+                // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                 ref={listRef}
+                initialScrollIndex={10}
                 style={[StyleSheet.absoluteFill, styles.scrollContainer]}
                 contentContainerStyle={styles.listContainer}
                 data={data}
@@ -37,18 +50,9 @@ export default function BidirectionalInfiniteList() {
                 drawDistance={DRAW_DISTANCE}
                 maintainVisibleContentPosition
                 recycleItems={true}
-                ListHeaderComponent={<View />}
-                ListHeaderComponentStyle={styles.listHeader}
-                ListFooterComponent={<View />}
-                ListFooterComponentStyle={styles.listHeader}
-                ListEmptyComponentStyle={{ flex: 1 }}
-                ListEmptyComponent={
-                    <View style={styles.listEmpty}>
-                        <Text style={{ color: "white" }}>Empty</Text>
-                    </View>
-                }
                 onStartReached={(props) => {
                     console.log("onStartReached", props);
+                    //onRefresh();
                 }}
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);
