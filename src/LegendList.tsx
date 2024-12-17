@@ -159,7 +159,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const addTotalSize = useCallback((key: string | null, add: number, set?: boolean) => {
             const state = refState.current!;
             const index = key === null ? 0 : state.indexByKey.get(key)!;
-            const isAbove = index < (state.startNoBuffer || 0);
+            const isAbove = key !== null && index < (state.startNoBuffer || 0);
             const prev = state.totalSize;
             if (set) {
                 state.totalSize = add;
