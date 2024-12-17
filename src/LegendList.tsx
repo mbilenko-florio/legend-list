@@ -423,34 +423,48 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         };
 
         const checkAtBottom = () => {
-            const { scrollLength, scroll } = refState.current!;
+            if (!refState.current) {
+                return;
+            }
+            const { scrollLength, scroll } = refState.current;
             const totalSize = peek$<number>(ctx, "totalSize");
             // Check if at end
             const distanceFromEnd = totalSize - scroll - scrollLength;
-            if (refState.current) {
-                refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
-            }
-            if (onEndReached && !refState.current?.isEndReached) {
-                if (distanceFromEnd < onEndReachedThreshold! * scrollLength) {
-                    if (refState.current) {
+            refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
+
+            if (onEndReached) {
+                if (!refState.current.isEndReached) {
+                    if (distanceFromEnd < onEndReachedThreshold! * scrollLength) {
                         refState.current.isEndReached = true;
+                        onEndReached({ distanceFromEnd });
                     }
-                    onEndReached({ distanceFromEnd });
+                } else {
+                    // reset flag when user scrolls back up
+                    if (distanceFromEnd >= onEndReachedThreshold! * scrollLength) {
+                        refState.current.isEndReached = false;
+                    }
                 }
             }
         };
 
         const checkAtTop = () => {
-            const { scrollLength, scroll } = refState.current!;
-            if (refState.current) {
-                refState.current.isAtTop = scroll === 0;
+            if (!refState.current) {
+                return;
             }
-            if (onStartReached && !refState.current?.isStartReached) {
-                if (scroll < onStartReachedThreshold! * scrollLength) {
-                    if (refState.current) {
+            const { scrollLength, scroll } = refState.current;
+            refState.current.isAtTop = scroll === 0;
+
+            if (onStartReached) {
+                if (!refState.current.isStartReached) {
+                    if (scroll < onStartReachedThreshold! * scrollLength) {
                         refState.current.isStartReached = true;
+                        onStartReached({ distanceFromStart: scroll });
                     }
-                    onStartReached({ distanceFromStart: scroll });
+                } else {
+                    // reset flag when user scrolls back down
+                    if (scroll >= onStartReachedThreshold! * scrollLength) {
+                        refState.current.isStartReached = false;
+                    }
                 }
             }
         };
