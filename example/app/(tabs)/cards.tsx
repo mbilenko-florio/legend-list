@@ -7,7 +7,11 @@ import { LogBox, Platform, StyleSheet, Text, View } from "react-native";
 
 LogBox.ignoreLogs(["Open debugger"]);
 
-export default function Cards() {
+interface CardsProps {
+    numColumns?: number;
+}
+
+export default function Cards({ numColumns = 1 }: CardsProps) {
     const listRef = useRef<LegendListRef>(null);
 
     const [data, setData] = useState<Item[]>(
@@ -39,6 +43,7 @@ export default function Cards() {
                 drawDistance={DRAW_DISTANCE}
                 maintainVisibleContentPosition
                 recycleItems={true}
+                numColumns={numColumns}
                 // initialScrollIndex={50}
                 // alignItemsAtEnd
                 // maintainScrollAtEnd
@@ -100,7 +105,7 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {},
     listContainer: {
-        width: 360,
+        width: 400,
         maxWidth: "100%",
         marginHorizontal: "auto",
     },

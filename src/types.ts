@@ -4,7 +4,7 @@ import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
 
 export type LegendListProps<T> = Omit<
     ComponentProps<typeof ScrollView>,
-    'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition'
+    'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition' | 'stickyHeaderIndices'
 > & {
     data: ArrayLike<any> & T[];
     initialScrollOffset?: number;
@@ -18,6 +18,7 @@ export type LegendListProps<T> = Omit<
     maintainScrollAtEndThreshold?: number;
     alignItemsAtEnd?: boolean;
     maintainVisibleContentPosition?: boolean;
+    numColumns?: number;
     // in most cases providing a constant value for item size enough
     estimatedItemSize: number;
     // in case you have distinct item sizes, you can provide a function to get the size of an item
@@ -42,6 +43,7 @@ export type LegendListProps<T> = Omit<
 
 export interface InternalState {
     positions: Map<string, number>;
+    columns: Map<string, number>;
     sizes: Map<string, number>;
     pendingAdjust: number;
     animFrameLayout: any;

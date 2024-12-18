@@ -28,6 +28,10 @@ const data: ListElement[] = [
         url: "/cards-flashlist",
     },
     {
+        title: "Cards Columns",
+        url: "/cards-columns",
+    },
+    {
         title: "Movies FlashList",
         url: "/movies-flashlist",
     },

@@ -57,6 +57,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             alignItemsAtEnd = false,
             maintainVisibleContentPosition = false,
             onScroll: onScrollProp,
+            numColumns: numColumnsProp = 1,
             keyExtractor,
             renderItem,
             estimatedItemSize,
@@ -118,6 +119,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             refState.current = {
                 sizes: new Map(),
                 positions: new Map(),
+                columns: new Map(),
                 pendingAdjust: 0,
                 animFrameLayout: null,
                 animFrameTotalSize: null,
@@ -156,12 +158,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 refState.current!.scrollAdjustPending -= diff;
             }
         };
-        const addTotalSize = useCallback((key: string | null, add: number, set?: boolean) => {
+        const addTotalSize = useCallback((key: string | null, add: number) => {
             const state = refState.current!;
             const index = key === null ? 0 : state.indexByKey.get(key)!;
             const isAbove = key !== null && index < (state.startNoBuffer || 0);
             const prev = state.totalSize;
-            if (set) {
+            if (key === null) {
                 state.totalSize = add;
             } else {
                 state.totalSize += add;
@@ -181,7 +183,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 adjustScroll(add);
             }
 
-            if (!prev || set) {
+            if (!prev || key === null) {
                 doAdd();
             } else if (!state.animFrameTotalSize) {
                 state.animFrameTotalSize = requestAnimationFrame(doAdd);
@@ -190,7 +192,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const calculateItemsInView = useCallback((speed = 0) => {
             const state = refState.current!;
-            const { data, scrollLength, scroll: scrollState, startBuffered: startBufferedState, positions } = state!;
+            const {
+                data,
+                scrollLength,
+                scroll: scrollState,
+                startBuffered: startBufferedState,
+                positions,
+                columns,
+            } = state!;
             if (state.animFrameLayout) {
                 cancelAnimationFrame(state.animFrameLayout);
                 state.animFrameLayout = null;
@@ -214,6 +223,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // Go backwards from the last start position to find the first item that is in view
             // This is an optimization to avoid looping through all items, which could slow down
             // when scrolling at the end of a long list.
+
+            // TODO: Fix this logic for numColumns
             let loopStart = startBufferedState || 0;
             if (startBufferedState) {
                 for (let i = startBufferedState; i >= 0; i--) {
@@ -231,14 +242,29 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
+            const numColumns = peek$<number>(ctx, "numColumns");
+            const loopStartMod = loopStart % numColumns;
+            if (loopStartMod > 0) {
+                loopStart -= loopStartMod;
+            }
+
             let top = loopStart > 0 ? positions.get(getId(loopStart))! : 0;
+
+            let column = 1;
+            let maxSizeInRow = 0;
 
             for (let i = loopStart; i < data!.length; i++) {
                 const id = getId(i)!;
                 const size = getItemSize(id, i, data[i]);
 
+                maxSizeInRow = Math.max(maxSizeInRow, size);
+
                 if (positions.get(id) !== top) {
                     positions.set(id, top);
+                }
+
+                if (columns.get(id) !== column) {
+                    columns.set(id, column);
                 }
 
                 if (startNoBuffer === null && top + size > scroll) {
@@ -258,7 +284,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
                 }
 
-                top += size;
+                column++;
+                if (column > numColumns) {
+                    top += maxSizeInRow;
+                    column = 1;
+                    maxSizeInRow = 0;
+                }
             }
 
             Object.assign(refState.current!, {
@@ -268,18 +299,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endNoBuffer,
             });
 
-            // console.log(
-            //     "start",
-            //     startBuffered,
-            //     startNoBuffer,
-            //     endNoBuffer,
-            //     endBuffered,
-            //     scroll,
-            //     scrollState,
-            //     topPad,
-            //     scrollAdjustPending,
-            //     scrollExtra,
-            // );
+            // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, scroll);
 
             if (startBuffered !== null && endBuffered !== null) {
                 const prevNumContainers = ctx.values.get("numContainers") as number;
@@ -333,6 +353,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
                             set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
+                            set$(ctx, `containerColumn${containerId}`, -1);
 
                             if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
                                 console.warn(
@@ -362,10 +383,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         const id = getId(itemIndex);
                         if (!(itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered)) {
                             const pos = (positions.get(id) || 0) + scrollAdjustPending;
+                            const column = columns.get(id) || 1;
                             const prevPos = peek$(ctx, `containerPosition${i}`);
+                            const prevColumn = peek$(ctx, `containerColumn${i}`);
 
                             if (pos >= 0 && pos !== prevPos) {
                                 set$(ctx, `containerPosition${i}`, pos);
+                            }
+                            if (column >= 0 && column !== prevColumn) {
+                                set$(ctx, `containerColumn${i}`, column);
                             }
                         }
                     }
@@ -475,26 +501,36 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const isFirst = !refState.current.renderItem;
         // Run first time and whenever data changes
-        if (isFirst || data !== refState.current.data) {
+        if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
             refState.current.data = data;
             let totalSize = 0;
             const indexByKey = new Map();
+            let column = 1;
+            let maxSizeInRow = 0;
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
                 indexByKey.set(key, i);
-                totalSize += getItemSize(key, i, data[i]);
+                const size = getItemSize(key, i, data[i]);
+                maxSizeInRow = Math.max(maxSizeInRow, size);
 
-                // This maintains position when items are added by adding the estimated size to the top padding
                 if (
                     maintainVisibleContentPosition &&
                     i < refState.current.startNoBuffer &&
                     !refState.current.indexByKey.has(key)
                 ) {
+                    // This maintains position when items are added by adding the estimated size to the top padding
                     const size = getItemSize(key, i, data[i]);
                     adjustScroll(size);
                 }
+
+                column++;
+                if (column > numColumnsProp) {
+                    totalSize += maxSizeInRow;
+                    column = 1;
+                    maxSizeInRow = 0;
+                }
             }
-            addTotalSize(null, totalSize, true);
+            addTotalSize(null, totalSize);
 
             if (maintainVisibleContentPosition) {
                 // This maintains positions when items are removed by removing their size from the top padding
@@ -517,6 +553,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 for (let i = 0; i < numContainers; i++) {
                     set$(ctx, `containerItemKey${i}`, undefined);
                     set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                    set$(ctx, `containerColumn${i}`, -1);
                 }
                 calculateItemsInView();
 
@@ -527,6 +564,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }
         refState.current.renderItem = renderItem!;
         set$(ctx, "lastItemKey", getId(data[data.length - 1]));
+        set$(ctx, "numColumns", numColumnsProp);
         // TODO: This needs to support horizontal and other ways of defining padding
         set$(
             ctx,
@@ -652,10 +690,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const scrollLength = refState.current!.scrollLength;
             const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]);
             const numContainers =
-                initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize);
+                (initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize)) *
+                numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                set$(ctx, `containerColumn${i}`, -1);
             }
 
             set$(ctx, "numContainers", numContainers);
@@ -669,7 +709,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (!data) {
                 return;
             }
-            const { sizes, indexByKey, idsInFirstRender } = refState.current!;
+            const { sizes, indexByKey, idsInFirstRender, columns } = refState.current!;
             const index = indexByKey.get(key)!;
             // TODO: I don't love this, can do it better?
             const wasInFirstRender = idsInFirstRender.has(key);
@@ -677,8 +717,37 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const prevSize = sizes.get(key) || (wasInFirstRender ? getItemSize(key, index, data[index]) : 0);
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
-                sizes.set(key, size);
-                addTotalSize(key, size - prevSize);
+                let diff: number;
+                const numColumns = peek$<number>(ctx, "numColumns");
+                if (numColumns > 1) {
+                    const column = columns.get(key);
+                    const loopStart = index - (column! - 1);
+                    let prevMaxSizeInRow = 0;
+
+                    // TODO: Can probably reduce duplication and do this more efficiently
+                    // but it works for now.
+                    for (let i = loopStart; i < loopStart + numColumns; i++) {
+                        const id = getId(i)!;
+                        const size = getItemSize(id, i, data[i]);
+                        prevMaxSizeInRow = Math.max(prevMaxSizeInRow, size);
+                    }
+
+                    sizes.set(key, size);
+
+                    let nextMaxSizeInRow = 0;
+                    for (let i = loopStart; i < loopStart + numColumns; i++) {
+                        const id = getId(i)!;
+                        const size = getItemSize(id, i, data[i]);
+                        nextMaxSizeInRow = Math.max(nextMaxSizeInRow, size);
+                    }
+
+                    diff = nextMaxSizeInRow - prevMaxSizeInRow;
+                } else {
+                    sizes.set(key, size);
+                    diff = size - prevSize;
+                }
+
+                addTotalSize(key, diff);
 
                 doMaintainScrollAtEnd(true);
 

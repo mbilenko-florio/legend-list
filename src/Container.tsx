@@ -1,5 +1,5 @@
 import React from "react";
-import type { LayoutChangeEvent, ViewStyle } from "react-native";
+import type { DimensionValue, LayoutChangeEvent, ViewStyle } from "react-native";
 import { $View } from "./$View";
 import { peek$, set$, use$, useStateContext } from "./state";
 
@@ -47,19 +47,27 @@ export const Container = ({
 
     const createStyle = (): ViewStyle => {
         const position = peek$<number>(ctx, `containerPosition${id}`);
+        const column = peek$<number>(ctx, `containerColumn${id}`) || 0;
         const visible = peek$<boolean>(ctx, `containerDidLayout${id}`);
+        const numColumns = peek$<number>(ctx, "numColumns");
+
+        const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
+        const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
+
         return horizontal
             ? {
                   flexDirection: "row",
                   position: "absolute",
-                  top: visible ? 0 : -10000000,
-                  bottom: 0,
+                  top: visible ? otherAxisPos : -10000000,
+                  bottom: numColumns > 1 ? null : 0,
+                  height: otherAxisSize,
                   left: position,
               }
             : {
                   position: "absolute",
-                  left: visible ? 0 : -10000000,
-                  right: 0,
+                  left: visible ? otherAxisPos : -10000000,
+                  right: numColumns > 1 ? null : 0,
+                  width: otherAxisSize,
                   top: position,
               };
     };
@@ -71,6 +79,8 @@ export const Container = ({
         <$View
             $key={`containerPosition${id}`}
             $key2={`containerDidLayout${id}`}
+            $key3={`containerColumn${id}`}
+            $key4="numColumns"
             $style={createStyle}
             onLayout={(event: LayoutChangeEvent) => {
                 const key = peek$<string>(ctx, `containerItemKey${id}`);
