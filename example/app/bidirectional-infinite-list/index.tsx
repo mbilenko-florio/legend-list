@@ -50,9 +50,11 @@ export default function BidirectionalInfiniteList() {
                 drawDistance={DRAW_DISTANCE}
                 maintainVisibleContentPosition
                 recycleItems={true}
+                ListHeaderComponent={<View />}
+                ListHeaderComponentStyle={styles.listHeader}
                 onStartReached={(props) => {
                     console.log("onStartReached", props);
-                    //onRefresh();
+                    onRefresh();
                 }}
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);
