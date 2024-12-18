@@ -23,12 +23,11 @@ export default function BidirectionalInfiniteList() {
             setData((prevData) => {
                 const initialIndex = Number.parseInt(prevData[0].id);
                 const newData = [
-                    ...Array.from({ length: 10 }, (_, i) => ({
+                    ...Array.from({ length: 5 }, (_, i) => ({
                         id: (initialIndex - i - 1).toString(),
                     })).reverse(),
                     ...prevData,
                 ];
-                console.log(newData);
                 return newData;
             });
             setRefreshing(false);
