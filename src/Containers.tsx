@@ -39,8 +39,9 @@ export const Containers = React.memo(function Containers({
     return (
         <$View
             $key="totalSize"
-            //$key2="scrollAdjust"
+            $key2="scrollAdjust"
             $style={() => {
+                const adjust = peek$<number>(ctx, "scrollAdjust");
                 const size = peek$<number>(ctx, "totalSize");
 
                 return horizontal
@@ -48,7 +49,9 @@ export const Containers = React.memo(function Containers({
                           width: size,
                       }
                     : {
-                          height: size,
+                        marginTop: adjust,
+                        height: size,
+                        marginBottom: -adjust,
                       };
             }}
         >
