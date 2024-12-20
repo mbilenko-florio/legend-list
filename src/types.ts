@@ -42,6 +42,7 @@ export type LegendListProps<T> = Omit<
 };
 
 export interface InternalState {
+    anchorElement: number; // having this element is a hack, what to do on the anchor deletion?
     positions: Map<string, number>;
     columns: Map<string, number>;
     sizes: Map<string, number>;

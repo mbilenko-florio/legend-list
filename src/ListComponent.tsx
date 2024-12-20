@@ -5,13 +5,12 @@ import {
     type NativeScrollEvent,
     type NativeSyntheticEvent,
     type ScrollView,
-    StyleSheet,
     View,
 } from "react-native";
-import { $ScrollView } from "./$ScrollView";
+import { $ScrollView} from "./$ScrollView";
 import { $View } from "./$View";
 import { Containers } from "./Containers";
-import { peek$, set$, useStateContext } from "./state";
+import { peek$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
 
 interface ListComponentProps
@@ -31,7 +30,7 @@ interface ListComponentProps
     updateItemSize: (key: string, size: number) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onLayout: (event: LayoutChangeEvent) => void;
-    addTotalSize: (key: string | null, size: number) => void;
+
 }
 
 const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {
@@ -62,7 +61,6 @@ export const ListComponent = React.memo(function ListComponent({
     ListEmptyComponentStyle,
     getRenderedItem,
     updateItemSize,
-    addTotalSize,
     refScroller,
     ...rest
 }: ListComponentProps) {
@@ -92,8 +90,9 @@ export const ListComponent = React.memo(function ListComponent({
             }
             ref={refScroller}
         >
+           <$View $key="scrollAdjust" $style={() => ({ marginTop: peek$(ctx, "scrollAdjust") })} />
             {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$(ctx, "paddingTop") })} />}
-            {ListHeaderComponent && (
+            {/* {ListHeaderComponent && (
                 <$View
                     $key="scrollAdjust"
                     $style={() =>
@@ -119,7 +118,7 @@ export const ListComponent = React.memo(function ListComponent({
                 >
                     {getComponent(ListEmptyComponent)}
                 </$View>
-            )}
+            )} */}
 
             <Containers
                 horizontal={horizontal!}
@@ -129,6 +128,7 @@ export const ListComponent = React.memo(function ListComponent({
                 updateItemSize={updateItemSize}
             />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
+          
         </$ScrollView>
     );
 });

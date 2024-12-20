@@ -47,12 +47,15 @@ export const Container = ({
 
     const createStyle = (): ViewStyle => {
         const position = peek$<number>(ctx, `containerPosition${id}`);
+        const key = peek$<string>(ctx, `containerItemKey${id}`);
         const column = peek$<number>(ctx, `containerColumn${id}`) || 0;
         const visible = peek$<boolean>(ctx, `containerDidLayout${id}`);
         const numColumns = peek$<number>(ctx, "numColumns");
 
         const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
         const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
+
+       ///console.log("Render", id, key, position)
 
         return horizontal
             ? {
