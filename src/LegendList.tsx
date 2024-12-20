@@ -162,6 +162,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const state = refState.current!;
             const index = key === null ? 0 : state.indexByKey.get(key)!;
             const isAbove = key !== null && index < (state.startNoBuffer || 0);
+            console.log({ isAbove, key });
             const prev = state.totalSize;
             if (key === null) {
                 state.totalSize = add;
@@ -180,6 +181,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             };
 
             if (isAbove) {
+                const position = state.positions.get(key);
+                console.log("Adjustposition", position, add);
                 adjustScroll(add);
             }
 

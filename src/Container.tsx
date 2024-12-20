@@ -58,14 +58,16 @@ export const Container = ({
             ? {
                   flexDirection: "row",
                   position: "absolute",
-                  top: visible ? otherAxisPos : -10000000,
+                  opacity: visible ? 1 : 0,
+                  top: 0,
                   bottom: numColumns > 1 ? null : 0,
                   height: otherAxisSize,
                   left: position,
               }
             : {
                   position: "absolute",
-                  left: visible ? otherAxisPos : -10000000,
+                  opacity: visible ? 1 : 0,
+                  left: 0,
                   right: numColumns > 1 ? null : 0,
                   width: otherAxisSize,
                   top: position,

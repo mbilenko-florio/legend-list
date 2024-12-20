@@ -2,7 +2,7 @@ import { type Item, renderItem } from "@/app/cards-renderItem";
 import { DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constants/constants";
 import { LegendList, type LegendListRef } from "@legendapp/list";
 import { useRef, useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { Platform, RefreshControl, StyleSheet, View } from "react-native";
 
 export default function BidirectionalInfiniteList() {
     const listRef = useRef<LegendListRef>(null);
@@ -37,7 +37,7 @@ export default function BidirectionalInfiniteList() {
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
             <LegendList
-                // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                 ref={listRef}
                 initialScrollIndex={10}
                 style={[StyleSheet.absoluteFill, styles.scrollContainer]}
@@ -53,10 +53,11 @@ export default function BidirectionalInfiniteList() {
                 ListHeaderComponentStyle={styles.listHeader}
                 onStartReached={(props) => {
                     console.log("onStartReached", props);
-                    onRefresh();
+                    // onRefresh();
                 }}
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);
+                    return;
                     if (distanceFromEnd > 0) {
                         setTimeout(() => {
                             setData((prevData) => {

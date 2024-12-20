@@ -266,6 +266,7 @@ const styles = StyleSheet.create({
     itemOuterContainer: {
         paddingVertical: 8,
         paddingHorizontal: 8,
+        //width: 360,
     },
     itemContainer: {
         padding: 16,
