@@ -51,7 +51,7 @@ export default function BidirectionalInfiniteList() {
                 recycleItems={true}
                 onStartReached={(props) => {
                     console.log("onStartReached", props);
-                    //onRefresh();
+                   // onRefresh();
                 }}
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);

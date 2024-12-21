@@ -241,9 +241,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 loopStart -= loopStartMod;
             }
 
-            let top: number | undefined = undefined;
+            let top: number = undefined;
 
-            console.log("TOP", top, "SCROLL", scroll);
+            //console.log("TOP", top, "SCROLL", scroll);
 
             let column = 1;
             let maxSizeInRow = 0;
@@ -319,14 +319,19 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 for (let i = reversePassStartIndex; i >= 0; i--) {
                     const id = getId(i)!;
-                    const size = getItemSize(id, i, data[i]);
+                    const size = refState.current!.sizes.get(id);
+                    // const size = getItemSize(id, i, data[i]);
+
+                    if (!size) {
+                        continue
+                    }
 
                     maxSizeInRow = Math.max(maxSizeInRow, size);
 
                     const elementBottom = top;
                     top -= size;
 
-                    console.log("Doing reverse pass", i, id, top, startNoBuffer, startBuffered);
+                    //console.log("Doing reverse pass", id, top);
 
                     if (positions.get(id) !== top) {
                         positions.set(id, top);
@@ -362,15 +367,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     // }
                 }
                 if (maintainVisibleContentPosition) {
-                    // if (Math.abs(scroll-top) < 700) {
-                       // if (scroll < 4000) {
-                        console.log("Requesting adjust", top);
-                        set$(ctx, "scrollAdjust", -top);
-                  //  }
+                    const newAdjust = Math.floor(-top);
+                    const oldScrollAdjust = peek$<number>(ctx, "scrollAdjust") || 0;
+                    //rconsole.log("Adjusting", newAdjust, oldScrollAdjust, oldScrollAdjust === newAdjust);
+                  
+                    if (oldScrollAdjust !== newAdjust && newAdjust > 100) 
+                        console.log("Requesting adjuster", newAdjust);
+                        //requestAnimationFrame(() => {
+                            set$(ctx, "scrollAdjust", newAdjust);
                 }
             }
 
-            console.log({ scroll,startBuffered, startNoBuffer, endBuffered, endNoBuffer });
+            //console.log({ scroll, startBuffered, startNoBuffer, endBuffered, endNoBuffer });
 
             Object.assign(refState.current!, {
                 startBuffered,
