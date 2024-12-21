@@ -90,7 +90,7 @@ export const ListComponent = React.memo(function ListComponent({
             }
             ref={refScroller}
         >
-           <$View $key="scrollAdjust" $style={() => ({ marginTop: peek$(ctx, "scrollAdjust") })} />
+         
             {alignItemsAtEnd && <$View $key="paddingTop" $style={() => ({ height: peek$(ctx, "paddingTop") })} />}
             {/* {ListHeaderComponent && (
                 <$View

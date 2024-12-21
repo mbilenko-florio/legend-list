@@ -314,7 +314,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             if (reversePassStartIndex !== undefined) {
                 top = reversePassStartOffset;
-
+                
                 for (let i = reversePassStartIndex; i >= 0; i--) {
                     const id = getId(i)!;
                     const size = getItemSize(id, i, data[i]);
@@ -323,7 +323,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     top -= size;
 
-                    //console.log("Doing reverse pass", i, id, top);
+                    console.log("Doing reverse pass", i, id, top);
 
                     if (positions.get(id) !== top) {
                         positions.set(id, top);
@@ -339,7 +339,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
                     if (top + size > scroll - scrollBuffer) {
                         startBuffered = i;
-                    }
+                    } 
                     // if (startNoBuffer !== null) {
                         if (endNoBuffer == null && top <= scroll + scrollLength) {
                             endNoBuffer = i;
