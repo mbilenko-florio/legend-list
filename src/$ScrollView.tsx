@@ -9,7 +9,6 @@ export const $ScrollView = React.forwardRef(function $ScrollView(props: ScrollVi
     const { style, horizontal, ...rest } = props;
   
 
-//
     return <ScrollView {...rest} style={style} horizontal={horizontal} ref={ref} maintainVisibleContentPosition={{minIndexForVisible:0}} />;
 });
 
