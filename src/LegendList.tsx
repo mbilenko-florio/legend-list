@@ -369,7 +369,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const newAdjust = Math.floor(-top);
                     const oldScrollAdjust = scrollAdjustPending;
 
-                    if (oldScrollAdjust !== newAdjust && newAdjust > 10) {
+                    if (oldScrollAdjust !== newAdjust) {
                         console.log("Requesting adjuster", newAdjust);
                         refState.current!.scrollAdjustPending = newAdjust;
                     }
