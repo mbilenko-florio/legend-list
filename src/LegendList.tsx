@@ -152,7 +152,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 anchorElement: initialScrollIndex || 0,
             };
             refState.current.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
-            set$(ctx, "scrollAdjust", 1);
+            set$(ctx, "scrollAdjustTop", 0);
+            set$(ctx, "scrollAdjustBottom", 0);
         }
 
         const addTotalSize = useCallback((key: string | null, add: number) => {
@@ -564,8 +565,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (!refState.current) {
                 return;
             }
-            const { scrollLength, scroll } = refState.current;
-            const scrollAdjust = peek$<number>(ctx, "scrollAdjust") || 0;
+            const { scrollLength, scroll,scrollAdjustPending } = refState.current;
+            const scrollAdjust = scrollAdjustPending || 0;
             const distanceFromTop = scroll - scrollAdjust;
             refState.current.isAtTop = distanceFromTop < 0;
 
