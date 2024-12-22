@@ -634,18 +634,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             addTotalSize(null, totalSize);
 
-            if (maintainVisibleContentPosition) {
-                // This maintains positions when items are removed by removing their size from the top padding
-                for (const [key, index] of refState.current.indexByKey) {
-                    if (index < refState.current.startNoBuffer && !indexByKey.has(key)) {
-                        const size = refState.current.sizes.get(key) ?? 0;
-                        if (size) {
-                            //adjustScroll(-size);
-                        }
-                    }
-                }
-            }
-
+            
             refState.current.indexByKey = indexByKey;
 
             if (!isFirst) {
@@ -662,6 +651,30 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 doMaintainScrollAtEnd(false);
                 checkAtTop();
                 checkAtBottom();
+
+                requestAnimationFrame(() => {
+                    console.log("Data changed!")
+                    const {totalSize, scroll,scrollAdjustPending} = refState.current!;
+                    const toBottom = totalSize - scroll;
+                    const toTop = scroll;
+                    console.log("TO TOP", toTop, "TO BOTTOM", toBottom);
+                    if (toBottom > toTop) {
+                        const newAdjustTop = scrollAdjustPending;
+                        const oldAdjutTop = peek$<number>(ctx, "scrollAdjustTop");
+                        if (oldAdjutTop !== newAdjustTop) {
+                            set$(ctx, "scrollAdjustTop", newAdjustTop);
+                            console.log("Setting top", newAdjustTop);
+                        }
+                    } else {
+                        const oldAdjutBottom = peek$<number>(ctx, "scrollAdjustBottom");
+                        const newAdjustBottom = -scrollAdjustPending;
+                        if (oldAdjutBottom !== newAdjustBottom) {
+                            set$(ctx, "scrollAdjustBottom", newAdjustBottom);
+                            console.log("Setting bottom", newAdjustBottom);
+                        }
+                    }
+                });
+               
             }
         }
         refState.current.renderItem = renderItem!;
