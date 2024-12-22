@@ -21,7 +21,8 @@ export type ListenerType =
     | "totalSize"
     | "paddingTop"
     | "stylePaddingTop"
-    | "scrollAdjust"
+    | "scrollAdjustTop"
+      | "scrollAdjustTop"
     | "headerSize"
     | "footerSize";
 

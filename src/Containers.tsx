@@ -39,9 +39,11 @@ export const Containers = React.memo(function Containers({
     return (
         <$View
             $key="totalSize"
-            $key2="scrollAdjust"
+            $key2="scrollAdjustTop"
+            $key3="scrollAdjustBottom"
             $style={() => {
-                const adjust = peek$<number>(ctx, "scrollAdjust");
+                const adjustTop = peek$<number>(ctx, "scrollAdjustTop") || 0;
+                const adjustBottom = peek$<number>(ctx, "scrollAdjustBottom") || 0;
                 const size = peek$<number>(ctx, "totalSize");
 
                 return horizontal
@@ -49,9 +51,10 @@ export const Containers = React.memo(function Containers({
                           width: size,
                       }
                     : {
-                        marginTop: adjust,
+                        marginTop: adjustTop,
                         height: size,
-                        marginBottom: -adjust,
+                        marginBottom: adjustBottom, // it seems that changing marginTop and marginBottom at same point of time causes jerk
+                        // It may be not really necessary to do this at same point of time,
                       };
             }}
         >
