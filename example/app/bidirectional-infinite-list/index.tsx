@@ -34,6 +34,21 @@ export default function BidirectionalInfiniteList() {
         }, 500);
     };
 
+    // useEffect(() => {
+    //     setTimeout(() => {
+    //         setData((prevData) => {
+    //             const initialIndex = Number.parseInt(prevData[0].id);
+    //             const newData = [
+    //                 ...Array.from({ length: 1 }, (_, i) => ({
+    //                     id: (initialIndex - i - 1).toString(),
+    //                 })).reverse(),
+    //                 ...prevData,
+    //             ];
+    //             return newData;
+    //         });
+    //     }, 2000);
+    // }, []);
+
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
             <LegendList
@@ -51,7 +66,7 @@ export default function BidirectionalInfiniteList() {
                 recycleItems={true}
                 onStartReached={(props) => {
                     console.log("onStartReached", props);
-                   // onRefresh();
+                 //  onRefresh();
                 }}
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);

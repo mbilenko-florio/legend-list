@@ -149,9 +149,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scrollHistory: [],
                 scrollVelocity: 0,
                 contentSize: { width: 0, height: 0 },
-                anchorElement: initialScrollIndex || 0,
             };
-            refState.current.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
+            refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
+            refState.current!.anchorElement = initialScrollIndex
+                ? {
+                      coordinate: initialContentOffset,
+                      id: getId(initialScrollIndex),
+                  }
+                : undefined;
             set$(ctx, "scrollAdjustTop", 0);
             set$(ctx, "scrollAdjustBottom", 0);
         }
@@ -250,8 +255,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             let reversePassStartIndex: number | undefined = undefined;
             let reversePassStartOffset: number | undefined = undefined;
 
+            const getAnchorElementIndex = () => {
+                if (state.anchorElement) {
+                    return state.indexByKey.get(state.anchorElement.id);
+                }
+                return undefined;
+            };
+
+            console.log(state.anchorElement);
+
             for (let i = loopStart; i < data!.length; i++) {
-                const isAbove = i < state.anchorElement;
+                const isAbove = state.anchorElement && i < getAnchorElementIndex()!;
 
                 if (isAbove) {
                     // skip all items above the anchor element,
@@ -267,7 +281,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 if (top === undefined) {
                     top = i > 0 ? positions.get(id) : 0;
-                    if (i === state.anchorElement) {
+                    if (id === state.anchorElement?.id) {
                         top = initialContentOffset || 0;
                     }
                 }
@@ -276,7 +290,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     reversePassStartOffset = top;
                 }
 
-                //console.log("Doing forward pass", i, id, top);
+                console.log("Doing forward pass", i, id, top);
 
                 if (positions.get(id) !== top) {
                     positions.set(id, top);
@@ -327,10 +341,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     maxSizeInRow = Math.max(maxSizeInRow, size);
 
-                    const elementBottom = top;
+                    const elementBottom = top + scrollAdjustPending;
                     top -= size;
 
-                    //console.log("Doing reverse pass", id, top);
+                    console.log("Doing reverse pass", id, top);
 
                     if (positions.get(id) !== top) {
                         positions.set(id, top);
@@ -340,6 +354,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         columns.set(id, column);
                     }
 
+                    console.log({elementBottom, scroll,scrollAdjustPending})
                     if (elementBottom > scroll) {
                         startNoBuffer = i;
                     }
@@ -376,7 +391,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            //console.log({ scroll, startBuffered, startNoBuffer, endBuffered, endNoBuffer });
+            console.log({ scroll, startBuffered, startNoBuffer, endBuffered, endNoBuffer });
 
             Object.assign(refState.current!, {
                 startBuffered,
@@ -565,7 +580,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (!refState.current) {
                 return;
             }
-            const { scrollLength, scroll,scrollAdjustPending } = refState.current;
+            const { scrollLength, scroll, scrollAdjustPending } = refState.current;
             const scrollAdjust = scrollAdjustPending || 0;
             const distanceFromTop = scroll - scrollAdjust;
             refState.current.isAtTop = distanceFromTop < 0;
@@ -863,15 +878,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const oldAdjutTop = peek$<number>(ctx, "scrollAdjustTop");
                 if (oldAdjutTop !== newAdjustTop) {
                     set$(ctx, "scrollAdjustTop", newAdjustTop);
-                    console.log("Setting top", newAdjustTop,velocity);
+                    console.log("Setting top", newAdjustTop, velocity);
                 }
-            } 
+            }
             if (velocity > 0.1) {
                 const oldAdjutBottom = peek$<number>(ctx, "scrollAdjustBottom");
                 const newAdjustBottom = -scrollAdjustPending;
                 if (oldAdjutBottom !== newAdjustBottom) {
                     set$(ctx, "scrollAdjustBottom", newAdjustBottom);
-                    console.log("Setting bottom", newAdjustBottom,velocity);
+                    console.log("Setting bottom", newAdjustBottom, velocity);
                 }
             }
         }, []);

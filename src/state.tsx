@@ -22,7 +22,7 @@ export type ListenerType =
     | "paddingTop"
     | "stylePaddingTop"
     | "scrollAdjustTop"
-      | "scrollAdjustTop"
+    | "scrollAdjustBottom"
     | "headerSize"
     | "footerSize";
 
