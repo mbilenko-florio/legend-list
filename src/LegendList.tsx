@@ -607,8 +607,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return;
             }
             const { scrollLength, scroll, scrollAdjustPending } = refState.current;
-            const scrollAdjust = scrollAdjustPending || 0;
-            const distanceFromTop = scroll - scrollAdjust;
+            const distanceFromTop = scroll;
             refState.current.isAtTop = distanceFromTop < 0;
 
             if (onStartReached) {
@@ -660,6 +659,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             if (!isFirst) {
                 refState.current.isEndReached = false;
+                refState.current.isStartReached = false;
 
                 // Reset containers that aren't used anymore because the data has changed
                 const numContainers = peek$<number>(ctx, "numContainers");
