@@ -25,23 +25,25 @@ export const Container = ({
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
-    const style: StyleProp<ViewStyle> = horizontal
-        ? {
-              flexDirection: "row",
-              position: "absolute",
-              top: visible ? otherAxisPos : -10000000,
-              bottom: numColumns > 1 ? null : 0,
-              height: otherAxisSize,
-              left: position,
-          }
-        : {
-              position: "absolute",
-              left: visible ? otherAxisPos : -10000000,
-              right: numColumns > 1 ? null : 0,
-              width: otherAxisSize,
-              top: position,
-          };
-
+    const style: StyleProp<ViewStyle> =horizontal
+            ? {
+                  flexDirection: "row",
+                  position: "absolute",
+                  opacity: visible ? 1 : 0,
+                  top: 0,
+                  bottom: numColumns > 1 ? null : 0,
+                  height: otherAxisSize,
+                  left: position,
+              }
+            : {
+                  position: "absolute",
+                  opacity: visible ? 1 : 0,
+                  left: 0,
+                  right: numColumns > 1 ? null : 0,
+                  width: otherAxisSize,
+                  top: position,
+              };
+    
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
 

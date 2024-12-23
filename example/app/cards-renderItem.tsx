@@ -266,8 +266,8 @@ const styles = StyleSheet.create({
     itemOuterContainer: {
         paddingVertical: 8,
         paddingHorizontal: 8,
-        width: 380,
-        marginLeft: 6,
+       // width: 380,
+        //marginLeft: 6,
     },
     itemContainer: {
         padding: 16,
