@@ -276,6 +276,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 const id = getId(i)!;
                 const size = getItemSize(id, i, data[i]);
+                
 
                 maxSizeInRow = Math.max(maxSizeInRow, size);
 
@@ -313,7 +314,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     if (top <= scroll + scrollLength + scrollBuffer) {
                         endBuffered = i;
                     } else {
-                        break;
+                       // break;
                     }
                 }
 
@@ -341,7 +342,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     maxSizeInRow = Math.max(maxSizeInRow, size);
 
-                    const elementBottom = top + scrollAdjustPending;
+                    const elementBottom = top + peek$(ctx,'scrollAdjustTop'); // TODO: is this really needed?
                     top -= size;
 
                     console.log("Doing reverse pass", id, top);
@@ -354,7 +355,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         columns.set(id, column);
                     }
 
-                    console.log({elementBottom, scroll,scrollAdjustPending})
+                    console.log({ elementBottom, scroll, scrollAdjustPending });
                     if (elementBottom > scroll) {
                         startNoBuffer = i;
                     }
@@ -634,7 +635,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             addTotalSize(null, totalSize);
 
-            
             refState.current.indexByKey = indexByKey;
 
             if (!isFirst) {
@@ -651,10 +651,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 doMaintainScrollAtEnd(false);
                 checkAtTop();
                 checkAtBottom();
+                
 
                 requestAnimationFrame(() => {
-                    console.log("Data changed!")
-                    const {totalSize, scroll,scrollAdjustPending} = refState.current!;
+                    console.log("Data changed!");
+                    const { totalSize, scroll, scrollAdjustPending } = refState.current!;
                     const toBottom = totalSize - scroll;
                     const toTop = scroll;
                     console.log("TO TOP", toTop, "TO BOTTOM", toBottom);
@@ -674,7 +675,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         }
                     }
                 });
-               
             }
         }
         refState.current.renderItem = renderItem!;
@@ -885,22 +885,27 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             checkAtBottom();
             checkAtTop();
 
-            const scrollAdjustPending = refState.current!.scrollAdjustPending;
+            const { scrollAdjustPending, scroll, totalSize } = refState.current!;
+            const toBottom = totalSize - scroll;
+            const toTop = scroll;
+
             if (velocity < 0.1) {
                 const newAdjustTop = scrollAdjustPending;
                 const oldAdjutTop = peek$<number>(ctx, "scrollAdjustTop");
                 if (oldAdjutTop !== newAdjustTop) {
                     set$(ctx, "scrollAdjustTop", newAdjustTop);
-                    console.log("Setting top", newAdjustTop, velocity);
+                    console.log("Setting topV", newAdjustTop, velocity);
                 }
             }
             if (velocity > 0.1) {
-                const oldAdjutBottom = peek$<number>(ctx, "scrollAdjustBottom");
-                const newAdjustBottom = -scrollAdjustPending;
-                if (oldAdjutBottom !== newAdjustBottom) {
-                    set$(ctx, "scrollAdjustBottom", newAdjustBottom);
-                    console.log("Setting bottom", newAdjustBottom, velocity);
-                }
+                requestAnimationFrame(() => {
+                    const oldAdjutBottom = peek$<number>(ctx, "scrollAdjustBottom");
+                    const newAdjustBottom = -scrollAdjustPending;
+                    if (oldAdjutBottom !== newAdjustBottom) {
+                        set$(ctx, "scrollAdjustBottom", newAdjustBottom);
+                        console.log("Setting bottomV", newAdjustBottom, velocity);
+                    }
+                });
             }
         }, []);
 

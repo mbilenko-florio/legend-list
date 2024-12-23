@@ -52,7 +52,7 @@ export default function BidirectionalInfiniteList() {
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
             <LegendList
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={'#ffffff'} progressViewOffset={40}/>}
                 ref={listRef}
                 initialScrollIndex={10}
                 style={[StyleSheet.absoluteFill, styles.scrollContainer]}
@@ -66,11 +66,11 @@ export default function BidirectionalInfiniteList() {
                 recycleItems={true}
                 onStartReached={(props) => {
                     console.log("onStartReached", props);
-                 //  onRefresh();
+                 //onRefresh();
                 }}
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);
-                    return;
+                    //return;
                     if (distanceFromEnd > 0) {
                         setTimeout(() => {
                             setData((prevData) => {
