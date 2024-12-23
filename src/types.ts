@@ -2,11 +2,11 @@ import type { ComponentProps, ReactNode } from 'react';
 import type { ScrollResponderMixin, ScrollViewComponent } from 'react-native';
 import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
 
-export type LegendListProps<T> = Omit<
+export type LegendListProps<ItemT> = Omit<
     ComponentProps<typeof ScrollView>,
     'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition' | 'stickyHeaderIndices'
 > & {
-    data: ArrayLike<any> & T[];
+    data: ArrayLike<any> & ItemT[];
     initialScrollOffset?: number;
     initialScrollIndex?: number;
     drawDistance?: number;
@@ -20,15 +20,15 @@ export type LegendListProps<T> = Omit<
     maintainVisibleContentPosition?: boolean;
     numColumns?: number;
     // in most cases providing a constant value for item size enough
-    estimatedItemSize: number;
+    estimatedItemSize?: number;
     // in case you have distinct item sizes, you can provide a function to get the size of an item
     // use instead of FlatList's getItemLayout or FlashList overrideItemLayout
     // if you want to have accurate initialScrollOffset, you should provide this function
-    getEstimatedItemSize?: (index: number, item: T) => number;
-    onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
+    getEstimatedItemSize?: (index: number, item: ItemT) => number;
     onStartReached?: ((info: { distanceFromStart: number }) => void) | null | undefined;
-    keyExtractor?: (item: T, index: number) => string;
-    renderItem?: (props: LegendListRenderItemProps<T>) => ReactNode;
+    onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined;
+    keyExtractor?: (item: ItemT, index: number) => string;
+    renderItem?: (props: LegendListRenderItemProps<ItemT>) => ReactNode;
     ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
     ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
     ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
@@ -49,6 +49,7 @@ export interface InternalState {
     positions: Map<string, number>;
     columns: Map<string, number>;
     sizes: Map<string, number>;
+    sizesLaidOut: Map<string, number> | undefined;
     pendingAdjust: number;
     animFrameLayout: any;
     animFrameTotalSize: number | null;
@@ -72,6 +73,7 @@ export interface InternalState {
     scrollAdjustPending: number;
     totalSize: number;
     timeouts: Set<number>;
+    timeoutSizeMessage: any;
     nativeMarginTop: number;
     indexByKey: Map<string, number>;
     contentSize: { width: number; height: number };
@@ -94,7 +96,7 @@ export interface LegendListRenderItemProps<ItemT> {
     useViewability: (configId: string, callback: ViewabilityCallback) => void;
     useViewabilityAmount: (callback: ViewabilityAmountCallback) => void;
     useRecyclingEffect: (effect: (info: LegendListRecyclingState<ItemT>) => void | (() => void)) => void;
-    useRecyclingState: <T>(updateState: (info: LegendListRecyclingState<ItemT>) => T) => [T, React.Dispatch<T>];
+    useRecyclingState: <T>(updateState: ((info: LegendListRecyclingState<ItemT>) => T) | T) => [T, React.Dispatch<T>];
 }
 
 export type LegendListRef = {
@@ -157,7 +159,7 @@ export interface ViewabilityConfig {
     /**
      * A unique ID to identify this viewability config
      */
-    id: string;
+    id?: string;
 
     /**
      * Minimum amount of time (in milliseconds) that an item must be physically viewable before the

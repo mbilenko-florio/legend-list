@@ -127,7 +127,7 @@ const MovieRow = ({
                     contentContainerStyle={rowStyles.listContainer}
                     // See https://shopify.github.io/flash-list/docs/fundamentals/performant-components/#remove-key-prop
                     // keyExtractor={(movie: Movie, index: number) => (isLegend ? movie.id.toString() : index.toString())}
-                    keyExtractor={(movie: Movie, index: number) => index.toString()}
+                    // keyExtractor={(movie: Movie, index: number) => index.toString()}
                     ItemSeparatorComponent={MarginBetweenItems}
                     horizontal
                     estimatedItemSize={cardStyles.image.width + 5}
