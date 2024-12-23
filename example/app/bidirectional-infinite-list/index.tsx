@@ -70,7 +70,7 @@ export default function BidirectionalInfiniteList() {
                 }}
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);
-                    //return;
+                    return;
                     if (distanceFromEnd > 0) {
                         setTimeout(() => {
                             setData((prevData) => {

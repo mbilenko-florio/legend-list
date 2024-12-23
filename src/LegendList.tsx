@@ -20,7 +20,6 @@ import {
     StyleSheet,
 } from "react-native";
 import { ListComponent } from "./ListComponent";
-import { USE_CONTENT_INSET } from "./constants";
 import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
 import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 import type { InternalState, LegendListProps } from "./types";
@@ -218,7 +217,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
             const scroll = Math.max(
                 0,
-                scrollState - topPad - (USE_CONTENT_INSET ? scrollAdjustPending : 0) + scrollExtra,
+                scrollState - topPad - scrollAdjustPending  + scrollExtra,
             );
             const scrollBottom = scroll + scrollLength;
 
@@ -648,17 +647,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const size = getItemSize(key, i, data[i]);
                 maxSizeInRow = Math.max(maxSizeInRow, size);
 
-                // if (
-                //     maintainVisibleContentPosition &&
-                //     i < refState.current.startNoBuffer &&
-                //     !refState.current.indexByKey.has(key)
-                // ) {
-                //     // This maintains position when items are added by adding the estimated size to the top padding
-                //     const size = getItemSize(key, i, data[i]);
-                //     console.log("Above item found",i)
-                //     // adjustScroll(size);
-                // }
-
                 column++;
                 if (column > numColumnsProp) {
                     totalSize += maxSizeInRow;
@@ -980,12 +968,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, []);
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
-            let scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
+            const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
 
-            if (!USE_CONTENT_INSET) {
-                // Add the adjusted scroll, see $ScrollView for where this is applied
-                scrollLength += event.nativeEvent.layout[horizontal ? "x" : "y"];
-            }
+            // if (!USE_CONTENT_INSET) {
+            //     // Add the adjusted scroll, see $ScrollView for where this is applied
+            //     scrollLength += event.nativeEvent.layout[horizontal ? "x" : "y"];
+            // }
             refState.current!.scrollLength = scrollLength;
 
             if (refState.current!.hasScrolled) {
@@ -1100,6 +1088,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 recycleItems={recycleItems}
                 alignItemsAtEnd={alignItemsAtEnd}
                 ListEmptyComponent={data.length === 0 ? ListEmptyComponent : undefined}
+                maintainVisibleContentPosition={maintainVisibleContentPosition}
                 style={style}
             />
         );
