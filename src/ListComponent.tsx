@@ -32,7 +32,7 @@ interface ListComponentProps
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onLayout: (event: LayoutChangeEvent) => void;
-
+    maintainVisibleContentPosition: boolean;
 }
 
 const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {
@@ -64,11 +64,11 @@ export const ListComponent = React.memo(function ListComponent({
     getRenderedItem,
     updateItemSize,
     refScroller,
+    maintainVisibleContentPosition,
     ...rest
 }: ListComponentProps) {
     const ctx = useStateContext();
     const animPaddingTop = useValue$("paddingTop");
-
 
     // TODO: Try this again? This had bad behaviorof sometimes setting the min size to greater than
     // the screen size
@@ -89,6 +89,7 @@ export const ListComponent = React.memo(function ListComponent({
         <$ScrollView
             {...rest}
             style={style}
+            maintainVisibleContentPosition={maintainVisibleContentPosition ? { minIndexForVisible: 0 } : undefined}
             contentContainerStyle={[
                 contentContainerStyle,
                 horizontal
@@ -125,9 +126,7 @@ export const ListComponent = React.memo(function ListComponent({
                 </Animated.View>
             )}
             {ListEmptyComponent && (
-                <Animated.View
-                    style={StyleSheet.compose<ViewStyle, ViewStyle, ViewStyle>(ListEmptyComponentStyle)}
-                >
+                <Animated.View style={StyleSheet.compose<ViewStyle, ViewStyle, ViewStyle>(ListEmptyComponentStyle)}>
                     {getComponent(ListEmptyComponent)}
                 </Animated.View>
             )}
@@ -140,7 +139,6 @@ export const ListComponent = React.memo(function ListComponent({
                 updateItemSize={updateItemSize}
             />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
-          
         </$ScrollView>
     );
 });
