@@ -27,7 +27,6 @@ import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_DRAW_DISTANCE = 250;
-const INITIAL_SCROLL_ADJUST = 0;
 const POSITION_OUT_OF_VIEW = -10000000;
 const DEFAULT_ITEM_SIZE = 100;
 
@@ -110,7 +109,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     offset = index * estimatedItemSize;
                 }
 
-                return offset + (maintainVisibleContentPosition ? INITIAL_SCROLL_ADJUST : 0);
+                return offset;
             }
             return 0;
         };
@@ -323,7 +322,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     if (top <= scrollBottom + scrollBuffer) {
                         endBuffered = i;
                     } else {
-                       // break;
+                        break;
                     }
                 }
 
