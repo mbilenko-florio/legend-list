@@ -80,7 +80,7 @@ export interface InternalState {
     viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs | undefined;
     renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
     scrollHistory: Array<{ scroll: number; time: number }>;
-    scrollTimer: number | undefined;
+    scrollTimer: Timer | undefined;
 }
 
 export interface ViewableRange<T> {
