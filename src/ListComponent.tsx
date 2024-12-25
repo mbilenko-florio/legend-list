@@ -7,11 +7,10 @@ import {
     type NativeSyntheticEvent,
     type ScrollView,
     View,
-    type ViewStyle,
 } from "react-native";
 import { $ScrollView } from "./$ScrollView";
 import { Containers } from "./Containers";
-import { peek$, useStateContext } from "./state";
+import { peek$, set$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
 import { useValue$ } from "./useValue$";
 
@@ -113,7 +112,7 @@ export const ListComponent = React.memo(function ListComponent({
             {alignItemsAtEnd && <Animated.View style={{ height: animPaddingTop }} />}
             {ListHeaderComponent && (
                 <Animated.View
-                    style={StyleSheet.compose<ViewStyle, ViewStyle, ViewStyle>(ListHeaderComponentStyle)}
+                    style={ListHeaderComponentStyle}
                     onLayout={(event) => {
                         const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
                         const prevSize = peek$<number>(ctx, "headerSize") || 0;
@@ -126,7 +125,7 @@ export const ListComponent = React.memo(function ListComponent({
                 </Animated.View>
             )}
             {ListEmptyComponent && (
-                <Animated.View style={StyleSheet.compose<ViewStyle, ViewStyle, ViewStyle>(ListEmptyComponentStyle)}>
+                <Animated.View style={ListEmptyComponentStyle}>
                     {getComponent(ListEmptyComponent)}
                 </Animated.View>
             )}

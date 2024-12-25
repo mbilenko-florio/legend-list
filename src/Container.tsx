@@ -2,8 +2,8 @@ import React, { useMemo } from "react";
 import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type ViewStyle } from "react-native";
 import { peek$, set$, use$, useStateContext } from "./state";
 
-type MeasureMethod = "offscreen" | 'invisible';
-const MEASURE_METHOD: MeasureMethod = 'offscreen';
+type MeasureMethod = "offscreen" | "invisible";
+const MEASURE_METHOD: MeasureMethod = "invisible";
 
 export const Container = ({
     id,
@@ -28,32 +28,34 @@ export const Container = ({
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
-    let style: StyleProp<ViewStyle> =horizontal
-            ? {
-                  flexDirection: "row",
-                  position: "absolute",
-                  opacity: visible ? 1 : 0,
-                  top: 0,
-                  bottom: numColumns > 1 ? null : 0,
-                  height: otherAxisSize,
-                  left: position,
-              }
-            : {
-                  position: "absolute",
-                  opacity: visible ? 1 : 0,
-                  left: 0,
-                  right: numColumns > 1 ? null : 0,
-                  width: otherAxisSize,
-                  top: position,
-              };
+    let style: StyleProp<ViewStyle> = horizontal
+        ? {
+              flexDirection: "row",
+              position: "absolute",
+              opacity: visible ? 1 : 0,
+              top: otherAxisPos,
+              bottom: numColumns > 1 ? null : 0,
+              height: otherAxisSize,
+              left: position,
+          }
+        : {
+              position: "absolute",
+              opacity: visible ? 1 : 0,
+              left: otherAxisPos,
+              right: numColumns > 1 ? null : 0,
+              width: otherAxisSize,
+              top: position,
+          };
 
-    if (MEASURE_METHOD === 'invisible') {
+    if (MEASURE_METHOD === "invisible") {
         style.opacity = visible ? 1 : 0;
-    } else if (MEASURE_METHOD === 'offscreen') {
-        const additional = horizontal ? {   top: visible ? otherAxisPos : -10000000, } :{  left: visible ? otherAxisPos : -10000000, }
-        style = { ...style, ...additional};
+    } else if (MEASURE_METHOD === "offscreen") {
+        const additional = horizontal
+            ? { top: visible ? otherAxisPos : -10000000 }
+            : { left: visible ? otherAxisPos : -10000000 };
+        style = { ...style, ...additional };
     }
-    
+
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
 
