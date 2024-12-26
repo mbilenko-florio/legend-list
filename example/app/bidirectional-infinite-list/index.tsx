@@ -4,8 +4,12 @@ import { LegendList, type LegendListRef } from "@legendapp/list";
 import { useRef, useState } from "react";
 import { Platform, RefreshControl, StyleSheet, View } from "react-native";
 
+
+
 export default function BidirectionalInfiniteList() {
     const listRef = useRef<LegendListRef>(null);
+
+  
 
     const [data, setData] = useState<Item[]>(
         () =>
@@ -66,7 +70,7 @@ export default function BidirectionalInfiniteList() {
                 recycleItems={true}
                 onStartReached={(props) => {
                     console.log("onStartReached", props);
-                 onRefresh();
+                    onRefresh();
                 }}
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);

@@ -89,6 +89,7 @@ export function set$(ctx: StateContext, signalName: ListenerType, value: any) {
         const setListeners = listeners.get(signalName);
         if (setListeners) {
             for (const listener of setListeners) {
+                //console.log("Signal changed", signalName,value);
                 listener(value);
             }
         }

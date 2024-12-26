@@ -26,6 +26,8 @@ export const Container = ({
     const visible = use$<boolean>(`containerDidLayout${id}`);
     const numColumns = use$<number>("numColumns");
 
+
+
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
     let style: StyleProp<ViewStyle> = horizontal
@@ -61,9 +63,6 @@ export const Container = ({
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey]);
 
-    // Use a reactive View to ensure the container element itself
-    // is not rendered when style changes, only the style prop.
-    // This is a big perf boost to do less work rendering.
     return (
         <View
             style={style}

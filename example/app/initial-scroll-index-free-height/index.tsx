@@ -30,6 +30,13 @@ export default function IntialScrollIndexFreeHeight() {
                 drawDistance={DRAW_DISTANCE}
                 maintainVisibleContentPosition
                 recycleItems={true}
+                //numColumns={2}
+                onStartReached={(props) => {
+                    console.log("onStartReached", props);
+                }}
+                onEndReached={({ distanceFromEnd }) => {
+                    console.log("onEndReached", distanceFromEnd);
+                }}
             />
         </View>
     );
