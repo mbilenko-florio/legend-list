@@ -202,7 +202,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 positions,
                 sizes,
                 columns,
-               
             } = state!;
             if (state.animFrameLayout) {
                 cancelAnimationFrame(state.animFrameLayout);
@@ -214,10 +213,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const scrollAdjustPending = state!.scrollAdjustPending ?? 0;
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll = Math.max(
-                0,
-                scrollState - topPad - scrollAdjustPending  + scrollExtra,
-            );
+            const scroll = Math.max(0, scrollState - topPad - scrollAdjustPending + scrollExtra);
             const scrollBottom = scroll + scrollLength;
 
             let startNoBuffer: number | null = null;
@@ -253,7 +249,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 loopStart -= loopStartMod;
             }
 
-            let top: number = undefined;
+            let top: number;
 
             //console.log("TOP", top, "SCROLL", scroll);
 
@@ -270,8 +266,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return undefined;
             };
 
-            console.log(state.anchorElement);
-
             for (let i = loopStart; i < data!.length; i++) {
                 const isAbove = state.anchorElement && i < getAnchorElementIndex()!;
 
@@ -284,7 +278,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 const id = getId(i)!;
                 const size = getItemSize(id, i, data[i]);
-                
 
                 maxSizeInRow = Math.max(maxSizeInRow, size);
 
@@ -299,7 +292,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     reversePassStartOffset = top;
                 }
 
-                console.log("Doing forward pass", i, id, top);
+                //console.log("Doing forward pass", i, id, top);
 
                 if (positions.get(id) !== top) {
                     positions.set(id, top);
@@ -338,6 +331,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // do reverse pass, from the first visible item to the top
                 // to resolve correct positions of item above the first visible item
                 top = reversePassStartOffset;
+                const elementsLeft = 0;
 
                 for (let i = reversePassStartIndex; i >= 0; i--) {
                     const id = getId(i)!;
@@ -350,10 +344,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     maxSizeInRow = Math.max(maxSizeInRow, size);
 
-                    const elementBottom = top + peek$(ctx,'scrollAdjustTop'); // TODO: is this really needed?
+                    const elementBottom = top + peek$(ctx, "scrollAdjustTop"); // TODO: is this really needed?
                     top -= size;
 
-                    console.log("Doing reverse pass", id, top);
+                    //console.log("Doing reverse pass", id, top);
 
                     if (positions.get(id) !== top) {
                         positions.set(id, top);
@@ -363,7 +357,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         columns.set(id, column);
                     }
 
-                    console.log({ elementBottom, scroll, scrollAdjustPending });
+                   // console.log({ elementBottom, scroll, scrollAdjustPending });
                     if (elementBottom > scroll) {
                         startNoBuffer = i;
                     }
@@ -378,7 +372,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         endBuffered = i;
                     }
 
+                    
                     // if (elementBottom <= scroll - scrollBuffer) {
+                    //     elementsLeft = i;
                     //     break;
                     // }
 
@@ -388,6 +384,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     //     column = 1;
                     //     maxSizeInRow = 0;
                     // }
+                }
+                if (elementsLeft !== 0) {
+                    // don't really iterate until the top of the list
+                    // just estimate where the top of the list would be
+                    top -= (estimatedItemSize || 0) * elementsLeft;
                 }
                 if (maintainVisibleContentPosition) {
                     const newAdjust = Math.floor(-top);
@@ -400,7 +401,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            console.log({ scroll, startBuffered, startNoBuffer, endBuffered, endNoBuffer });
+            //console.log({ scroll, startBuffered, startNoBuffer, endBuffered, endNoBuffer });
 
             Object.assign(refState.current!, {
                 startBuffered,
@@ -494,7 +495,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
                             // This is fairly complex because we want to avoid setting container position if it's not even in view
                             // because it will trigger a render
-                            const prevPos = peek$<number>(ctx, `containerPosition${i}`) ;
+                            const prevPos = peek$<number>(ctx, `containerPosition${i}`);
                             const pos = positions.get(id) || 0;
                             const size = sizes.get(id) || 0;
 
@@ -505,7 +506,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                             }
                         } else {
-                            const pos = (positions.get(id) || 0) ;
+                            const pos = positions.get(id) || 0;
                             const column = columns.get(id) || 1;
                             const prevPos = peek$(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
@@ -680,7 +681,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 doMaintainScrollAtEnd(false);
                 checkAtTop();
                 checkAtBottom();
-                
 
                 requestAnimationFrame(() => {
                     console.log("Data changed!");
@@ -851,6 +851,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
+            console.log("updateItemSize", containerId, itemKey, size);
             const data = refState.current?.data;
             if (!data) {
                 return;
@@ -1026,7 +1027,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 state.scrollTimer = setTimeout(() => {
                     state.scrollVelocity = 0;
-                },500);
+                }, 500);
 
                 // Calculate average velocity from history
                 let velocity = 0;

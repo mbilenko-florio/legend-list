@@ -3,7 +3,7 @@ import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type
 import { peek$, set$, use$, useStateContext } from "./state";
 
 type MeasureMethod = "offscreen" | "invisible";
-const MEASURE_METHOD: MeasureMethod = "invisible";
+const MEASURE_METHOD: MeasureMethod = "offscreen";
 
 export const Container = ({
     id,
