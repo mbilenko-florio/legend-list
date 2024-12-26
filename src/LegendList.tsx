@@ -105,8 +105,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     for (let i = 0; i < index; i++) {
                         offset += getEstimatedItemSize(i, data[i]);
                     }
-                } else if (estimatedItemSize) {
-                    offset = index * estimatedItemSize;
+                } else {
+                    offset = index * (estimatedItemSize ?? DEFAULT_ITEM_SIZE);
                 }
 
                 return offset;
@@ -152,6 +152,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 contentSize: { width: 0, height: 0 },
                 sizesLaidOut: __DEV__ ? new Map() : undefined,
                 timeoutSizeMessage: 0,
+                scrollTimer: undefined
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             refState.current!.anchorElement = initialScrollIndex
@@ -249,7 +250,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 loopStart -= loopStartMod;
             }
 
-            let top: number;
+            let top: number | undefined;
 
             //console.log("TOP", top, "SCROLL", scroll);
 
@@ -283,6 +284,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 if (top === undefined) {
                     top = i > 0 ? positions.get(id) : 0;
+                    if (top === undefined) {
+                        // if we failed to get the top position, estimate it
+                        // can happen if we use scrollToIndex and the item is not yet rendered
+                        top = calculateInitialOffset(i)
+                    }
                     if (id === state.anchorElement?.id) {
                         top = initialContentOffset || 0;
                     }
@@ -327,7 +333,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            if (reversePassStartIndex !== undefined) {
+            if (reversePassStartIndex !== undefined && reversePassStartOffset !== undefined) {
                 // do reverse pass, from the first visible item to the top
                 // to resolve correct positions of item above the first visible item
                 top = reversePassStartOffset;
@@ -344,7 +350,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     maxSizeInRow = Math.max(maxSizeInRow, size);
 
-                    const elementBottom = top + peek$(ctx, "scrollAdjustTop"); // TODO: is this really needed?
+                    const elementBottom = top + peek$<number>(ctx, "scrollAdjustTop"); // TODO: is this really needed?
                     top -= size;
 
                     //console.log("Doing reverse pass", id, top);
@@ -851,7 +857,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
-            console.log("updateItemSize", containerId, itemKey, size);
             const data = refState.current?.data;
             if (!data) {
                 return;
