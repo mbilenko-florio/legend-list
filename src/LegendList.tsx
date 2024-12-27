@@ -142,7 +142,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 timeouts: new Set(),
                 viewabilityConfigCallbackPairs: undefined as never,
                 renderItem: undefined as never,
-                scrollAdjustPending: 0,
                 nativeMarginTop: 0,
                 scrollPrev: 0,
                 scrollPrevTime: 0,
@@ -353,10 +352,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     maxSizeInRow = Math.max(maxSizeInRow, size);
 
-                    const elementBottom = top; 
+                    const elementBottom = top;
                     top -= size;
 
-                   console.log("Doing reverse pass", id, top, { elementBottom, scroll });
+                    // console.log("Doing reverse pass", id, top, { elementBottom, scroll });
 
                     if (positions.get(id) !== top) {
                         positions.set(id, top);
@@ -402,15 +401,20 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 if (maintainVisibleContentPosition) {
                     const newAdjust = Math.floor(-top);
                     const oldScrollAdjust = scrollAdjustPending;
+                    console.log("Speed", speed);
 
-                    if (oldScrollAdjust !== newAdjust) {
-                        console.log("Requesting adjuster", newAdjust);
-                        refState.current!.scrollAdjustPending = newAdjust;
-                    }
-                }
+                   if (oldScrollAdjust !== newAdjust) {
+                        console.log("Requesting adjuster", newAdjust, speed);
+                        const scrollAdjustPending = newAdjust;
+                        const newAdjustTop = scrollAdjustPending;
+                        const newAdjustBottom = -scrollAdjustPending;
+                        set$(ctx, "scrollAdjustTop", newAdjustTop);
+                        set$(ctx, "scrollAdjustBottom", newAdjustBottom);
+                   }
+                } 
             }
 
-            console.log({ scroll, startBuffered, startNoBuffer, endBuffered, endNoBuffer });
+            //console.log({ scroll, startBuffered, startNoBuffer, endBuffered, endNoBuffer });
 
             Object.assign(refState.current!, {
                 startBuffered,
@@ -521,7 +525,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
 
                             if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
-                                console.log("Changing position", i,id, pos, numContainers);
+                                console.log("Changing position", i, id, pos, numContainers);
                                 set$(ctx, `containerPosition${i}`, pos);
                             }
                             if (column >= 0 && column !== prevColumn) {
@@ -674,7 +678,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 for (let i = 0; i < numContainers; i++) {
                     const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
                     if (!keyExtractorProp || (itemKey && refState.current?.indexByKey.get(itemKey) === undefined)) {
-                        console.log("Resetting container #@@@@@@@@@@@@@@@@")
+                        console.log("Resetting container #@@@@@@@@@@@@@@@@");
                         set$(ctx, `containerItemKey${i}`, undefined);
                         set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                         set$(ctx, `containerColumn${i}`, -1);
@@ -686,7 +690,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     refState.current.sizes.clear();
                     refState.current.positions;
                 }
-             
 
                 doMaintainScrollAtEnd(false);
                 checkAtTop();
@@ -694,22 +697,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 requestAnimationFrame(() => {
                     console.log("Data changed!");
-                    const { totalSize, scroll, scrollAdjustPending } = refState.current!;
-                    const toBottom = totalSize - scroll;
-                    const toTop = scroll;
-                    if (toBottom > toTop) {
-                        const newAdjustTop = scrollAdjustPending;
-                        const oldAdjutTop = peek$<number>(ctx, "scrollAdjustTop");
-                        if (oldAdjutTop !== newAdjustTop) {
-                            set$(ctx, "scrollAdjustTop", newAdjustTop);
-                        }
-                    } else {
-                        const oldAdjutBottom = peek$<number>(ctx, "scrollAdjustBottom");
-                        const newAdjustBottom = -scrollAdjustPending;
-                        if (oldAdjutBottom !== newAdjustBottom) {
-                            set$(ctx, "scrollAdjustBottom", newAdjustBottom);
-                        }
-                    }
                     calculateItemsInView();
                 });
             }
@@ -949,27 +936,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             calculateItemsInView(velocity);
             checkAtBottom();
             checkAtTop();
-
-            const { scrollAdjustPending, scroll, totalSize } = refState.current!;
-            const toBottom = totalSize - scroll;
-            const toTop = scroll;
-
-            if (velocity < 0.1) {
-                const newAdjustTop = scrollAdjustPending;
-                const oldAdjutTop = peek$<number>(ctx, "scrollAdjustTop");
-                if (oldAdjutTop !== newAdjustTop) {
-                    set$(ctx, "scrollAdjustTop", newAdjustTop);
-                }
-            }
-            if (velocity > 0.1) {
-                requestAnimationFrame(() => {
-                    const oldAdjutBottom = peek$<number>(ctx, "scrollAdjustBottom");
-                    const newAdjustBottom = -scrollAdjustPending;
-                    if (oldAdjutBottom !== newAdjustBottom) {
-                        set$(ctx, "scrollAdjustBottom", newAdjustBottom);
-                    }
-                });
-            }
         }, []);
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
