@@ -84,7 +84,6 @@ export default function BidirectionalInfiniteList() {
                                         id: (Number.parseInt(prevData[prevData.length - 1].id) + i + 1).toString(),
                                     })),
                                 ];
-                                console.log(newData);
                                 return newData;
                             });
                         }, 500);

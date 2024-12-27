@@ -193,7 +193,53 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         }, []);
 
+        const adjustScrollPosition = useCallback((newPos: number, oldPos: number, speed: number, scroll: number) => {
+            const newAdjust = Math.floor(-newPos);
+            const oldScrollAdjust = oldPos;
+          
+
+            if (oldScrollAdjust !== newAdjust) {
+                console.log("Requesting adjuster", newAdjust, speed);
+                const scrollAdjustPending = newAdjust;
+                const { totalSize } = refState.current!;
+
+                if (speed < 0.1) {
+                    const newAdjustTop = scrollAdjustPending;
+                    const oldAdjutTop = peek$<number>(ctx, "scrollAdjustTop");
+                    if (oldAdjutTop !== newAdjustTop) {
+                        set$(ctx, "scrollAdjustTop", newAdjustTop);
+                    }
+                } else if (speed > 0.1) {
+                    const oldAdjutBottom = peek$<number>(ctx, "scrollAdjustBottom");
+                    const newAdjustBottom = -scrollAdjustPending;
+                    if (oldAdjutBottom !== newAdjustBottom) {
+                        console.log("Setting bottom", newAdjustBottom);
+                        requestAnimationFrame(() => {
+                        set$(ctx, "scrollAdjustBottom", newAdjustBottom);
+                        });
+                    }
+                } else {
+                    const toBottom = totalSize - scroll;
+                    const toTop = scroll;
+                    if (toBottom > toTop) {
+                        const newAdjustTop = scrollAdjustPending;
+                        const oldAdjutTop = peek$<number>(ctx, "scrollAdjustTop");
+                        if (oldAdjutTop !== newAdjustTop) {
+                            set$(ctx, "scrollAdjustTop", newAdjustTop);
+                        }
+                    } else {
+                        const oldAdjutBottom = peek$<number>(ctx, "scrollAdjustBottom");
+                        const newAdjustBottom = -scrollAdjustPending;
+                        if (oldAdjutBottom !== newAdjustBottom) {
+                            set$(ctx, "scrollAdjustBottom", newAdjustBottom);
+                        }
+                    }
+                }
+            }
+        }, []);
+
         const calculateItemsInView = useCallback((speed = 0) => {
+            console.log("Calculating items in view", speed);
             const state = refState.current!;
             const {
                 data,
@@ -212,9 +258,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return;
             }
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
-            const scrollAdjustPending = peek$<number>(ctx, "scrollAdjustTop");
+            const previousScrollAdjust = peek$<number>(ctx, "scrollAdjustTop");
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll = scrollState - topPad - scrollAdjustPending + scrollExtra;
+            const scroll = scrollState - topPad - previousScrollAdjust + scrollExtra;
             const scrollBottom = scroll + scrollLength;
 
             let startNoBuffer: number | null = null;
@@ -399,22 +445,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     top -= (estimatedItemSize || 0) * elementsLeft;
                 }
                 if (maintainVisibleContentPosition) {
-                    const newAdjust = Math.floor(-top);
-                    const oldScrollAdjust = scrollAdjustPending;
-                    console.log("Speed", speed);
-
-                   if (oldScrollAdjust !== newAdjust) {
-                        console.log("Requesting adjuster", newAdjust, speed);
-                        const scrollAdjustPending = newAdjust;
-                        const newAdjustTop = scrollAdjustPending;
-                        const newAdjustBottom = -scrollAdjustPending;
-                        set$(ctx, "scrollAdjustTop", newAdjustTop);
-                        set$(ctx, "scrollAdjustBottom", newAdjustBottom);
-                   }
-                } 
+                    adjustScrollPosition(top, previousScrollAdjust, speed, scroll);
+                }
             }
 
-            //console.log({ scroll, startBuffered, startNoBuffer, endBuffered, endNoBuffer });
+            console.log({ scroll, startBuffered, startNoBuffer, endBuffered, endNoBuffer });
 
             Object.assign(refState.current!, {
                 startBuffered,
@@ -670,8 +705,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             if (!isFirst) {
                 console.log("Data change effect!");
-                refState.current.isEndReached = false;
-                //refState.current.isStartReached = false;
+                // refState.current.isEndReached = false;
+                // refState.current.isStartReached = false;
 
                 // Reset containers that aren't used anymore because the data has changed
                 const numContainers = peek$<number>(ctx, "numContainers");
@@ -850,6 +885,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             if (!data) {
                 return;
             }
+            console.log("updateItemSize",containerId, itemKey, size);
             const state = refState.current!;
             const { sizes, indexByKey, idsInFirstRender, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
@@ -940,11 +976,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
             const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
-
-            // if (!USE_CONTENT_INSET) {
-            //     // Add the adjusted scroll, see $ScrollView for where this is applied
-            //     scrollLength += event.nativeEvent.layout[horizontal ? "x" : "y"];
-            // }
             refState.current!.scrollLength = scrollLength;
 
             if (refState.current!.hasScrolled) {
