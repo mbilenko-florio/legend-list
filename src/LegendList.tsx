@@ -219,7 +219,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll = scrollFilter.filter(scrollState, previousScrollAdjust) -topPad -  + scrollExtra;
+            const scroll = scrollFilter.filter(scrollState, previousScrollAdjust) - topPad - scrollExtra;
 
             const scrollBottom = scroll + scrollLength;
 
@@ -273,7 +273,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             // scan data forwards
             for (let i = loopStart; i < data!.length; i++) {
-                const isAbove = state.anchorElement && i < getAnchorElementIndex()!;
+                const isAbove = maintainVisibleContentPosition && state.anchorElement && i < getAnchorElementIndex()!;
 
                 if (isAbove) {
                     // skip all items above the anchor element,
@@ -302,7 +302,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 if (reversePassStartOffset === undefined) {
                     reversePassStartOffset = top;
-                }               
+                }
 
                 if (positions.get(id) !== top) {
                     positions.set(id, top);
@@ -337,7 +337,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            if (reversePassStartIndex !== undefined && reversePassStartOffset !== undefined) {
+            if (
+                maintainVisibleContentPosition &&
+                reversePassStartIndex !== undefined &&
+                reversePassStartOffset !== undefined
+            ) {
                 // do reverse pass, from the first visible item to the top
                 // to resolve correct positions of item above the first visible item
                 top = reversePassStartOffset;
@@ -379,7 +383,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const elementTop = top - getRowHeight(rowNumber);
 
                     const elementBottom = top;
-                    
+
                     if (positions.get(id) !== elementTop) {
                         positions.set(id, elementTop);
                     }
@@ -409,15 +413,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         maxSizeInRow = 0;
                     }
                     // TODO: figure out how to break loop earlier, without returning to the first element
-                   
                 }
-              
+
                 if (maintainVisibleContentPosition) {
                     const newAdjust = -top;
                     refState.current!.scrollAdjustHandler.requestAdjust(newAdjust);
                 }
             }
-       
+
             Object.assign(refState.current!, {
                 startBuffered,
                 startNoBuffer,
@@ -692,7 +695,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     refState.current.sizes.clear();
                     refState.current.positions;
                 }
-                calculateItemsInView(refState.current.scrollVelocity, 'data change');
+                calculateItemsInView(refState.current.scrollVelocity, "data change");
 
                 doMaintainScrollAtEnd(false);
                 checkAtTop();
@@ -840,7 +843,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             set$(ctx, "numContainers", numContainers);
             set$(ctx, "numContainersPooled", numContainers * 2);
 
-            calculateItemsInView(refState.current!.scrollVelocity, 'init');
+            calculateItemsInView(refState.current!.scrollVelocity, "init");
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
@@ -921,10 +924,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     if (!peek$(ctx, `containerDidLayout${containerId}`)) {
                         state.animFrameLayout = requestAnimationFrame(() => {
                             state.animFrameLayout = null;
-                            calculateItemsInView(state.scrollVelocity,'updateItemSize(didLayout)');
+                            calculateItemsInView(state.scrollVelocity, "updateItemSize(didLayout)");
                         });
                     } else {
-                        calculateItemsInView(state.scrollVelocity,'updateItemSize');
+                        calculateItemsInView(state.scrollVelocity, "updateItemSize");
                     }
                 }
             }
@@ -932,7 +935,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const handleScrollDebounced = useCallback((velocity: number) => {
             // Use velocity to predict scroll position
-            calculateItemsInView(velocity,'scrolldebounced');
+            calculateItemsInView(velocity, "scrolldebounced");
             checkAtBottom();
             checkAtTop();
         }, []);

@@ -69,6 +69,7 @@ export const ListComponent = React.memo(function ListComponent({
 }: ListComponentProps) {
     const ctx = useStateContext();
     const animPaddingTop = useValue$("paddingTop");
+    const adjustTop = useValue$("scrollAdjustTop");
 
     // TODO: Try this again? This had bad behaviorof sometimes setting the min size to greater than
     // the screen size
@@ -84,6 +85,8 @@ export const ListComponent = React.memo(function ListComponent({
     //     console.log("style", StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>);
     //     return StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>;
     // }, [otherAxisSize]);
+
+    const additionalSize = { marginTop: adjustTop, paddingTop: animPaddingTop };
 
     return (
         <ScrollView
@@ -110,7 +113,7 @@ export const ListComponent = React.memo(function ListComponent({
             }
             ref={refScroller}
         >
-            {alignItemsAtEnd && <Animated.View style={{ height: animPaddingTop }} />}
+            <Animated.View style={additionalSize} />
             {ListHeaderComponent && (
                 <Animated.View
                     style={ListHeaderComponentStyle}

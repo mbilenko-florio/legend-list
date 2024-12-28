@@ -43,6 +43,10 @@ const data: ListElement[] = [
         title: "Bidirectional Infinite List",
         url: "/bidirectional-infinite-list",
     },
+    {
+        title: "Infinite chat",
+        url: "/chat-infinite",
+    },
     // Add more items as needed
 ].map(
     (v, i) =>

@@ -67,6 +67,7 @@ export class ScrollFilter {
 
         if (adjustDiff > 300) {          
             this.jerkTimestamp = now;
+            console.log("jerk detected");
         }
 
         this.lastScrollAdjust = scrollAdjust;

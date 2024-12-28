@@ -2,7 +2,8 @@ import { type Item, renderItem } from "@/app/cards-renderItem";
 import { DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constants/constants";
 import { LegendList, type LegendListRef } from "@legendapp/list";
 import { useRef, useState } from "react";
-import { Platform, RefreshControl, StyleSheet, View } from "react-native";
+import { RefreshControl, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function BidirectionalInfiniteList() {
     const listRef = useRef<LegendListRef>(null);
@@ -49,10 +50,19 @@ export default function BidirectionalInfiniteList() {
     //     }, 2000);
     // }, []);
 
+    const { top, bottom } = useSafeAreaInsets();
+
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
             <LegendList
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={'#ffffff'} progressViewOffset={40}/>}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={"#ffffff"}
+                        progressViewOffset={40}
+                    />
+                }
                 ref={listRef}
                 initialScrollIndex={10}
                 style={[StyleSheet.absoluteFill, styles.scrollContainer]}
@@ -64,6 +74,8 @@ export default function BidirectionalInfiniteList() {
                 drawDistance={DRAW_DISTANCE}
                 maintainVisibleContentPosition
                 recycleItems={true}
+                ListHeaderComponent={<View style={{ height: top }} />}
+                ListFooterComponent={<View style={{ height: bottom }} />}
                 onStartReached={(props) => {
                     console.log("onStartReached", props);
                     onRefresh();
@@ -79,7 +91,6 @@ export default function BidirectionalInfiniteList() {
                                         id: (Number.parseInt(prevData[prevData.length - 1].id) + i + 1).toString(),
                                     })),
                                 ];
-                                console.log(newData);
                                 return newData;
                             });
                         }, 500);
@@ -109,7 +120,6 @@ const styles = StyleSheet.create({
     },
     outerContainer: {
         backgroundColor: "#456",
-        bottom: Platform.OS === "ios" ? 82 : 0,
     },
     scrollContainer: {},
     listContainer: {

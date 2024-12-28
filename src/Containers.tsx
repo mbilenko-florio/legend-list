@@ -22,7 +22,7 @@ export const Containers = React.memo(function Containers({
     const ctx = useStateContext();
     const numContainers = use$<number>("numContainersPooled");
     const totalSize = useValue$("totalSize");
-    const adjustTop = useValue$("scrollAdjustTop");
+
     const adjustBottom = useValue$("scrollAdjustBottom");
 
     const containers = [];
@@ -40,11 +40,9 @@ export const Containers = React.memo(function Containers({
         );
     }
 
-    const additionalSize = { marginTop: adjustTop };
-
     const style: StyleProp<ViewStyle> = horizontal
-        ? { width: Animated.add(totalSize, adjustBottom), ...additionalSize }
-        : { height: Animated.add(totalSize, adjustBottom), ...additionalSize };
+        ? { width: Animated.add(totalSize, adjustBottom) }
+        : { height: Animated.add(totalSize, adjustBottom) };
 
     return <Animated.View style={style}>{containers}</Animated.View>;
 });
