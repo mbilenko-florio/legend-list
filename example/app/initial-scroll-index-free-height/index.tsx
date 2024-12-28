@@ -2,7 +2,8 @@ import { type Item, renderItem } from "@/app/cards-renderItem";
 import { DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constants/constants";
 import { LegendList, type LegendListRef } from "@legendapp/list";
 import { useRef, useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 //** Purpose of this component is to show that LegendList with initialScrollIndex can correctly scroll to the begginning
 // and the end of the list even if element height is unknown and calculated dynamically */
@@ -15,6 +16,8 @@ export default function IntialScrollIndexFreeHeight() {
                 id: i.toString(),
             })) as any[],
     );
+
+    const {top, bottom} = useSafeAreaInsets();
 
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
@@ -30,6 +33,8 @@ export default function IntialScrollIndexFreeHeight() {
                 drawDistance={DRAW_DISTANCE}
                 maintainVisibleContentPosition
                 recycleItems={true}
+                ListHeaderComponent={<View style={{height:top}}/>}
+                ListFooterComponent={<View style={{height:bottom}}/>}
             />
         </View>
     );
@@ -54,7 +59,6 @@ const styles = StyleSheet.create({
     },
     outerContainer: {
         backgroundColor: "#456",
-        bottom: Platform.OS === "ios" ? 82 : 0,
     },
     scrollContainer: {},
     listContainer: {

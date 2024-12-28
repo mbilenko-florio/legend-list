@@ -340,33 +340,54 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 top = reversePassStartOffset;
                 const elementsLeft = 0;
                 maxSizeInRow = 0;
-                column = 1;
+                column = (reversePassStartIndex % numColumns) + 1;
+
+                const rowHeights = new Map<number, number>();
+
+                const getRowHeight = (n: number): number => {
+                    if (numColumns === 1) {
+                        const id = getId(n);
+                        return getItemSize(id, n, data[n]);
+                    }
+                    if (rowHeights.has(n)) {
+                        return rowHeights.get(n) || 0;
+                    }
+                    let rowHeight = 0;
+                    const startEl = n * numColumns;
+                    for (let i = startEl; i < startEl + numColumns; i++) {
+                        const id = getId(i);
+                        const size = getItemSize(id, i, data[i]);
+                        rowHeight = Math.max(rowHeight, size);
+                    }
+                    rowHeights.set(n, rowHeight);
+                    return rowHeight;
+                };
 
                 for (let i = reversePassStartIndex; i >= 0; i--) {
                     const id = getId(i)!;
-                    const size = refState.current!.sizes.get(id);
-                    // const size = getItemSize(id, i, data[i]);
+                    const size = getItemSize(id, i, data[i]);
 
                     if (!size) {
                         continue;
                     }
 
                     maxSizeInRow = Math.max(maxSizeInRow, size);
+                    const rowNumber = Math.floor(i / numColumns);
+                    const elementTop = top - getRowHeight(rowNumber);
 
-                    const elementBottom = top; // TODO: is this really needed?
-                    top -= size;
+                    const elementBottom = top;
 
-                    //console.log("Doing reverse pass", id, top);
+                    console.log("Doing reverse pass", id, elementTop, column);
 
-                    if (positions.get(id) !== top) {
-                        positions.set(id, top);
+                    if (positions.get(id) !== elementTop) {
+                        positions.set(id, elementTop);
                     }
 
                     if (columns.get(id) !== column) {
                         columns.set(id, column);
                     }
 
-                   // console.log({ elementBottom, scroll, scrollAdjustPending });
+                    // console.log({ elementBottom, scroll, scrollAdjustPending });
                     if (elementBottom > scroll) {
                         startNoBuffer = i;
                     }
@@ -374,24 +395,23 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         startBuffered = i;
                     }
 
-                    if (endNoBuffer == null && top <= scroll + scrollLength) {
+                    if (endNoBuffer == null && elementTop <= scroll + scrollLength) {
                         endNoBuffer = i;
                     }
-                    if (endBuffered == null && top <= scroll + scrollLength + scrollBuffer) {
+                    if (endBuffered == null && elementTop <= scroll + scrollLength + scrollBuffer) {
                         endBuffered = i;
                     }
 
-                    
+                    column--;
+                    if (column <= 0) {
+                        top -= getRowHeight(rowNumber);
+                        column = numColumns;
+                        maxSizeInRow = 0;
+                    }
+
                     // if (elementBottom <= scroll - scrollBuffer) {
                     //     elementsLeft = i;
                     //     break;
-                    // }
-
-                    column = 1;
-                    // if (column > numColumns) {
-                    //     top += maxSizeInRow;
-                    //     column = 1;
-                    //     maxSizeInRow = 0;
                     // }
                 }
                 if (elementsLeft !== 0) {

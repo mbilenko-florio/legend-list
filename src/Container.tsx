@@ -3,7 +3,7 @@ import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type
 import { peek$, set$, use$, useStateContext } from "./state";
 
 type MeasureMethod = "offscreen" | "invisible";
-const MEASURE_METHOD: MeasureMethod = "offscreen";
+const MEASURE_METHOD = "invisible" as MeasureMethod;
 
 export const Container = ({
     id,
@@ -32,7 +32,6 @@ export const Container = ({
         ? {
               flexDirection: "row",
               position: "absolute",
-              opacity: visible ? 1 : 0,
               top: otherAxisPos,
               bottom: numColumns > 1 ? null : 0,
               height: otherAxisSize,
@@ -40,7 +39,6 @@ export const Container = ({
           }
         : {
               position: "absolute",
-              opacity: visible ? 1 : 0,
               left: otherAxisPos,
               right: numColumns > 1 ? null : 0,
               width: otherAxisSize,
