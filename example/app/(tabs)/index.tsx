@@ -44,7 +44,7 @@ const data: ListElement[] = [
         url: "/bidirectional-infinite-list",
     },
     {
-        title: "Infinite chat",
+        title: "🚧🚧🚧Infinite chat🚧🚧🚧",
         url: "/chat-infinite",
     },
     // Add more items as needed

@@ -196,7 +196,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         }, []);
 
-        const calculateItemsInView = useCallback((speed: number, source: string) => {
+        const calculateItemsInView = useCallback((speed: number) => {
             const state = refState.current!;
             const {
                 data,
@@ -695,7 +695,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     refState.current.sizes.clear();
                     refState.current.positions;
                 }
-                calculateItemsInView(refState.current.scrollVelocity, "data change");
+                calculateItemsInView(refState.current.scrollVelocity);
 
                 doMaintainScrollAtEnd(false);
                 checkAtTop();
@@ -843,7 +843,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             set$(ctx, "numContainers", numContainers);
             set$(ctx, "numContainersPooled", numContainers * 2);
 
-            calculateItemsInView(refState.current!.scrollVelocity, "init");
+            calculateItemsInView(refState.current!.scrollVelocity);
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
@@ -924,10 +924,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     if (!peek$(ctx, `containerDidLayout${containerId}`)) {
                         state.animFrameLayout = requestAnimationFrame(() => {
                             state.animFrameLayout = null;
-                            calculateItemsInView(state.scrollVelocity, "updateItemSize(didLayout)");
+                            calculateItemsInView(state.scrollVelocity);
                         });
                     } else {
-                        calculateItemsInView(state.scrollVelocity, "updateItemSize");
+                        calculateItemsInView(state.scrollVelocity);
                     }
                 }
             }
@@ -935,7 +935,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const handleScrollDebounced = useCallback((velocity: number) => {
             // Use velocity to predict scroll position
-            calculateItemsInView(velocity, "scrolldebounced");
+            calculateItemsInView(velocity);
             checkAtBottom();
             checkAtTop();
         }, []);
