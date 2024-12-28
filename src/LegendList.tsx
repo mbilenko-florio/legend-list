@@ -676,10 +676,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             refState.current.indexByKey = indexByKey;
 
             if (!isFirst) {
-                // those are messing up the infinite scroll
-                // refState.current.isEndReached = false;
-                // refState.current.isStartReached = false;
-
                 // Reset containers that aren't used anymore because the data has changed
                 const numContainers = peek$<number>(ctx, "numContainers");
                 for (let i = 0; i < numContainers; i++) {
