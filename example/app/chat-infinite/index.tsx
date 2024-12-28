@@ -36,6 +36,7 @@ const defaultChatMessages: Message[] = [
     { id: String(idCounter++), text: "How can I help you?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 3 },
 ];
 
+// TODO: under construction
 const ChatExample = () => {
     const [messages, setMessages] = useState<Message[]>(defaultChatMessages);
     const [inputText, setInputText] = useState("");
