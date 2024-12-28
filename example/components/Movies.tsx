@@ -3,7 +3,7 @@
 
 import { LegendList, type LegendListRenderItemProps } from "@legendapp/list";
 import { FlashList } from "@shopify/flash-list";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
 import { IMAGE_SIZE, type Movie, type Playlist, getImageUrl } from "../api";
 import { playlists as playlistData } from "../api/data/playlist";
 
@@ -54,6 +54,7 @@ const rowStyles = StyleSheet.create({
     container: {
         minHeight: cardStyles.image.height,
         marginBottom: margins.l,
+        width: Dimensions.get("window").width,
     },
     listContainer: {
         paddingHorizontal: margins.m,

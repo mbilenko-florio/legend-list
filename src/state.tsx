@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useMemo } from "react";
+import { useSyncExternalStore } from "react";
 import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 
 // This is an implementation of a simple state management system, inspired by Legend State.
@@ -57,12 +57,12 @@ export function useStateContext() {
 
 export function use$<T>(signalName: ListenerType): T {
     const ctx = React.useContext(ContextState)!;
-    const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
-    useMemo(() => {
-        listen$<number>(ctx, signalName, forceUpdate);
-    }, []);
+    const value = useSyncExternalStore(
+        (onStoreChange) => listen$(ctx, signalName, onStoreChange),
+        () => ctx.values.get(signalName),
+    );
 
-    return ctx.values.get(signalName);
+    return value;
 }
 
 export function listen$<T>(ctx: StateContext, signalName: ListenerType, cb: (value: T) => void): () => void {
