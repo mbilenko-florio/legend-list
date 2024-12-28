@@ -70,7 +70,6 @@ export const Container = ({
                 if (key !== undefined) {
                     const size = event.nativeEvent.layout[horizontal ? "width" : "height"];
 
-                    // console.log("layout", key, size);
                     updateItemSize(id, key, size);
 
                     const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
