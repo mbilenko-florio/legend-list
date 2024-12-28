@@ -13,9 +13,7 @@ export function useValue$(key: ListenerType, getValue?: (value: number) => numbe
     const ctx = useStateContext();
     const animValue = useAnimatedValue((getValue ? getValue(peek$(ctx, key)) : peek$(ctx, key)) ?? 0);
     useMemo(() => {
-        listen$<number>(ctx, key, (v) => {
-            animValue.setValue(getValue ? getValue(v) : v)
-        });
+        listen$<number>(ctx, key, (v) => animValue.setValue(getValue ? getValue(v) : v));
     }, []);
 
     return animValue;
