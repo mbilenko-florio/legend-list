@@ -271,12 +271,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return undefined;
             };
 
+            // scan data forwards
             for (let i = loopStart; i < data!.length; i++) {
                 const isAbove = state.anchorElement && i < getAnchorElementIndex()!;
 
                 if (isAbove) {
                     // skip all items above the anchor element,
                     // they will be handled in the reverse pass
+                    // TODO: I believe it can be optimized further, without doing this skip cycles
                     reversePassStartIndex = i;
                     continue;
                 }
@@ -300,11 +302,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 if (reversePassStartOffset === undefined) {
                     reversePassStartOffset = top;
-                }
-
-               
-               //     console.log("Doing forward pass", id, i, top);
-               
+                }               
 
                 if (positions.get(id) !== top) {
                     positions.set(id, top);
@@ -381,10 +379,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const elementTop = top - getRowHeight(rowNumber);
 
                     const elementBottom = top;
-                   
-                    // console.log("Doing reverse pass", id, elementTop, column);
                     
-
                     if (positions.get(id) !== elementTop) {
                         positions.set(id, elementTop);
                     }
@@ -413,27 +408,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         column = numColumns;
                         maxSizeInRow = 0;
                     }
-
-                    // if (elementBottom <= scroll - scrollBuffer) {
-                    //     elementsLeft = i;
-                    //     break;
-                    // }
+                    // TODO: figure out how to break loop earlier, without returning to the first element
+                   
                 }
-                if (elementsLeft !== 0) {
-                    // don't really iterate until the top of the list
-                    // just estimate where the top of the list would be
-                    top -= (estimatedItemSize || 0) * elementsLeft;
-                }
+              
                 if (maintainVisibleContentPosition) {
                     const newAdjust = -top;
                     refState.current!.scrollAdjustHandler.requestAdjust(newAdjust);
-                    
                 }
             }
-
        
-           // console.log(scroll, previousScrollAdjust,scrollAdjustHandler.getPendingAdjust(),'speed', speed, source,'startBuffered',startBuffered, 'startBuffered', startNoBuffer, 'endBuffered',endBuffered, 'endNoBuffer',endNoBuffer );
-
             Object.assign(refState.current!, {
                 startBuffered,
                 startNoBuffer,
