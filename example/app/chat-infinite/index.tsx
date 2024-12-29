@@ -2,7 +2,7 @@ import { LegendList } from "@legendapp/list";
 import { useState } from "react";
 import { Button, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from "react-native";
 import { RefreshControl } from "react-native-gesture-handler";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 type MessageSide = "user" | "bot";
 type Message = {
@@ -85,6 +85,27 @@ const ChatExample = () => {
         }, 500);
     };
 
+    // useEffect(() => {
+    //     setInterval(() => {
+    //         setMessages((prevData) => {
+    //             const initialIndex = Number.parseInt(prevData[0].id);
+    //             const newData = [
+    //                 ...Array.from({ length: 1 }, (_, i) => ({
+    //                     id: (initialIndex - i - 1).toString(),
+    //                     text: `Previous message${(initialIndex - i - 1).toString()}`,
+    //                     sender: "user" as MessageSide,
+    //                     timeStamp: Date.now() - MS_PER_SECOND * 5,
+    //                 })).reverse(),
+    //                 ...prevData,
+    //             ];
+    //             return newData;
+    //         });
+    //         setRefreshing(false);
+    //     }, 500);
+    // }, []);
+
+    const { top } = useSafeAreaInsets();
+
     return (
         <SafeAreaView style={styles.container} edges={["bottom"]}>
             <KeyboardAvoidingView style={styles.container} behavior="padding">
@@ -96,19 +117,18 @@ const ChatExample = () => {
                     maintainScrollAtEnd
                     maintainVisibleContentPosition
                     alignItemsAtEnd
+                    onStartReachedThreshold={0.2}
                     onStartReached={(props) => {
                         console.log("onStartReached", props);
                         onRefresh();
                     }}
+                    recycleItems={true}
+                    ListHeaderComponent={<View style={{ height: top }} />}
                     refreshControl={
-                        <RefreshControl
-                            refreshing={refreshing}
-                            tintColor={"#000000"}
-                            progressViewOffset={40}
-                        />
+                        <RefreshControl refreshing={refreshing} tintColor={"#000000"} progressViewOffset={40} />
                     }
                     renderItem={({ item }) => (
-                        <>
+                        <View>
                             <View
                                 style={[
                                     styles.messageContainer,
@@ -127,7 +147,7 @@ const ChatExample = () => {
                                     {new Date(item.timeStamp).toLocaleTimeString()}
                                 </Text>
                             </View>
-                        </>
+                        </View>
                     )}
                 />
                 <View style={styles.inputContainer}>

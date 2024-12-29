@@ -158,12 +158,22 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scrollFilter: new ScrollFilter(),
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
-            refState.current!.anchorElement = initialScrollIndex
-                ? {
-                      coordinate: initialContentOffset,
-                      id: getId(initialScrollIndex),
-                  }
-                : undefined;
+            if (maintainVisibleContentPosition) {
+                if (initialScrollIndex) {
+                    refState.current!.anchorElement = {
+                        coordinate: initialContentOffset,
+                        id: getId(initialScrollIndex),
+                    };
+                } else if (data.length) {
+                    refState.current!.anchorElement = {
+                        coordinate: initialContentOffset,
+                        id: getId(0),
+                    };
+                } else {
+                    // TODO: allow anchorElement to defined at the later point of time when data is available
+                    console.warn("[legend-list] maintainVisibleContentPosition was not able to find an anchor element");
+                }
+            }
             set$(ctx, "scrollAdjustTop", 0);
             set$(ctx, "scrollAdjustBottom", 0);
         }
