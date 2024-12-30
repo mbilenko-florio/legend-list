@@ -140,6 +140,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endNoBuffer: 0,
                 scroll: initialContentOffset || 0,
                 totalSize: 0,
+                totalSizeBelowAnchor: 0,
                 timeouts: new Set(),
                 viewabilityConfigCallbackPairs: undefined as never,
                 renderItem: undefined as never,
@@ -178,15 +179,33 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             set$(ctx, "scrollAdjustBottom", 0);
         }
 
-        const addTotalSize = useCallback((key: string | null, add: number) => {
+        const getAnchorElementIndex = () => {
+            const state = refState.current!;
+            if (state.anchorElement) {
+                const el = state.indexByKey.get(state.anchorElement.id);
+                return el;
+            }
+            return undefined;
+        };
+
+        const addTotalSize = useCallback((key: string | null, add: number, totalSizeBelowAnchor: number) => {
             const state = refState.current!;
             const index = key === null ? 0 : state.indexByKey.get(key)!;
-            const isAbove = key !== null && index < (state.startNoBuffer || 0);
+            let isAbove = false;
+            if (maintainVisibleContentPosition) {
+                if (state.anchorElement && index < getAnchorElementIndex()!) {
+                    isAbove = true;
+                }
+            }
             const prev = state.totalSize;
             if (key === null) {
                 state.totalSize = add;
+                state.totalSizeBelowAnchor = totalSizeBelowAnchor;
             } else {
                 state.totalSize += add;
+                if (isAbove) {
+                    state.totalSizeBelowAnchor! += add;
+                }
             }
             const doAdd = () => {
                 const totalSize = state.totalSize;
@@ -196,6 +215,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 if (alignItemsAtEnd) {
                     doUpdatePaddingTop();
+                }
+                if (maintainVisibleContentPosition) {
+                    const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
+                    console.log(
+                        "newAdjust",
+                        newAdjust,
+                        state.scroll,
+                        "totalSizeBelowAnchor",
+                        state.totalSizeBelowAnchor,
+                    );
+                    refState.current!.scrollAdjustHandler.requestAdjust(-newAdjust);
                 }
             };
 
@@ -274,13 +304,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             let reversePassStartIndex: number | undefined = undefined;
             let reversePassStartOffset: number | undefined = undefined;
 
-            const getAnchorElementIndex = () => {
-                if (state.anchorElement) {
-                    return state.indexByKey.get(state.anchorElement.id);
-                }
-                return undefined;
-            };
-
             // scan data forwards
             for (let i = loopStart; i < data!.length; i++) {
                 const isAbove = maintainVisibleContentPosition && state.anchorElement && i < getAnchorElementIndex()!;
@@ -297,6 +320,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const size = getItemSize(id, i, data[i]);
 
                 maxSizeInRow = Math.max(maxSizeInRow, size);
+                console.log("Forward pass", i, id, size, maxSizeInRow);
 
                 if (top === undefined) {
                     top = i > 0 ? positions.get(id) : 0;
@@ -355,7 +379,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // do reverse pass, from the first visible item to the top
                 // to resolve correct positions of item above the first visible item
                 top = reversePassStartOffset;
-                const elementsLeft = 0;
                 maxSizeInRow = 0;
                 column = (reversePassStartIndex % numColumns) + 1;
 
@@ -380,6 +403,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     return rowHeight;
                 };
 
+              
+
                 for (let i = reversePassStartIndex; i >= 0; i--) {
                     const id = getId(i)!;
                     const size = getItemSize(id, i, data[i]);
@@ -393,6 +418,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const elementTop = top - getRowHeight(rowNumber);
 
                     const elementBottom = top;
+
+                      console.log("Reverse pass", i, id, size, maxSizeInRow);
 
                     if (positions.get(id) !== elementTop) {
                         positions.set(id, elementTop);
@@ -422,12 +449,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         column = numColumns;
                         maxSizeInRow = 0;
                     }
-                    // TODO: figure out how to break loop earlier, without returning to the first element
-                }
-
-                if (maintainVisibleContentPosition) {
-                    const newAdjust = -top;
-                    refState.current!.scrollAdjustHandler.requestAdjust(newAdjust);
+                    if (elementBottom <= scroll - scrollBuffer) {
+                        break;
+                    }
                 }
             }
 
@@ -438,7 +462,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endNoBuffer,
             });
 
-            // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, scroll);
+            console.log('scroll', scroll, 'scrollAdjust',previousScrollAdjust, "start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, scroll);
 
             if (startBuffered !== null && endBuffered !== null) {
                 const prevNumContainers = ctx.values.get("numContainers") as number;
@@ -665,25 +689,36 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             refState.current.data = data;
 
             let totalSize = 0;
+            let totalSizeBelowIndex = 0;
             const indexByKey = new Map();
             let column = 1;
             let maxSizeInRow = 0;
+
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
                 indexByKey.set(key, i);
+            }
+            // getAnchorElementIndex needs indexByKey, build it first
+            refState.current.indexByKey = indexByKey;
+            const anchorElementIndex = getAnchorElementIndex();
+            for (let i = 0; i < data.length; i++) {
+                const key = getId(i);
+
                 const size = getItemSize(key, i, data[i]);
                 maxSizeInRow = Math.max(maxSizeInRow, size);
 
                 column++;
                 if (column > numColumnsProp) {
+                    if (maintainVisibleContentPosition && anchorElementIndex !== undefined && i < anchorElementIndex) {
+                        totalSizeBelowIndex += maxSizeInRow;
+                    }
                     totalSize += maxSizeInRow;
                     column = 1;
                     maxSizeInRow = 0;
                 }
             }
-            addTotalSize(null, totalSize);
-
-            refState.current.indexByKey = indexByKey;
+            console.log("Calc size below index", totalSizeBelowIndex, anchorElementIndex);
+            addTotalSize(null, totalSize, totalSizeBelowIndex);
 
             if (!isFirst) {
                 // Reset containers that aren't used anymore because the data has changed
@@ -919,7 +954,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }, 1000);
                 }
 
-                addTotalSize(itemKey, diff);
+                addTotalSize(itemKey, diff, 0);
 
                 doMaintainScrollAtEnd(true);
 

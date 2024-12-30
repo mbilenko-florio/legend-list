@@ -73,6 +73,7 @@ export interface InternalState {
     scrollVelocity: number;
     scrollAdjustHandler: ScrollAdjustHandler;
     totalSize: number;
+    totalSizeBelowAnchor: number;
     timeouts: Set<number>;
     timeoutSizeMessage: any;
     nativeMarginTop: number;
