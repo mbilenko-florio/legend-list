@@ -74,6 +74,7 @@ export interface InternalState {
     scrollAdjustHandler: ScrollAdjustHandler;
     totalSize: number;
     totalSizeBelowAnchor: number;
+    positionsNeedCorrectionId?: string;
     timeouts: Set<number>;
     timeoutSizeMessage: any;
     nativeMarginTop: number;

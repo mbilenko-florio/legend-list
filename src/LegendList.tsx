@@ -157,6 +157,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 timeoutSizeMessage: 0,
                 scrollTimer: undefined,
                 scrollFilter: new ScrollFilter(),
+                positionsNeedCorrectionId: undefined,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -207,6 +208,48 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     state.totalSizeBelowAnchor! += add;
                 }
             }
+            if (maintainVisibleContentPosition && key !== null) {
+                // if (isAboveAnchor) {
+                //     console.log({ index });
+                //     let top = state.positions.get(getId(index + 1));
+                //     console.log("Found top", top);
+                //     if (top === undefined) {
+                //         console.warn("top not found", index);
+                //         return;
+                //     }
+                //     for (let i = index; i >= 0; i--) {
+                //         const id = getId(i)!;
+                //         const size = getItemSize(id, i, data[i]);
+                //         top -= size;
+                //         state.positions.set(id, top);
+                //         console.log("Setting position", id, top);
+                //     }
+                // }
+                // if (isAboveAnchor) {
+                //     console.log(
+                //         "Adjusting size of",
+                //         index,
+                //         key,
+                //         add,
+                //         "position",
+                //         state.positions.get(key),
+                //         "size",
+                //         state.sizes.get(key),
+                //     );
+                //     for (let i = index; i >= 0; i--) {
+                //         const id = getId(i)!;
+                //         const oldPostion = state.positions.get(id);
+                //         if (oldPostion === undefined) {
+                //             // get itemSize makes side effect of modifying positions
+                //             getItemSize(id, i, data[i]);
+                //             console.warn("old position not found", id, i);
+                //         }
+                //         console.log("Applying position adjust", id, add, oldPostion! - add);
+                //         state.positions.set(id, oldPostion! - add);
+                //     }
+                //     console.log("Position after", state.positions.get(key));
+                // }
+            }
             const doAdd = () => {
                 const totalSize = state.totalSize;
                 state.animFrameTotalSize = null;
@@ -217,18 +260,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     doUpdatePaddingTop();
                 }
                 if (maintainVisibleContentPosition) {
-                    if (isAboveAnchor) {
-                        for (let i = index; i >= 0; i--) {
-                            const id = getId(i)!;
-                            const oldPostion = state.positions.get(id);
-                            if (oldPostion === undefined) {
-                                console.warn("old position not found", id);
-                            }
-                            console.log("Applying position adjust", id, add, oldPostion! - add)
-                            state.positions.set( id, oldPostion! - add);
-                           
-                        }
-                    }
                     const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
                     console.log(
                         "newAdjust",
@@ -237,6 +268,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         "totalSizeBelowAnchor",
                         state.totalSizeBelowAnchor,
                     );
+                    const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId)!;
+                    console.log("isAboveAnchor", isAboveAnchor, positionsNeedCorrectionIndex, index);
+                    if (
+                        isAboveAnchor &&
+                        key &&
+                        (positionsNeedCorrectionIndex > index || state.positionsNeedCorrectionId === undefined)
+                    ) {
+                        state.positionsNeedCorrectionId = key;
+                        console.log("Measure setpositionsNeedCorrectionId" , key)
+                    }
                     refState.current!.scrollAdjustHandler.requestAdjust(-newAdjust);
                 }
             };
@@ -284,11 +325,55 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // This is an optimization to avoid looping through all items, which could slow down
             // when scrolling at the end of a long list.
 
+            const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId) || -1;
+            // if (positionsNeedCorrectionIndex >= 0) {
+            //     console.log(
+            //         "Position needs correction index",
+            //         state.positionsNeedCorrectionId,
+            //         positionsNeedCorrectionIndex,
+            //     );
+            // }
+          
+
+            //     let top = state.positions.get(getId(index + 1));
+            //     console.log("Found top", top);
+            //     if (top === undefined) {
+            //         console.warn("top not found", index);
+            //         return;
+            //     }
+            //     for (let i = index; i >= 0; i--) {
+            //         const id = getId(i)!;
+            //         const size = getItemSize(id, i, data[i]);
+            //         top -= size;
+            //         state.positions.set(id, top);
+            //         console.log("Setting position", id, top);
+            //     }
+            // }
+
+            let anchorTop =
+                positionsNeedCorrectionIndex > 0 ? state.positions.get(getId(positionsNeedCorrectionIndex + 1)) : 0;
+
             // TODO: Fix this logic for numColumns
             let loopStart = startBufferedState || 0;
             if (startBufferedState) {
                 for (let i = startBufferedState; i >= 0; i--) {
+                
                     const id = getId(i)!;
+                    if (i <= positionsNeedCorrectionIndex) {
+                        console.log("Request adjust", i);
+                        const size = getItemSize(id, i, data[i]);
+                        anchorTop -= size;
+                        positions.set(id, anchorTop);
+                        console.log("=====================================Searching for loopStart",i, anchorTop, "for", size)
+                        if (i === 0) {
+                            state.positionsNeedCorrectionId = undefined
+                            console.log("Setting correction id", state.positionsNeedCorrectionId);
+                        } else {
+                            state.positionsNeedCorrectionId = getId(i-1);
+                            console.log("Setting correction id", state.positionsNeedCorrectionId);
+                        }
+                        
+                    }
                     const top = positions.get(id)!;
                     if (top !== undefined) {
                         const size = getItemSize(id, i, data[i]);
@@ -315,13 +400,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             const getInitialTop = (i: number): number => {
                 const id = getId(i)!;
-                let topOffset = i > 0 ? positions.get(id) : 0;
-                if (topOffset === undefined) {
-                    // if we failed to get the top position, estimate it
-                    // can happen if we use scrollToIndex and the item is not yet rendered
-                    topOffset = calculateInitialOffset(i);
-                    console.log("calculateInitialOffset", i, topOffset);
+                let topOffset = 0;
+                if (positions.get(id)) {
+                    topOffset = positions.get(id)!;
                 }
+                // if (topOffset === undefined) {
+                //     // if we failed to get the top position, estimate it
+                //     // can happen if we use scrollToIndex and the item is not yet rendered
+                //     topOffset = calculateInitialOffset(i);
+                //     console.log("calculateInitialOffset", i, topOffset);
+                // }
                 if (id === state.anchorElement?.id) {
                     topOffset = initialContentOffset || 0;
                 }
@@ -330,7 +418,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             // scan data forwards
             for (let i = loopStart; i < data!.length; i++) {
-
                 const id = getId(i)!;
                 const size = getItemSize(id, i, data[i]);
 
