@@ -215,11 +215,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
                 //console.log("newAdjust", newAdjust, state.scroll, "totalSizeBelowAnchor", state.totalSizeBelowAnchor);
                 const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId)!;
-                console.log("#####addTotalSize####: isAboveAnchor", isAboveAnchor, positionsNeedCorrectionIndex, index, 'size', state.sizes.get(key));
+                console.log(
+                    "#####addTotalSize####: isAboveAnchor",
+                    isAboveAnchor,
+                    positionsNeedCorrectionIndex,
+                    index,
+                    "size",
+                    state.sizes.get(key),
+                );
                 if (
                     isAboveAnchor &&
                     key &&
-                    (state.positionsNeedCorrectionId === undefined || positionsNeedCorrectionIndex < index) 
+                    (state.positionsNeedCorrectionId === undefined || positionsNeedCorrectionIndex < index)
                 ) {
                     state.positionsNeedCorrectionId = key;
                     console.log("################### setting positionsNeedCorrectionId", key);
@@ -284,71 +291,54 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // This is an optimization to avoid looping through all items, which could slow down
             // when scrolling at the end of a long list.
 
-            const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId) || -1;
-            // if (positionsNeedCorrectionIndex >= 0) {
-            //     console.log(
-            //         "Position needs correction index",
-            //         state.positionsNeedCorrectionId,
-            //         positionsNeedCorrectionIndex,
-            //     );
-            // }
-
-            //     let top = state.positions.get(getId(index + 1));
-            //     console.log("Found top", top);
-            //     if (top === undefined) {
-            //         console.warn("top not found", index);
-            //         return;
-            //     }
-            //     for (let i = index; i >= 0; i--) {
-            //         const id = getId(i)!;
-            //         const size = getItemSize(id, i, data[i]);
-            //         top -= size;
-            //         state.positions.set(id, top);
-            //         console.log("Setting position", id, top);
-            //     }
-            // }
+            const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId);
 
             let anchorTop =
-                positionsNeedCorrectionIndex > 0 ? state.positions.get(getId(positionsNeedCorrectionIndex + 1)) : 0;
+                positionsNeedCorrectionIndex != null
+                    ? state.positions.get(getId(positionsNeedCorrectionIndex + 1))
+                    : undefined;
+            // console.log(
+            //     "positionsNeedCorrectionId",
+            //     state.positionsNeedCorrectionId,
+            //     positionsNeedCorrectionIndex,
+            //     anchorTop,
+            //     "startBufferedState",
+            //     startBufferedState,
+            // );
 
             // TODO: Fix this logic for numColumns
             let loopStart = startBufferedState || 0;
-            if (startBufferedState) {
-                for (let i = startBufferedState; i >= 0; i--) {
-                    const id = getId(i)!;
-                    if (i <= positionsNeedCorrectionIndex) {
-                        console.log("Request adjust", i);
-                        const size = getItemSize(id, i, data[i]);
-                        anchorTop -= size;
-                        positions.set(id, anchorTop);
-                        console.log(
-                            "=====================================Searching for loopStart",
-                            i,
-                            anchorTop,
-                            "for",
-                            size,
-                        );
-                        if (i === 0) {
-                            state.positionsNeedCorrectionId = undefined;
-                            console.log("Setting correction id", state.positionsNeedCorrectionId);
-                        } else {
-                            state.positionsNeedCorrectionId = getId(i - 1);
-                            console.log("Setting correction id", state.positionsNeedCorrectionId);
+
+            for (let i = startBufferedState; i >= 0; i--) {
+                const id = getId(i)!;
+                let newPosition: number | undefined;
+                if (positionsNeedCorrectionIndex != null && anchorTop != null && i <= positionsNeedCorrectionIndex) {
+                    //console.log("Request adjust", i, anchorTop);
+                    const size = getItemSize(id, i, data[i]);
+                    anchorTop -= size;
+                    newPosition = anchorTop;
+                }
+                const top = newPosition || positions.get(id)!;
+                if (top !== undefined) {
+                    const size = getItemSize(id, i, data[i]);
+                    const bottom = top + size;
+                    if (bottom > scroll - scrollBuffer) {
+                        loopStart = i;
+                        if (newPosition !== undefined) {
+                            positions.set(id, newPosition);
+                            if (i === 0) {
+                                state.positionsNeedCorrectionId = undefined;
+                                console.log("Setting correction id", state.positionsNeedCorrectionId);
+                            } else {
+                                state.positionsNeedCorrectionId = getId(i - 1);
+                                console.log("Setting correction id", state.positionsNeedCorrectionId);
+                            }
                         }
-                    }
-                    const top = positions.get(id)!;
-                    if (top !== undefined) {
-                        const size = getItemSize(id, i, data[i]);
-                        const bottom = top + size;
-                        if (bottom > scroll - scrollBuffer) {
-                            loopStart = i;
-                        } else {
-                            break;
-                        }
+                    } else {
+                        break;
                     }
                 }
             }
-            console.log("Chosen loopstart", loopStart);
 
             const numColumns = peek$<number>(ctx, "numColumns");
             const loopStartMod = loopStart % numColumns;

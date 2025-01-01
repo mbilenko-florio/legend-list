@@ -29,7 +29,7 @@ export default function IntialScrollIndexFreeHeight() {
                 data={data}
                 renderItem={renderItem}
                 keyExtractor={(item) => `id${item.id}`}
-                estimatedItemSize={ESTIMATED_ITEM_LENGTH}
+                estimatedItemSize={ESTIMATED_ITEM_LENGTH*2}
                 drawDistance={DRAW_DISTANCE}
                 maintainVisibleContentPosition
                 recycleItems={true}

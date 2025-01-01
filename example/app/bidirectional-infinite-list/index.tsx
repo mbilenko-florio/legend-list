@@ -78,7 +78,7 @@ export default function BidirectionalInfiniteList() {
                 ListFooterComponent={<View style={{ height: bottom }} />}
                 onStartReached={(props) => {
                     console.log("onStartReached", props);
-                    onRefresh();
+                   // onRefresh();
                 }}
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);
