@@ -86,17 +86,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return `${ret}`;
         };
 
-        const getItemSize = (key: string, index: number, data: T) => {
+        const getItemSize = (key: string, index: number) => {
             const sizeKnown = refState.current!.sizes.get(key)!;
             if (sizeKnown !== undefined) {
                 return sizeKnown;
             }
 
             const size =
-                (getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize) ?? DEFAULT_ITEM_SIZE;
-            // TODO: I don't think I like this setting sizes when it's not really known, how to do
-            // that better and support viewability checking sizes
-            refState.current!.sizes.set(key, size);
+                (getEstimatedItemSize ? getEstimatedItemSize(index, refState.current!.data) : estimatedItemSize) ?? DEFAULT_ITEM_SIZE;
+            // // TODO: I don't think I like this setting sizes when it's not really known, how to do
+            // // that better and support viewability checking sizes
+            // refState.current!.sizes.set(key, size);
             return size;
         };
         const calculateInitialOffset = (index = initialScrollIndex) => {
@@ -215,21 +215,21 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
                 //console.log("newAdjust", newAdjust, state.scroll, "totalSizeBelowAnchor", state.totalSizeBelowAnchor);
                 const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId)!;
-                console.log(
-                    "#####addTotalSize####: isAboveAnchor",
-                    isAboveAnchor,
-                    positionsNeedCorrectionIndex,
-                    index,
-                    "size",
-                    state.sizes.get(key),
-                );
+                // console.log(
+                //     "#####addTotalSize####: isAboveAnchor",
+                //     isAboveAnchor,
+                //     positionsNeedCorrectionIndex,
+                //     index,
+                //     "size",
+                //     state.sizes.get(key),
+                // );
                 if (
                     isAboveAnchor &&
                     key &&
                     (state.positionsNeedCorrectionId === undefined || positionsNeedCorrectionIndex < index)
                 ) {
                     state.positionsNeedCorrectionId = key;
-                    console.log("################### setting positionsNeedCorrectionId", key);
+                    //console.log("################### setting positionsNeedCorrectionId", key);
                 }
                 scheduleAdjust = -newAdjust;
             }
@@ -244,6 +244,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     doUpdatePaddingTop();
                 }
                 if (scheduleAdjust !== undefined) {
+                    //console.log("adjusting", scheduleAdjust);
                     refState.current!.scrollAdjustHandler.requestAdjust(scheduleAdjust);
                 }
             };
@@ -297,14 +298,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 positionsNeedCorrectionIndex != null
                     ? state.positions.get(getId(positionsNeedCorrectionIndex + 1))
                     : undefined;
-            // console.log(
-            //     "positionsNeedCorrectionId",
-            //     state.positionsNeedCorrectionId,
-            //     positionsNeedCorrectionIndex,
-            //     anchorTop,
-            //     "startBufferedState",
-            //     startBufferedState,
-            // );
+            console.log(
+                "positionsNeedCorrectionId",
+                state.positionsNeedCorrectionId,
+                positionsNeedCorrectionIndex,
+                anchorTop,
+                "startBufferedState",
+                startBufferedState,
+            );
 
             // TODO: Fix this logic for numColumns
             let loopStart = startBufferedState || 0;
@@ -314,26 +315,26 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 let newPosition: number | undefined;
                 if (positionsNeedCorrectionIndex != null && anchorTop != null && i <= positionsNeedCorrectionIndex) {
                     //console.log("Request adjust", i, anchorTop);
-                    const size = getItemSize(id, i, data[i]);
+                    const size = getItemSize(id, i);
                     anchorTop -= size;
                     newPosition = anchorTop;
+                    if (newPosition !== undefined) {
+                        positions.set(id, newPosition);
+                        if (i === 0) {
+                            state.positionsNeedCorrectionId = undefined;
+                            console.log("Setting correction id", state.positionsNeedCorrectionId);
+                        } else {
+                            state.positionsNeedCorrectionId = getId(i - 1);
+                            console.log("Setting correction id", state.positionsNeedCorrectionId);
+                        }
+                    }
                 }
                 const top = newPosition || positions.get(id)!;
                 if (top !== undefined) {
-                    const size = getItemSize(id, i, data[i]);
+                    const size = getItemSize(id, i);
                     const bottom = top + size;
                     if (bottom > scroll - scrollBuffer) {
                         loopStart = i;
-                        if (newPosition !== undefined) {
-                            positions.set(id, newPosition);
-                            if (i === 0) {
-                                state.positionsNeedCorrectionId = undefined;
-                                console.log("Setting correction id", state.positionsNeedCorrectionId);
-                            } else {
-                                state.positionsNeedCorrectionId = getId(i - 1);
-                                console.log("Setting correction id", state.positionsNeedCorrectionId);
-                            }
-                        }
                     } else {
                         break;
                     }
@@ -372,7 +373,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // scan data forwards
             for (let i = loopStart; i < data!.length; i++) {
                 const id = getId(i)!;
-                const size = getItemSize(id, i, data[i]);
+                const size = getItemSize(id, i);
 
                 maxSizeInRow = Math.max(maxSizeInRow, size);
                 //console.log("Forward pass", i, id, top);
@@ -421,18 +422,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endNoBuffer,
             });
 
-            // console.log(
-            //     "scroll",
-            //     scroll,
-            //     "scrollAdjust",
-            //     previousScrollAdjust,
-            //     "start",
-            //     startBuffered,
-            //     startNoBuffer,
-            //     endNoBuffer,
-            //     endBuffered,
-            //     scroll,
-            // );
+            console.log(
+                "scroll",
+                scroll,
+                "scrollAdjust",
+                previousScrollAdjust,
+                "start",
+                startBuffered,
+                startNoBuffer,
+                endNoBuffer,
+                endBuffered,
+                scroll,
+            );
 
             if (startBuffered !== null && endBuffered !== null) {
                 const prevNumContainers = ctx.values.get("numContainers") as number;
@@ -519,7 +520,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             // because it will trigger a render
                             const prevPos = peek$<number>(ctx, `containerPosition${i}`);
                             const pos = positions.get(id) || 0;
-                            const size = sizes.get(id) || 0;
+                            const size = getItemSize(id, itemIndex);
 
                             if (
                                 (pos + size >= scroll && pos <= scrollBottom) ||
@@ -553,6 +554,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     scrollLength,
                     startNoBuffer!,
                     endNoBuffer!,
+                    getItemSize
                 );
             }
         }, []);
@@ -674,7 +676,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
 
-                const size = getItemSize(key, i, data[i]);
+                const size = getItemSize(key, i);
                 maxSizeInRow = Math.max(maxSizeInRow, size);
 
                 column++;
@@ -858,7 +860,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
-            //console.log("updateItemSize", containerId, itemKey, size);
+            console.log("updateItemSize", containerId, itemKey, size);
             const data = refState.current?.data;
             if (!data) {
                 return;
@@ -866,10 +868,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const state = refState.current!;
             const { sizes, indexByKey, idsInFirstRender, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
-            // TODO: I don't love this, can do it better?
-            const wasInFirstRender = idsInFirstRender.has(itemKey);
 
-            const prevSize = sizes.get(itemKey) || (wasInFirstRender ? getItemSize(itemKey, index, data[index]) : 0);
+            const prevSize = getItemSize(itemKey, index)
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 let diff: number;
@@ -883,7 +883,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     // but it works for now.
                     for (let i = loopStart; i < loopStart + numColumns; i++) {
                         const id = getId(i)!;
-                        const size = getItemSize(id, i, data[i]);
+                        const size = getItemSize(id, i);
                         prevMaxSizeInRow = Math.max(prevMaxSizeInRow, size);
                     }
 
@@ -892,7 +892,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     let nextMaxSizeInRow = 0;
                     for (let i = loopStart; i < loopStart + numColumns; i++) {
                         const id = getId(i)!;
-                        const size = getItemSize(id, i, data[i]);
+                        const size = getItemSize(id, i);
                         nextMaxSizeInRow = Math.max(nextMaxSizeInRow, size);
                     }
 

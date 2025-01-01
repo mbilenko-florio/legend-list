@@ -59,7 +59,8 @@ export function updateViewableItems(
     getId: (index: number) => string,
     scrollSize: number,
     start: number,
-    end: number
+    end: number,
+    getItemSize: (key: string, index: number) => number
 ) {
     for (const viewabilityConfigCallbackPair of viewabilityConfigCallbackPairs) {
         const viewabilityState = mapViewabilityConfigCallbackPairs.get(
@@ -70,11 +71,11 @@ export function updateViewableItems(
         if (viewabilityConfigCallbackPair.viewabilityConfig.minimumViewTime) {
             const timer: any = setTimeout(() => {
                 state.timeouts.delete(timer);
-                updateViewableItemsWithConfig(state.data, viewabilityConfigCallbackPair, getId, state, ctx, scrollSize);
+                updateViewableItemsWithConfig(state.data, viewabilityConfigCallbackPair, getId, state, ctx, scrollSize,getItemSize);
             }, viewabilityConfigCallbackPair.viewabilityConfig.minimumViewTime);
             state.timeouts.add(timer);
         } else {
-            updateViewableItemsWithConfig(state.data, viewabilityConfigCallbackPair, getId, state, ctx, scrollSize);
+            updateViewableItemsWithConfig(state.data, viewabilityConfigCallbackPair, getId, state, ctx, scrollSize,getItemSize);
         }
     }
 }
@@ -85,7 +86,8 @@ function updateViewableItemsWithConfig(
     getId: (index: number) => string,
     state: InternalState,
     ctx: StateContext,
-    scrollSize: number
+    scrollSize: number,
+    getItemSize: (key: string, index: number) => number
 ) {
     const { viewabilityConfig, onViewableItemsChanged } = viewabilityConfigCallbackPair;
     const configId = viewabilityConfig.id;
@@ -96,7 +98,7 @@ function updateViewableItemsWithConfig(
     if (previousViewableItems) {
         for (const viewToken of previousViewableItems) {
             if (
-                !isViewable(state, ctx, viewabilityConfig, viewToken.key, scrollSize, viewToken.item, viewToken.index)
+                !isViewable(state, ctx, viewabilityConfig, viewToken.key, scrollSize, viewToken.item, viewToken.index,getItemSize)
             ) {
                 viewToken.isViewable = false;
                 changed.push(viewToken);
@@ -110,7 +112,7 @@ function updateViewableItemsWithConfig(
         const item = data[i];
         if (item) {
             const key = getId(i);
-            if (isViewable(state, ctx, viewabilityConfig, key, scrollSize, item, i)) {
+            if (isViewable(state, ctx, viewabilityConfig, key, scrollSize, item, i, getItemSize)) {
                 const viewToken: ViewToken = {
                     item,
                     key,
@@ -152,15 +154,18 @@ function isViewable(
     key: string,
     scrollSize: number,
     item: any,
-    index: number
+    index: number,
+    getItemSize: (key: string, index: number) => number
 ) {
     const { sizes, positions, scroll } = state;
     const topPad = (peek$<number>(ctx, 'stylePaddingTop') || 0) + (peek$<number>(ctx, 'headerSize') || 0);
     const { itemVisiblePercentThreshold, viewAreaCoveragePercentThreshold } = viewabilityConfig;
     const viewAreaMode = viewAreaCoveragePercentThreshold != null;
     const viewablePercentThreshold = viewAreaMode ? viewAreaCoveragePercentThreshold : itemVisiblePercentThreshold;
+  
     const top = positions.get(key)! - scroll + topPad;
-    const size = sizes.get(key)! || 0;
+    // TODO: probably need another way sizes
+    const size = getItemSize(key,index);
     const bottom = top + size;
     const isEntirelyVisible = top >= 0 && bottom <= scrollSize && bottom > top;
 
