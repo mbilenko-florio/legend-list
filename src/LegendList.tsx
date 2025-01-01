@@ -208,48 +208,25 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     state.totalSizeBelowAnchor! += add;
                 }
             }
-            if (maintainVisibleContentPosition && key !== null) {
-                // if (isAboveAnchor) {
-                //     console.log({ index });
-                //     let top = state.positions.get(getId(index + 1));
-                //     console.log("Found top", top);
-                //     if (top === undefined) {
-                //         console.warn("top not found", index);
-                //         return;
-                //     }
-                //     for (let i = index; i >= 0; i--) {
-                //         const id = getId(i)!;
-                //         const size = getItemSize(id, i, data[i]);
-                //         top -= size;
-                //         state.positions.set(id, top);
-                //         console.log("Setting position", id, top);
-                //     }
-                // }
-                // if (isAboveAnchor) {
-                //     console.log(
-                //         "Adjusting size of",
-                //         index,
-                //         key,
-                //         add,
-                //         "position",
-                //         state.positions.get(key),
-                //         "size",
-                //         state.sizes.get(key),
-                //     );
-                //     for (let i = index; i >= 0; i--) {
-                //         const id = getId(i)!;
-                //         const oldPostion = state.positions.get(id);
-                //         if (oldPostion === undefined) {
-                //             // get itemSize makes side effect of modifying positions
-                //             getItemSize(id, i, data[i]);
-                //             console.warn("old position not found", id, i);
-                //         }
-                //         console.log("Applying position adjust", id, add, oldPostion! - add);
-                //         state.positions.set(id, oldPostion! - add);
-                //     }
-                //     console.log("Position after", state.positions.get(key));
-                // }
+
+            let scheduleAdjust = undefined;
+
+            if (maintainVisibleContentPosition) {
+                const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
+                //console.log("newAdjust", newAdjust, state.scroll, "totalSizeBelowAnchor", state.totalSizeBelowAnchor);
+                const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId)!;
+                console.log("#####addTotalSize####: isAboveAnchor", isAboveAnchor, positionsNeedCorrectionIndex, index, 'size', state.sizes.get(key));
+                if (
+                    isAboveAnchor &&
+                    key &&
+                    (state.positionsNeedCorrectionId === undefined || positionsNeedCorrectionIndex < index) 
+                ) {
+                    state.positionsNeedCorrectionId = key;
+                    console.log("################### setting positionsNeedCorrectionId", key);
+                }
+                scheduleAdjust = -newAdjust;
             }
+
             const doAdd = () => {
                 const totalSize = state.totalSize;
                 state.animFrameTotalSize = null;
@@ -259,26 +236,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 if (alignItemsAtEnd) {
                     doUpdatePaddingTop();
                 }
-                if (maintainVisibleContentPosition) {
-                    const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
-                    console.log(
-                        "newAdjust",
-                        newAdjust,
-                        state.scroll,
-                        "totalSizeBelowAnchor",
-                        state.totalSizeBelowAnchor,
-                    );
-                    const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId)!;
-                    console.log("isAboveAnchor", isAboveAnchor, positionsNeedCorrectionIndex, index);
-                    if (
-                        isAboveAnchor &&
-                        key &&
-                        (positionsNeedCorrectionIndex > index || state.positionsNeedCorrectionId === undefined)
-                    ) {
-                        state.positionsNeedCorrectionId = key;
-                        console.log("Measure setpositionsNeedCorrectionId" , key)
-                    }
-                    refState.current!.scrollAdjustHandler.requestAdjust(-newAdjust);
+                if (scheduleAdjust !== undefined) {
+                    refState.current!.scrollAdjustHandler.requestAdjust(scheduleAdjust);
                 }
             };
 
@@ -333,7 +292,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             //         positionsNeedCorrectionIndex,
             //     );
             // }
-          
 
             //     let top = state.positions.get(getId(index + 1));
             //     console.log("Found top", top);
@@ -357,22 +315,26 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             let loopStart = startBufferedState || 0;
             if (startBufferedState) {
                 for (let i = startBufferedState; i >= 0; i--) {
-                
                     const id = getId(i)!;
                     if (i <= positionsNeedCorrectionIndex) {
                         console.log("Request adjust", i);
                         const size = getItemSize(id, i, data[i]);
                         anchorTop -= size;
                         positions.set(id, anchorTop);
-                        console.log("=====================================Searching for loopStart",i, anchorTop, "for", size)
+                        console.log(
+                            "=====================================Searching for loopStart",
+                            i,
+                            anchorTop,
+                            "for",
+                            size,
+                        );
                         if (i === 0) {
-                            state.positionsNeedCorrectionId = undefined
+                            state.positionsNeedCorrectionId = undefined;
                             console.log("Setting correction id", state.positionsNeedCorrectionId);
                         } else {
-                            state.positionsNeedCorrectionId = getId(i-1);
+                            state.positionsNeedCorrectionId = getId(i - 1);
                             console.log("Setting correction id", state.positionsNeedCorrectionId);
                         }
-                        
                     }
                     const top = positions.get(id)!;
                     if (top !== undefined) {
@@ -386,6 +348,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
                 }
             }
+            console.log("Chosen loopstart", loopStart);
 
             const numColumns = peek$<number>(ctx, "numColumns");
             const loopStartMod = loopStart % numColumns;
