@@ -207,11 +207,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            let scheduleAdjust = undefined;
+            let applyAdjustValue = undefined;
 
             if (maintainVisibleContentPosition) {
                 const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
-                scheduleAdjust = -newAdjust;
+                applyAdjustValue = -newAdjust;
                 state.belowAnchorElementPositions = buildElementPositionsBelowAnchor();
             }
 
@@ -220,21 +220,19 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 state.animFrameTotalSize = null;
 
                 let resultSize = totalSize;
-                if (scheduleAdjust !== undefined) {
-                    resultSize -= scheduleAdjust;
+                if (applyAdjustValue !== undefined) {
+                    resultSize -= applyAdjustValue;
+                    const prevAdjust = peek$<number>(ctx, "scrollAdjust");
+                    refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue);
+                    const adjustDiff = prevAdjust - applyAdjustValue;
+                    // untill next handleScroll event state.scroll will contain invalid value, adjust it now
+                    state.scroll -= adjustDiff;
                 }
 
                 set$(ctx, "totalSize", resultSize);
 
                 if (alignItemsAtEnd) {
                     doUpdatePaddingTop();
-                }
-                if (scheduleAdjust !== undefined) {
-                    const prevAdjust = peek$<number>(ctx, "scrollAdjust");
-                    refState.current!.scrollAdjustHandler.requestAdjust(scheduleAdjust);
-                    const adjustDiff = prevAdjust - scheduleAdjust;
-                    // untill next handleScroll event state.scroll will contain invalid value, adjust it now
-                    state.scroll -= adjustDiff;
                 }
             };
 
