@@ -867,10 +867,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return;
             }
             const state = refState.current!;
-            const { sizes, indexByKey, columns, sizesLaidOut } = state;
+            const { sizes, indexByKey, idsInFirstRender, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
 
-            const prevSize = getItemSize(itemKey, index, data[index]);
+            // TODO: I don't love this, can do it better?
+            const wasInFirstRender = idsInFirstRender.has(itemKey);
+            const prevSize = sizes.get(itemKey) || (wasInFirstRender ? getItemSize(itemKey, index, data[index]) : 0);
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 let diff: number;
@@ -893,7 +895,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     let nextMaxSizeInRow = 0;
                     for (let i = loopStart; i < loopStart + numColumns; i++) {
                         const id = getId(i)!;
-                        const size = getItemSize(id, i, data[index]);
+                        const size = getItemSize(id, i, data[i]);
                         nextMaxSizeInRow = Math.max(nextMaxSizeInRow, size);
                     }
 
