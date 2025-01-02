@@ -175,7 +175,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     console.warn("[legend-list] maintainVisibleContentPosition was not able to find an anchor element");
                 }
             }
-            set$(ctx, "scrollAdjustTop", 0);
+            set$(ctx, "scrollAdjust", 0);
         }
 
         const getAnchorElementIndex = () => {
@@ -230,7 +230,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     doUpdatePaddingTop();
                 }
                 if (scheduleAdjust !== undefined) {
-                    const prevAdjust = peek$<number>(ctx, "scrollAdjustTop");
+                    const prevAdjust = peek$<number>(ctx, "scrollAdjust");
                     refState.current!.scrollAdjustHandler.requestAdjust(scheduleAdjust);
                     const adjustDiff = prevAdjust - scheduleAdjust;
                     // untill next handleScroll event state.scroll will contain invalid value, adjust it now

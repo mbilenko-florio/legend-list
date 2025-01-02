@@ -9,9 +9,9 @@ export class ScrollAdjustHandler {
     }
 
     requestAdjust(adjust: number) {
-        const oldAdjutTop = peek$<number>(this.context, "scrollAdjustTop");
+        const oldAdjutTop = peek$<number>(this.context, "scrollAdjust");
         if (oldAdjutTop !== adjust) {
-            set$(this.context, "scrollAdjustTop", adjust);
+            set$(this.context, "scrollAdjust", adjust);
             this.appliedAdjust = adjust;
         }
     }

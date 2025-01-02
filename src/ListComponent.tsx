@@ -69,7 +69,7 @@ export const ListComponent = React.memo(function ListComponent({
 }: ListComponentProps) {
     const ctx = useStateContext();
     const animPaddingTop = useValue$("paddingTop");
-    const animScrollAdjust = useValue$("scrollAdjustTop");
+    const animScrollAdjust = useValue$("scrollAdjust");
 
     // TODO: Try this again? This had bad behaviorof sometimes setting the min size to greater than
     // the screen size
