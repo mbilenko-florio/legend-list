@@ -86,18 +86,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return `${ret}`;
         };
 
-        const getItemSize = (key: string, index: number) => {
+        const getItemSize = (key: string, index: number, data: T) => {
             const sizeKnown = refState.current!.sizes.get(key)!;
             if (sizeKnown !== undefined) {
                 return sizeKnown;
             }
 
             const size =
-                (getEstimatedItemSize ? getEstimatedItemSize(index, refState.current!.data) : estimatedItemSize) ??
-                DEFAULT_ITEM_SIZE;
-            // // TODO: I don't think I like this setting sizes when it's not really known, how to do
-            // // that better and support viewability checking sizes
-            // refState.current!.sizes.set(key, size);
+                (getEstimatedItemSize ? getEstimatedItemSize(index, data) : estimatedItemSize) ?? DEFAULT_ITEM_SIZE;
+            // TODO: I don't think I like this setting sizes when it's not really known, how to do
+            // that better and support viewability checking sizes
+            refState.current!.sizes.set(key, size);
             return size;
         };
         const calculateInitialOffset = (index = initialScrollIndex) => {
@@ -271,7 +270,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const map = state.belowAnchorElementPositions || new Map();
             for (let i = anchorIndex - 1; i >= 0; i--) {
                 const id = getId(i);
-                const size = getItemSize(id, i);
+                const size = getItemSize(id, i, data[i]);
                 top -= size;
                 map.set(id, top);
                 console.log("getReliablePositionFromAnchor", i, id, top);
@@ -353,7 +352,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 //console.log("top",top, 'newPos', newPosition, 'arr', positions.get(id));
 
                 if (top !== undefined) {
-                    const size = getItemSize(id, i);
+                    const size = getItemSize(id, i, data[i]);
                     const bottom = top + size;
                     if (bottom > scroll - scrollBuffer) {
                         loopStart = i;
@@ -395,7 +394,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // scan data forwards
             for (let i = loopStart; i < data!.length; i++) {
                 const id = getId(i)!;
-                const size = getItemSize(id, i);
+                const size = getItemSize(id, i, data[i]);
 
                 maxSizeInRow = Math.max(maxSizeInRow, size);
 
@@ -547,7 +546,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             // because it will trigger a render
                             const prevPos = peek$<number>(ctx, `containerPosition${i}`);
                             const pos = positions.get(id) || 0;
-                            const size = getItemSize(id, itemIndex);
+                            const size = getItemSize(id, itemIndex, data[i]);
 
                             if (
                                 (pos + size >= scroll && pos <= scrollBottom) ||
@@ -581,7 +580,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     scrollLength,
                     startNoBuffer!,
                     endNoBuffer!,
-                    getItemSize,
                 );
             }
         }, []);
@@ -704,7 +702,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
 
-                const size = getItemSize(key, i);
+                const size = getItemSize(key, i, data[i]);
                 maxSizeInRow = Math.max(maxSizeInRow, size);
 
                 column++;
@@ -893,10 +891,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return;
             }
             const state = refState.current!;
-            const { sizes, indexByKey, idsInFirstRender, columns, sizesLaidOut } = state;
+            const { sizes, indexByKey, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
 
-            const prevSize = getItemSize(itemKey, index);
+            const prevSize = getItemSize(itemKey, index, data[index]);
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 console.log("updateItemSize", containerId, itemKey, size);
@@ -911,7 +909,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     // but it works for now.
                     for (let i = loopStart; i < loopStart + numColumns; i++) {
                         const id = getId(i)!;
-                        const size = getItemSize(id, i);
+                        const size = getItemSize(id, i, data[i]);
                         prevMaxSizeInRow = Math.max(prevMaxSizeInRow, size);
                     }
 
@@ -920,7 +918,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     let nextMaxSizeInRow = 0;
                     for (let i = loopStart; i < loopStart + numColumns; i++) {
                         const id = getId(i)!;
-                        const size = getItemSize(id, i);
+                        const size = getItemSize(id, i, data[index]);
                         nextMaxSizeInRow = Math.max(nextMaxSizeInRow, size);
                     }
 
