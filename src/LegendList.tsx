@@ -236,11 +236,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             };
 
-            if (!prev || key === null) {
-                doAdd();
-            } else if (!state.animFrameTotalSize) {
-                state.animFrameTotalSize = requestAnimationFrame(doAdd);
-            }
+            // if (!prev || key === null) {
+            //     doAdd();
+            // } else if (!state.animFrameTotalSize) {
+            //     state.animFrameTotalSize = requestAnimationFrame(doAdd);
+            // }
+            doAdd();
         }, []);
 
         // this function rebuilds it's data on each addTotalSize
