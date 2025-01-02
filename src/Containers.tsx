@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Animated, type StyleProp, type ViewStyle } from "react-native";
 import { Container } from "./Container";
-import { use$, } from "./state";
+import { use$ } from "./state";
 import { useValue$ } from "./useValue$";
 
 interface ContainersProps {
@@ -20,7 +20,7 @@ export const Containers = React.memo(function Containers({
     getRenderedItem,
 }: ContainersProps) {
     const numContainers = use$<number>("numContainersPooled");
-    const totalSize = useValue$("totalSize");
+    const animSize = useValue$("totalSize");
 
     const containers = [];
     for (let i = 0; i < numContainers; i++) {
@@ -37,9 +37,7 @@ export const Containers = React.memo(function Containers({
         );
     }
 
-    const style: StyleProp<ViewStyle> = horizontal
-        ? { width: totalSize }
-        : { height: totalSize };
+    const style: StyleProp<ViewStyle> = horizontal ? { width: animSize } : { height: animSize };
 
     return <Animated.View style={style}>{containers}</Animated.View>;
 });
