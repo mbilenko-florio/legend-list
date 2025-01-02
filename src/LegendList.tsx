@@ -1,3 +1,4 @@
+
 // biome-ignore lint/style/useImportType: Some uses crash if importing React is missing
 import * as React from "react";
 import {
@@ -222,6 +223,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 ) {
                     state.positionsNeedCorrectionId = key;
                 }
+                if (key == null) {
+                    if (data.length) {
+                        state.positionsNeedCorrectionId = getId(0);
+                    }
+                }
                 scheduleAdjust = -newAdjust;
             }
 
@@ -229,14 +235,24 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const totalSize = state.totalSize;
                 state.animFrameTotalSize = null;
 
-                set$(ctx, "totalSize", totalSize);
+                let resultSize = totalSize;
+                if (scheduleAdjust !== undefined) {
+                    resultSize -= scheduleAdjust;
+                }
+
+                set$(ctx, "totalSize", resultSize);
 
                 if (alignItemsAtEnd) {
                     doUpdatePaddingTop();
                 }
                 if (scheduleAdjust !== undefined) {
                     console.log("adjusting", scheduleAdjust);
+                    const prevAdjust = peek$<number>(ctx, "scrollAdjustTop");
                     refState.current!.scrollAdjustHandler.requestAdjust(scheduleAdjust);
+                    const adjustDiff = prevAdjust - scheduleAdjust;
+                    // untill next handleScroll event state.scroll will contain invalid value, adjust it now
+                    state.scroll -= adjustDiff;
+                    console.log("adjusting", scheduleAdjust, 'diff', adjustDiff);
                 }
             };
 
@@ -268,7 +284,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             } else {
                return undefined;
             }
-            console.log("getReliablePositionFromAnchor", index, top);  
+            //console.log("getReliablePositionFromAnchor", index, top);  
             return top;
         };
 
@@ -278,7 +294,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 data,
                 scrollLength,
                 scroll: scrollState,
-                startBuffered: startBufferedState,
+                startBufferedId: startBufferedIdOrig,
                 positions,
                 columns,
                 scrollAdjustHandler,
@@ -294,13 +310,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            //const scroll = scrollFilter.filter(scrollState, previousScrollAdjust) - topPad - scrollExtra;
-            const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
+            const scroll= scrollState - previousScrollAdjust- topPad - scrollExtra;
+
 
             const scrollBottom = scroll + scrollLength;
 
             let startNoBuffer: number | null = null;
             let startBuffered: number | null = null;
+            let startBufferedId: string | null = null;
             let endNoBuffer: number | null = null;
             let endBuffered: number | null = null;
 
@@ -320,13 +337,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // );
 
             // TODO: Fix this logic for numColumns
-            let loopStart = startBufferedState || 0;
+            const originalStartId = startBufferedIdOrig && state.indexByKey.get(startBufferedIdOrig);
+            let loopStart = originalStartId || 0;
 
-            let anchorTop = getReliablePositionFromAnchor(startBufferedState+1);
-            console.log("anchorTop", startBufferedState, anchorTop);
+            let anchorTop = getReliablePositionFromAnchor(loopStart+1);
+            //console.log("anchorTop",anchorTop, startBufferedIdOrig, 'ls', loopStart, originalStartId, );
 
-            for (let i = startBufferedState; i >= 0; i--) {
+            for (let i = loopStart; i >= 0; i--) {
                 const id = getId(i)!;
+                console.log("Pre iteration reverse",i,id,anchorTop,'positionsNeedCorrectionId', state.positionsNeedCorrectionId,positionsNeedCorrectionIndex)
                 let newPosition: number | undefined;
 
                 if (maintainVisibleContentPosition) {
@@ -334,12 +353,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     anchorTop -= size;
                 }
               
-                if (positionsNeedCorrectionIndex != null && anchorTop != null && i <= positionsNeedCorrectionIndex) {
+                if (positionsNeedCorrectionIndex != null && anchorTop != null) {
                     newPosition = anchorTop;
                     if (newPosition !== undefined) {
-                        console.log("Correcting position", i, id, "old", positions.get(id), "new", newPosition);
+                      // console.log("Correcting position", i, id, "old", positions.get(id), "new", newPosition);
                         positions.set(id, newPosition);
                         if (i === 0) {
+                            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                             state.positionsNeedCorrectionId = undefined;
                         } else {
                             state.positionsNeedCorrectionId = getId(i - 1);
@@ -348,6 +368,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
                
                 const top = newPosition || positions.get(id)!;
+
+                //console.log("top",top, 'newPos', newPosition, 'arr', positions.get(id));
+            
                 if (top !== undefined) {
                     const size = getItemSize(id, i);
                     const bottom = top + size;
@@ -400,7 +423,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     top = getInitialTop(i);
                 }
 
-                console.log("Forward pass", i, id, top,scroll);
+                //console.log("Forward pass", i, id, top,scroll);
 
                 if (positions.get(id) !== top) {
                     positions.set(id, top);
@@ -415,6 +438,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
                 if (startBuffered === null && top + size > scroll - scrollBuffer) {
                     startBuffered = i;
+                    startBufferedId = id;
                 }
                 if (startNoBuffer !== null) {
                     if (top <= scrollBottom) {
@@ -437,6 +461,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             Object.assign(refState.current!, {
                 startBuffered,
+                startBufferedId,
                 startNoBuffer,
                 endBuffered,
                 endNoBuffer,
@@ -454,7 +479,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endBuffered,
                 scroll,
             );
-            console.log("positions", positions);
+            //console.log("positions", positions);
             //console.log("sizes", sizes);
 
             if (startBuffered !== null && endBuffered !== null) {
@@ -953,7 +978,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 // TODO: Could this be optimized to only calculate items in view that have changed?
                 const scrollVelocity = state.scrollVelocity;
-                console.log("updateItemSize", scrollVelocity);
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
                     if (!peek$(ctx, `containerDidLayout${containerId}`)) {

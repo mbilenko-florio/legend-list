@@ -6,7 +6,7 @@ import { type StateContext, peek$, set$ } from "./state";
 export class ScrollAdjustHandler {
     private pendingAdjust = 0;
     private appliedAdjust = 0;
-    private busy = false;
+    //private busy = false;
     private context: StateContext;
     constructor(private ctx: any) {
         this.context = ctx;
@@ -16,33 +16,35 @@ export class ScrollAdjustHandler {
         if (Math.abs(adjust - this.pendingAdjust) < 0.5) {
             return;
         }
-        if (this.busy) {
-            this.pendingAdjust = adjust;
-            return;
-        }
-        this.busy = true;
+        // if (this.busy) {
+        //     this.pendingAdjust = adjust;
+        //     return;
+        // }
+        // this.busy = true;
         this.pendingAdjust = adjust;
-        this.doAdjust(() => {
-            this.busy = false;
-        });
+        this.doAdjust();
+        // this.doAdjust(() => {
+        //     this.busy = false;
+        // });
     }
-    doAdjust(callback: () => void) {
-        setTimeout(() => {
+    doAdjust() {
+       //setTimeout(() => {
             const newAdjustTop = this.pendingAdjust;
             const oldAdjutTop = peek$<number>(this.context, "scrollAdjustTop");
             if (oldAdjutTop !== newAdjustTop) {
                 set$(this.context, "scrollAdjustTop", newAdjustTop);
                 this.appliedAdjust = newAdjustTop;
             }
-            setTimeout(() => {
-                const oldAdjutBottom = peek$<number>(this.context, "scrollAdjustBottom");
-                const newAdjustBottom = -newAdjustTop;
-                if (oldAdjutBottom !== newAdjustBottom) {
-                    set$(this.context, "scrollAdjustBottom", newAdjustBottom);
-                    callback();
-                }
-            }, 5);
-        }, 5);
+          
+            // setTimeout(() => {
+            //     const oldAdjutBottom = peek$<number>(this.context, "scrollAdjustBottom");
+            //     const newAdjustBottom = -newAdjustTop;
+            //     if (oldAdjutBottom !== newAdjustBottom) {
+            //         set$(this.context, "scrollAdjustBottom", newAdjustBottom);
+            //         callback();
+            //     }
+            // }, 5);
+       // }, 5);
     }
     getAppliedAdjust() {
         return this.appliedAdjust;
@@ -70,7 +72,7 @@ export class ScrollFilter {
         }
 
         this.lastScrollAdjust = scrollAdjust;
-        if (this.jerkTimestamp > 0 && now - this.jerkTimestamp < 300) {
+        if (this.jerkTimestamp > 0 && now - this.jerkTimestamp < 100) {
             // if jerk detected, ignore the scroll value for 300ms
             return this.prevScroll;
         }

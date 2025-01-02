@@ -41,8 +41,8 @@ export const Containers = React.memo(function Containers({
     }
 
     const style: StyleProp<ViewStyle> = horizontal
-        ? { width: Animated.add(totalSize, adjustBottom) }
-        : { height: Animated.add(totalSize, adjustBottom) };
+        ? { width: totalSize }
+        : { height: totalSize };
 
     return <Animated.View style={style}>{containers}</Animated.View>;
 });

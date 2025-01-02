@@ -63,6 +63,7 @@ export interface InternalState {
     hasScrolled: boolean;
     scrollLength: number;
     startBuffered: number;
+    startBufferedId?: string;
     startNoBuffer: number;
     endBuffered: number;
     endNoBuffer: number;
