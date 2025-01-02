@@ -1,7 +1,7 @@
 import type { ComponentProps, ReactNode } from 'react';
 import type { ScrollResponderMixin, ScrollViewComponent } from 'react-native';
 import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
-import type { ScrollAdjustHandler, ScrollFilter } from './ScrollAdjustHandler';
+import type { ScrollAdjustHandler } from './ScrollAdjustHandler';
 
 export type LegendListProps<ItemT> = Omit<
     ComponentProps<typeof ScrollView>,
@@ -85,7 +85,6 @@ export interface InternalState {
     renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
     scrollHistory: Array<{ scroll: number; time: number }>;
     scrollTimer: Timer | undefined;
-    scrollFilter: ScrollFilter;
 }
 
 export interface ViewableRange<T> {

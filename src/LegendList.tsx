@@ -20,7 +20,7 @@ import {
     StyleSheet,
 } from "react-native";
 import { ListComponent } from "./ListComponent";
-import { ScrollAdjustHandler, ScrollFilter } from "./ScrollAdjustHandler";
+import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
 import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 import type { InternalState, LegendListProps } from "./types";
@@ -156,7 +156,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 sizesLaidOut: __DEV__ ? new Map() : undefined,
                 timeoutSizeMessage: 0,
                 scrollTimer: undefined,
-                scrollFilter: new ScrollFilter(),
                 belowAnchorElementPositions: undefined,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
