@@ -47,6 +47,7 @@ export interface InternalState {
         id: string;
         coordinate: number;
     }
+    belowAnchorElementPositions?: Map<string, number>;
     positions: Map<string, number>;
     columns: Map<string, number>;
     sizes: Map<string, number>;
@@ -75,7 +76,6 @@ export interface InternalState {
     scrollAdjustHandler: ScrollAdjustHandler;
     totalSize: number;
     totalSizeBelowAnchor: number;
-    positionsNeedCorrectionId?: string;
     timeouts: Set<number>;
     timeoutSizeMessage: any;
     nativeMarginTop: number;

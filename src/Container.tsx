@@ -68,7 +68,7 @@ export const Container = ({
             onLayout={(event: LayoutChangeEvent) => {
                 const key = peek$<string>(ctx, `containerItemKey${id}`);
                 if (key !== undefined) {
-                    // Round to nearest half pixel to avoid accumulating rounding errors
+                    // Round to nearest quater pixel to avoid accumulating rounding errors
                     const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"]*8)/8;
 
                     updateItemSize(id, key, size);

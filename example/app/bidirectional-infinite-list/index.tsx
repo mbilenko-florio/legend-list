@@ -5,6 +5,8 @@ import { useRef, useState } from "react";
 import { RefreshControl, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+let last = performance.now();
+
 export default function BidirectionalInfiniteList() {
     const listRef = useRef<LegendListRef>(null);
 
@@ -58,7 +60,7 @@ export default function BidirectionalInfiniteList() {
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
-                        onRefresh={onRefresh}
+                        //onRefresh={onRefresh}
                         tintColor={"#ffffff"}
                         progressViewOffset={40}
                     />
@@ -77,7 +79,9 @@ export default function BidirectionalInfiniteList() {
                 ListHeaderComponent={<View style={{ height: top }} />}
                 ListFooterComponent={<View style={{ height: bottom }} />}
                 onStartReached={(props) => {
-                    console.log("onStartReached", props);
+                    const time = performance.now();
+                    console.log("onStartReached", props, last - time);
+                    last = time;
                     onRefresh();
                 }}
                 onEndReached={({ distanceFromEnd }) => {

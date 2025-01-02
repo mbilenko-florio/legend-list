@@ -1,4 +1,3 @@
-
 // biome-ignore lint/style/useImportType: Some uses crash if importing React is missing
 import * as React from "react";
 import {
@@ -159,7 +158,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 timeoutSizeMessage: 0,
                 scrollTimer: undefined,
                 scrollFilter: new ScrollFilter(),
-                positionsNeedCorrectionId: undefined,
+                belowAnchorElementPositions: undefined,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -179,7 +178,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             set$(ctx, "scrollAdjustTop", 0);
-            set$(ctx, "scrollAdjustBottom", 0);
         }
 
         const getAnchorElementIndex = () => {
@@ -215,20 +213,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             if (maintainVisibleContentPosition) {
                 const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
-                const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId)!;
-                if (
-                    isAboveAnchor &&
-                    key &&
-                    (state.positionsNeedCorrectionId === undefined || positionsNeedCorrectionIndex < index)
-                ) {
-                    state.positionsNeedCorrectionId = key;
-                }
-                if (key == null) {
-                    if (data.length) {
-                        state.positionsNeedCorrectionId = getId(0);
-                    }
-                }
                 scheduleAdjust = -newAdjust;
+                state.belowAnchorElementPositions = buildElementPositionsBelowAnchor();
             }
 
             const doAdd = () => {
@@ -252,7 +238,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const adjustDiff = prevAdjust - scheduleAdjust;
                     // untill next handleScroll event state.scroll will contain invalid value, adjust it now
                     state.scroll -= adjustDiff;
-                    console.log("adjusting", scheduleAdjust, 'diff', adjustDiff);
+                    console.log(
+                        "#################################################adjusting",
+                        scheduleAdjust,
+                        "diff",
+                        adjustDiff,
+                    );
                 }
             };
 
@@ -263,29 +254,43 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         }, []);
 
-        const getReliablePositionFromAnchor = (index: number) => {
+        // this function rebuilds it's data on each addTotalSize
+        // this can be further optimized either by rebuilding part that's changed or by moving achorElement up, keeping number of function iterations minimal
+        const buildElementPositionsBelowAnchor = (): Map<string, number> => {
             const state = refState.current!;
+
             if (!state.anchorElement) {
-                return 0;
+                return new Map();
             }
-            const getAnchorElementIndex = () => {
-                if (state.anchorElement) {
-                    return state.indexByKey.get(state.anchorElement.id);
-                }
-                return undefined;
-            };
             let top = state.anchorElement!.coordinate;
-            if (index <= getAnchorElementIndex()!) {
-                for (let i = getAnchorElementIndex()!-1; i >= index; i--) {
-                    const id = getId(i);
-                    const size = getItemSize(id, i);
-                    top -= size;
-                }
-            } else {
-               return undefined;
+            const anchorIndex = state.indexByKey.get(state.anchorElement.id)!;
+            console.log("getReliablePositionFromAnchor", state.anchorElement, anchorIndex);
+            if (anchorIndex === 0) {
+                return new Map();
             }
-            //console.log("getReliablePositionFromAnchor", index, top);  
-            return top;
+            const map = state.belowAnchorElementPositions || new Map();
+            for (let i = anchorIndex - 1; i >= 0; i--) {
+                const id = getId(i);
+                const size = getItemSize(id, i);
+                top -= size;
+                map.set(id, top);
+                console.log("getReliablePositionFromAnchor", i, id, top);
+            }
+            return map;
+        };
+
+        const getElementPositionBelowAchor = (id: string) => {
+            const state = refState.current!;
+            if (!refState.current!.belowAnchorElementPositions) {
+                state.belowAnchorElementPositions = buildElementPositionsBelowAnchor();
+            }
+            const res = state.belowAnchorElementPositions!.get(id);
+
+            if (res === undefined) {
+                console.log(id, state.belowAnchorElementPositions);
+                throw new Error("Undefined position below achor");
+            }
+            return res;
         };
 
         const calculateItemsInView = useCallback((speed: number) => {
@@ -298,7 +303,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 positions,
                 columns,
                 scrollAdjustHandler,
-                scrollFilter,
             } = state!;
             if (state.animFrameLayout) {
                 cancelAnimationFrame(state.animFrameLayout);
@@ -310,8 +314,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll= scrollState - previousScrollAdjust- topPad - scrollExtra;
-
+            const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
 
             const scrollBottom = scroll + scrollLength;
 
@@ -325,52 +328,30 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // This is an optimization to avoid looping through all items, which could slow down
             // when scrolling at the end of a long list.
 
-            const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId);
-
-            // console.log(
-            //     "positionsNeedCorrectionId",
-            //     state.positionsNeedCorrectionId,
-            //     positionsNeedCorrectionIndex,
-            //     anchorTop,
-            //     "startBufferedState",
-            //     startBufferedState,
-            // );
-
             // TODO: Fix this logic for numColumns
             const originalStartId = startBufferedIdOrig && state.indexByKey.get(startBufferedIdOrig);
             let loopStart = originalStartId || 0;
 
-            let anchorTop = getReliablePositionFromAnchor(loopStart+1);
-            //console.log("anchorTop",anchorTop, startBufferedIdOrig, 'ls', loopStart, originalStartId, );
+            console.log("anchorTop", startBufferedIdOrig, "ls", loopStart, originalStartId);
+            const anchorElementIndex = getAnchorElementIndex()!;
 
             for (let i = loopStart; i >= 0; i--) {
                 const id = getId(i)!;
-                console.log("Pre iteration reverse",i,id,anchorTop,'positionsNeedCorrectionId', state.positionsNeedCorrectionId,positionsNeedCorrectionIndex)
+                console.log("Pre iteration reverse", i, id, loopStart);
                 let newPosition: number | undefined;
 
-                if (maintainVisibleContentPosition) {
-                    const size = getItemSize(id, i);
-                    anchorTop -= size;
-                }
-              
-                if (positionsNeedCorrectionIndex != null && anchorTop != null) {
-                    newPosition = anchorTop;
+                if (maintainVisibleContentPosition && anchorElementIndex && i < anchorElementIndex) {
+                    newPosition = getElementPositionBelowAchor(id);
                     if (newPosition !== undefined) {
-                      // console.log("Correcting position", i, id, "old", positions.get(id), "new", newPosition);
+                        console.log("Correcting position", i, id, "old", positions.get(id), "new", newPosition);
                         positions.set(id, newPosition);
-                        if (i === 0) {
-                            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-                            state.positionsNeedCorrectionId = undefined;
-                        } else {
-                            state.positionsNeedCorrectionId = getId(i - 1);
-                        }
                     }
                 }
-               
+
                 const top = newPosition || positions.get(id)!;
 
                 //console.log("top",top, 'newPos', newPosition, 'arr', positions.get(id));
-            
+
                 if (top !== undefined) {
                     const size = getItemSize(id, i);
                     const bottom = top + size;
@@ -417,7 +398,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const size = getItemSize(id, i);
 
                 maxSizeInRow = Math.max(maxSizeInRow, size);
-              
 
                 if (top === undefined) {
                     top = getInitialTop(i);
@@ -689,7 +669,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
                 } else {
                     // reset flag when user scrolls back down
-                    if (distanceFromTop >= onStartReachedThreshold! * scrollLength) {
+                    // add hysteresis to avoid multiple onStartReached events triggered
+                    if (distanceFromTop >= 1.3 * onStartReachedThreshold! * scrollLength) {
                         refState.current.isStartReached = false;
                     }
                 }
@@ -907,7 +888,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
-           
             const data = refState.current?.data;
             if (!data) {
                 return;
@@ -1069,6 +1049,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // Update current scroll state
                 state.scrollPrev = state.scroll;
                 state.scrollPrevTime = state.scrollTime;
+                console.log("------------------------ handleScroll", newScroll);
                 state.scroll = newScroll;
                 state.scrollTime = currentTime;
                 state.scrollVelocity = velocity;
