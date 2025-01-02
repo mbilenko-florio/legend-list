@@ -35,6 +35,7 @@ export default function IntialScrollIndexFreeHeight() {
                 recycleItems={true}
                 ListHeaderComponent={<View style={{height:top}}/>}
                 ListFooterComponent={<View style={{height:bottom}}/>}
+                numColumns={2}
             />
         </View>
     );
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {},
     listContainer: {
-        width: 360,
+        width: '100%',
         maxWidth: "100%",
         marginHorizontal: "auto",
     },

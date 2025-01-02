@@ -48,6 +48,7 @@ export interface InternalState {
         coordinate: number;
     }
     belowAnchorElementPositions?: Map<string, number>;
+    rowHeights: Map<number, number>;
     positions: Map<string, number>;
     columns: Map<string, number>;
     sizes: Map<string, number>;
