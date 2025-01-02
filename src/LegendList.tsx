@@ -93,7 +93,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
 
             const size =
-                (getEstimatedItemSize ? getEstimatedItemSize(index, refState.current!.data) : estimatedItemSize) ?? DEFAULT_ITEM_SIZE;
+                (getEstimatedItemSize ? getEstimatedItemSize(index, refState.current!.data) : estimatedItemSize) ??
+                DEFAULT_ITEM_SIZE;
             // // TODO: I don't think I like this setting sizes when it's not really known, how to do
             // // that better and support viewability checking sizes
             // refState.current!.sizes.set(key, size);
@@ -213,23 +214,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             if (maintainVisibleContentPosition) {
                 const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
-                //console.log("newAdjust", newAdjust, state.scroll, "totalSizeBelowAnchor", state.totalSizeBelowAnchor);
                 const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId)!;
-                // console.log(
-                //     "#####addTotalSize####: isAboveAnchor",
-                //     isAboveAnchor,
-                //     positionsNeedCorrectionIndex,
-                //     index,
-                //     "size",
-                //     state.sizes.get(key),
-                // );
                 if (
                     isAboveAnchor &&
                     key &&
                     (state.positionsNeedCorrectionId === undefined || positionsNeedCorrectionIndex < index)
                 ) {
                     state.positionsNeedCorrectionId = key;
-                    //console.log("################### setting positionsNeedCorrectionId", key);
                 }
                 scheduleAdjust = -newAdjust;
             }
@@ -244,7 +235,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     doUpdatePaddingTop();
                 }
                 if (scheduleAdjust !== undefined) {
-                    //console.log("adjusting", scheduleAdjust);
+                    console.log("adjusting", scheduleAdjust);
                     refState.current!.scrollAdjustHandler.requestAdjust(scheduleAdjust);
                 }
             };
@@ -256,6 +247,31 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         }, []);
 
+        const getReliablePositionFromAnchor = (index: number) => {
+            const state = refState.current!;
+            if (!state.anchorElement) {
+                return 0;
+            }
+            const getAnchorElementIndex = () => {
+                if (state.anchorElement) {
+                    return state.indexByKey.get(state.anchorElement.id);
+                }
+                return undefined;
+            };
+            let top = state.anchorElement!.coordinate;
+            if (index <= getAnchorElementIndex()!) {
+                for (let i = getAnchorElementIndex()!-1; i >= index; i--) {
+                    const id = getId(i);
+                    const size = getItemSize(id, i);
+                    top -= size;
+                }
+            } else {
+               return undefined;
+            }
+            console.log("getReliablePositionFromAnchor", index, top);  
+            return top;
+        };
+
         const calculateItemsInView = useCallback((speed: number) => {
             const state = refState.current!;
             const {
@@ -264,7 +280,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scroll: scrollState,
                 startBuffered: startBufferedState,
                 positions,
-                sizes,
                 columns,
                 scrollAdjustHandler,
                 scrollFilter,
@@ -279,7 +294,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll = scrollFilter.filter(scrollState, previousScrollAdjust) - topPad - scrollExtra;
+            //const scroll = scrollFilter.filter(scrollState, previousScrollAdjust) - topPad - scrollExtra;
+            const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
 
             const scrollBottom = scroll + scrollLength;
 
@@ -294,41 +310,43 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             const positionsNeedCorrectionIndex = state.indexByKey.get(state.positionsNeedCorrectionId);
 
-            let anchorTop =
-                positionsNeedCorrectionIndex != null
-                    ? state.positions.get(getId(positionsNeedCorrectionIndex + 1))
-                    : undefined;
-            console.log(
-                "positionsNeedCorrectionId",
-                state.positionsNeedCorrectionId,
-                positionsNeedCorrectionIndex,
-                anchorTop,
-                "startBufferedState",
-                startBufferedState,
-            );
+            // console.log(
+            //     "positionsNeedCorrectionId",
+            //     state.positionsNeedCorrectionId,
+            //     positionsNeedCorrectionIndex,
+            //     anchorTop,
+            //     "startBufferedState",
+            //     startBufferedState,
+            // );
 
             // TODO: Fix this logic for numColumns
             let loopStart = startBufferedState || 0;
 
+            let anchorTop = getReliablePositionFromAnchor(startBufferedState+1);
+            console.log("anchorTop", startBufferedState, anchorTop);
+
             for (let i = startBufferedState; i >= 0; i--) {
                 const id = getId(i)!;
                 let newPosition: number | undefined;
-                if (positionsNeedCorrectionIndex != null && anchorTop != null && i <= positionsNeedCorrectionIndex) {
-                    //console.log("Request adjust", i, anchorTop);
+
+                if (maintainVisibleContentPosition) {
                     const size = getItemSize(id, i);
                     anchorTop -= size;
+                }
+              
+                if (positionsNeedCorrectionIndex != null && anchorTop != null && i <= positionsNeedCorrectionIndex) {
                     newPosition = anchorTop;
                     if (newPosition !== undefined) {
+                        console.log("Correcting position", i, id, "old", positions.get(id), "new", newPosition);
                         positions.set(id, newPosition);
                         if (i === 0) {
                             state.positionsNeedCorrectionId = undefined;
-                            console.log("Setting correction id", state.positionsNeedCorrectionId);
                         } else {
                             state.positionsNeedCorrectionId = getId(i - 1);
-                            console.log("Setting correction id", state.positionsNeedCorrectionId);
                         }
                     }
                 }
+               
                 const top = newPosition || positions.get(id)!;
                 if (top !== undefined) {
                     const size = getItemSize(id, i);
@@ -376,11 +394,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const size = getItemSize(id, i);
 
                 maxSizeInRow = Math.max(maxSizeInRow, size);
-                //console.log("Forward pass", i, id, top);
+              
 
                 if (top === undefined) {
                     top = getInitialTop(i);
                 }
+
+                console.log("Forward pass", i, id, top,scroll);
 
                 if (positions.get(id) !== top) {
                     positions.set(id, top);
@@ -434,6 +454,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endBuffered,
                 scroll,
             );
+            console.log("positions", positions);
+            //console.log("sizes", sizes);
 
             if (startBuffered !== null && endBuffered !== null) {
                 const prevNumContainers = ctx.values.get("numContainers") as number;
@@ -554,7 +576,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     scrollLength,
                     startNoBuffer!,
                     endNoBuffer!,
-                    getItemSize
+                    getItemSize,
                 );
             }
         }, []);
@@ -860,7 +882,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
-            console.log("updateItemSize", containerId, itemKey, size);
+           
             const data = refState.current?.data;
             if (!data) {
                 return;
@@ -869,9 +891,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const { sizes, indexByKey, idsInFirstRender, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
 
-            const prevSize = getItemSize(itemKey, index)
+            const prevSize = getItemSize(itemKey, index);
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
+                console.log("updateItemSize", containerId, itemKey, size);
                 let diff: number;
                 const numColumns = peek$<number>(ctx, "numColumns");
                 if (numColumns > 1) {
@@ -930,6 +953,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 // TODO: Could this be optimized to only calculate items in view that have changed?
                 const scrollVelocity = state.scrollVelocity;
+                console.log("updateItemSize", scrollVelocity);
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
                     if (!peek$(ctx, `containerDidLayout${containerId}`)) {
