@@ -85,6 +85,7 @@ export interface InternalState {
     renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
     scrollHistory: Array<{ scroll: number; time: number }>;
     scrollTimer: Timer | undefined;
+    startReachedBlockedByTimer: boolean;
 }
 
 export interface ViewableRange<T> {

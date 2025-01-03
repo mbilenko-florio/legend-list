@@ -25,7 +25,6 @@ import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext
 import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 import type { InternalState, LegendListProps } from "./types";
 import { useInit } from "./useInit";
-import {} from "./utils";
 import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_DRAW_DISTANCE = 250;
@@ -723,7 +722,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // setTimeout is called instead of requestAnimationFrame because it should be called much faster then between frames
                 // requestAnimationFrame(fn) is not the same as setTimeout(fn, 0) - the former will fire after all the frames have flushed, whereas the latter will fire as quickly as possible (over 1000x per second on a iPhone 5S).
                 setTimeout(() => {
-                    calculateItemsInView(refState.current!.scrollVelocity, "render thread");
+                    calculateItemsInView(refState.current!.scrollVelocity);
                     doMaintainScrollAtEnd(false);
                     checkAtTop();
                     checkAtBottom();
@@ -904,9 +903,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
 
                     diff = nextMaxSizeInRow - prevMaxSizeInRow;
-                    // if (diff < 0.5) {
-                    //     return;
-                    // }
                 } else {
                     sizes.set(itemKey, size);
                     diff = size - prevSize;
