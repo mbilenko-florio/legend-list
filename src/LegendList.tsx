@@ -225,11 +225,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 let resultSize = totalSize;
                 if (applyAdjustValue !== undefined) {
                     resultSize -= applyAdjustValue;
-                    const prevAdjust = peek$<number>(ctx, "scrollAdjust");
-                    refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue);
-                    const adjustDiff = prevAdjust - applyAdjustValue;
-                    // until next handleScroll event state.scroll will contain invalid value, adjust it now
-                    state.scroll -= adjustDiff;
+                    refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff) => {
+                    // untill next handleScroll event state.scroll will contain invalid value, adjust it now
+                        state.scroll -= diff;
+                    });
                 }
 
                 set$(ctx, "totalSize", resultSize);
@@ -240,13 +239,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     doUpdatePaddingTop();
                 }
             };
-            //doAdd();
 
-            if (!prev || key === null) {
-                doAdd();
-            } else if (!state.animFrameTotalSize) {
-                state.animFrameTotalSize = requestAnimationFrame(doAdd);
-            }
+            doAdd();
         }, []);
 
         const getRowHeight = (n: number): number => {
@@ -670,10 +664,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             refState.current.isAtTop = distanceFromTop < 0;
 
             if (onStartReached) {
-                if (!refState.current.isStartReached) {
+                if (!refState.current.isStartReached && !refState.current!.startReachedBlockedByTimer) {
                     if (distanceFromTop < onStartReachedThreshold! * scrollLength) {
                         refState.current.isStartReached = true;
                         onStartReached({ distanceFromStart: scroll });
+                        refState.current!.startReachedBlockedByTimer = true;
+                        setTimeout(() => {
+                            refState.current!.startReachedBlockedByTimer = false;
+                        }, 700);
                     }
                 } else {
                     // reset flag when user scrolls back down
