@@ -24,8 +24,10 @@ export const Container = ({
 }) => {
     const ctx = useStateContext();
     const position = useValue$(`containerPosition${id}`);
+    const key = use$<number>(`containerItemKey${id}`) || 0;
     const column = use$<number>(`containerColumn${id}`) || 0;
     const animVisible = useValue$(`containerDidLayout${id}`);
+    const anchorIndex = useValue$("anchorIndex");
     const numColumns = use$<number>("numColumns");
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
@@ -52,7 +54,7 @@ export const Container = ({
         return style;
     });
 
-    console.log("Render", id)
+    console.log("Render", id, key)
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);

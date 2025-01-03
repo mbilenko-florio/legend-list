@@ -708,6 +708,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             addTotalSize(null, totalSize, totalSizeBelowIndex);
+            setTimeout(() => {
+                set$(ctx, "anchorIndex", anchorElementIndex,true);
+            },0);
 
             if (!isFirst) {
                 // Reset containers that aren't used anymore because the data has changed
@@ -863,6 +866,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return renderedItem;
         }, []);
 
+      
         useInit(() => {
             refState.current!.viewabilityConfigCallbackPairs = setupViewability(props);
 

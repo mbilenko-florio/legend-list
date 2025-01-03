@@ -19,6 +19,7 @@ export type ListenerType =
     | "scrollAdjust"
     | "headerSize"
     | "footerSize"
+    | "anchorIndex"
     | "otherAxisSize";
 
 export interface StateContext {
