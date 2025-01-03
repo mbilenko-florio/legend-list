@@ -55,7 +55,6 @@ export interface InternalState {
     sizesLaidOut: Map<string, number> | undefined;
     pendingAdjust: number;
     animFrameLayout: any;
-    animFrameTotalSize: number | null;
     isStartReached: boolean;
     isEndReached: boolean;
     isAtBottom: boolean;
