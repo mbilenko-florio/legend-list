@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import * as React from "react";
 import {
-    Animated,
     type LayoutChangeEvent,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
@@ -10,6 +9,7 @@ import {
     View,
 } from "react-native";
 
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { Containers } from "./Containers";
 import { peek$, set$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
@@ -86,7 +86,10 @@ export const ListComponent = React.memo(function ListComponent({
     //     return StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>;
     // }, [otherAxisSize]);
 
-    const additionalSize = { marginTop: animScrollAdjust, paddingTop: animPaddingTop };
+     const additionalSize = useAnimatedStyle(() => {
+        return { marginTop: animScrollAdjust.value, paddingTop: animPaddingTop.value };
+     });
+
 
     return (
         <ScrollView

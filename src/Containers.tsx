@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Animated, type StyleProp, type ViewStyle } from "react-native";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { Container } from "./Container";
 import { use$ } from "./state";
 import { useValue$ } from "./useValue$";
@@ -37,7 +37,10 @@ export const Containers = React.memo(function Containers({
         );
     }
 
-    const style: StyleProp<ViewStyle> = horizontal ? { width: animSize } : { height: animSize };
+     const style = useAnimatedStyle(() => {
+        return horizontal ? { width: animSize.value } : { height: animSize.value };
+     });
+   
 
     return <Animated.View style={style}>{containers}</Animated.View>;
 });

@@ -1,15 +1,8 @@
 import * as React from "react";
 import { useSyncExternalStore } from "react";
-import { Animated } from "react-native";
+import { type SharedValue, makeMutable } from "react-native-reanimated";
 import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 
-// This is an implementation of a simple state management system, inspired by Legend State.
-// It stores values and listeners in Maps, with peek$ and set$ functions to get and set values.
-// The set$ function also triggers the listeners.
-//
-// This is definitely not general purpose and has one big optimization/caveat: use$ is only ever called
-// once for each unique name. So we don't need to manage a Set of listeners or dispose them,
-// which saves needing useEffect hooks or managing listeners in a Set.
 
 export type ListenerType =
     | "numContainers"
@@ -31,7 +24,7 @@ export type ListenerType =
 export interface StateContext {
     listeners: Map<ListenerType, Set<(value: any) => void>>;
     values: Map<ListenerType, any>;
-    animatedValues: Map<ListenerType, Animated.Value>;
+    animatedValues: Map<ListenerType, SharedValue<any>>;
     mapViewabilityCallbacks: Map<string, ViewabilityCallback>;
     mapViewabilityValues: Map<string, ViewToken>;
     mapViewabilityAmountCallbacks: Map<number, ViewabilityAmountCallback>;
@@ -90,8 +83,7 @@ export const getAnimatedValue = (ctx: StateContext, signalName: ListenerType, in
     let isNew = false;
     if (!value) {
         isNew = true;
-        console.log("Creating new animated value", signalName, initialValue);
-        value = new Animated.Value(initialValue);
+        value = makeMutable(initialValue);
         animatedValues.set(signalName, value);
     }
     return [value, isNew] as const;
@@ -103,9 +95,8 @@ export function set$(ctx: StateContext, signalName: ListenerType, value: any, an
         values.set(signalName, value);
         if (animated) {
             const [animValue, isNew] = getAnimatedValue(ctx, signalName, value);
-            console.log("Setting animated value", signalName, value);
             if (!isNew) {
-                animValue.setValue(value);
+                animValue.value =value;
             }
         }
         const setListeners = listeners.get(signalName);

@@ -24,7 +24,8 @@
     },
     "peerDependencies": {
         "react": "*",
-        "react-native": "*"
+        "react-native": "*",
+        "react-native-reanimated": "*"
     },
     "devDependencies": {
         "@biomejs/biome": "^1.9.4",

@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { Animated, type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import type { DimensionValue, LayoutChangeEvent, StyleProp, ViewStyle } from "react-native";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { peek$, set$, use$, useStateContext } from "./state";
 import { useValue$ } from "./useValue$";
 
@@ -26,29 +27,32 @@ export const Container = ({
     const column = use$<number>(`containerColumn${id}`) || 0;
     const animVisible = useValue$(`containerDidLayout${id}`);
     const numColumns = use$<number>("numColumns");
-    
-  
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
-    const style: StyleProp<ViewStyle> = horizontal
-        ? {
-              flexDirection: "row",
-              position: "absolute",
-              top: otherAxisPos,
-              bottom: numColumns > 1 ? null : 0,
-              height: otherAxisSize,
-              left: position,
-              //opacity: animVisible
-          }
-        : {
-              position: "absolute",
-              left: otherAxisPos,
-              right: numColumns > 1 ? null : 0,
-              width: otherAxisSize,
-              top: position,
-              //opacity: animVisible
-          };
+    const style = useAnimatedStyle(() => {
+        const style: StyleProp<ViewStyle> = horizontal
+            ? {
+                  flexDirection: "row",
+                  position: "absolute",
+                  top: otherAxisPos,
+                  bottom: numColumns > 1 ? null : 0,
+                  height: otherAxisSize,
+                  left: position.value,
+                  //opacity: animVisible
+              }
+            : {
+                  position: "absolute",
+                  left: otherAxisPos,
+                  right: numColumns > 1 ? null : 0,
+                  width: otherAxisSize,
+                  top: position.value,
+                  opacity: 0.3+animVisible.value
+              };
+        return style;
+    });
+
+    console.log("Render", id)
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
@@ -75,9 +79,9 @@ export const Container = ({
                     // const measured = peek$(ctx, `containerDidLayout${id}`);
                     // if (!measured) {
                     //     requestAnimationFrame(() => {
-                            set$(ctx, `containerDidLayout${id}`, true);
+                    set$(ctx, `containerDidLayout${id}`, true);
                     //    });
-                   // }
+                    // }
                 }
             }}
         >
