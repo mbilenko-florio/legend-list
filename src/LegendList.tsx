@@ -125,7 +125,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 columns: new Map(),
                 pendingAdjust: 0,
                 animFrameLayout: null,
-                animFrameTotalSize: null,
                 isStartReached: initialContentOffset < initialScrollLength * onStartReachedThreshold!,
                 isEndReached: false,
                 isAtBottom: false,
@@ -214,17 +213,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 applyAdjustValue = -newAdjust;
                 state.belowAnchorElementPositions = buildElementPositionsBelowAnchor();
             }
+           
 
             const doAdd = () => {
                 const totalSize = state.totalSize;
-                state.animFrameTotalSize = null;
 
                 let resultSize = totalSize;
                 if (applyAdjustValue !== undefined) {
                     resultSize -= applyAdjustValue;
+                    console.log("Adjust requested");
                     refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff) => {
                         console.log("EEE", key, diff);
-                    // untill next handleScroll event state.scroll will contain invalid value, adjust it now
+                        // until next handleScroll event state.scroll will contain invalid value, adjust it now
                         state.scroll -= diff;
                     });
                 }
@@ -275,7 +275,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return res;
         };
 
-        const calculateItemsInView = useCallback((speed: number) => {
+        const calculateItemsInView = useCallback((speed: number, from = 'default') => {
+            console.log('calculateItemsInView', from);
             const state = refState.current!;
             const {
                 data,
@@ -297,6 +298,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
             const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
+
+            console.log(
+                "scroll",
+                scroll,
+                "scrollstate",
+                scrollState,
+                "scrollAdjust",
+                previousScrollAdjust, 'scrollExtra', scrollExtra, 'topPad', topPad);
 
             const scrollBottom = scroll + scrollLength;
 
@@ -417,18 +426,20 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endNoBuffer,
             });
 
-            // console.log(
-            //     "scroll",
-            //     scroll,
-            //     "scrollAdjust",
-            //     previousScrollAdjust,
-            //     "start",
-            //     startBuffered,
-            //     startNoBuffer,
-            //     endNoBuffer,
-            //     endBuffered,
-            //     scroll,
-            // );
+            console.log(
+                "scroll",
+                scroll,
+                "scrollstate",
+                scrollState,
+                "scrollAdjust",
+                previousScrollAdjust,
+                "start",
+                startBuffered,
+                startNoBuffer,
+                endNoBuffer,
+                endBuffered,
+                scroll,
+            );
 
 
             if (startBuffered !== null && endBuffered !== null) {
@@ -707,11 +718,18 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     refState.current.sizes.clear();
                     refState.current.positions;
                 }
-                calculateItemsInView(refState.current.scrollVelocity);
-
-                doMaintainScrollAtEnd(false);
-                checkAtTop();
-                checkAtBottom();
+                // Following bug is creating various problems with the render state, which is making app super fiddly and results in the incorrect values
+                // in the scrollstate
+                //  Warning: Cannot update a component (`Container`) while rendering a different component (`ForwardRef(LegendListInner)`). To locate the bad setState() call inside `ForwardRef(LegendListInner)`, follow the stack trace as described in https://react.dev/link/setstate-in-render
+                // that's why I added setTimeout there
+                // setTimeout is called instead of requestAnimationFrame because it should be called much faster then between frames
+                // requestAnimationFrame(fn) is not the same as setTimeout(fn, 0) - the former will fire after all the frames have flushed, whereas the latter will fire as quickly as possible (over 1000x per second on a iPhone 5S).
+                setTimeout(() => {
+                    calculateItemsInView(refState.current!.scrollVelocity, 'render thread');
+                    doMaintainScrollAtEnd(false);
+                    checkAtTop();
+                    checkAtBottom();
+                }, 0);
             }
         }
         refState.current.renderItem = renderItem!;
@@ -1020,6 +1038,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 // Update current scroll state
                 state.scrollPrev = state.scroll;
+                console.log("HandleScroll")
                 state.scrollPrevTime = state.scrollTime;
                 state.scroll = newScroll;
                 state.scrollTime = currentTime;
