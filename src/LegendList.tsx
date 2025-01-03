@@ -157,6 +157,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scrollTimer: undefined,
                 belowAnchorElementPositions: undefined,
                 rowHeights: new Map(),
+                startReachedBlockedByTimer: false,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
