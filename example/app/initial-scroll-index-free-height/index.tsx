@@ -29,13 +29,13 @@ export default function IntialScrollIndexFreeHeight() {
                 data={data}
                 renderItem={renderItem}
                 keyExtractor={(item) => `id${item.id}`}
-                estimatedItemSize={ESTIMATED_ITEM_LENGTH*2}
+                estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={DRAW_DISTANCE}
                 maintainVisibleContentPosition
                 recycleItems={true}
                 ListHeaderComponent={<View style={{height:top}}/>}
                 ListFooterComponent={<View style={{height:bottom}}/>}
-                numColumns={2}
+                numColumns={1}
             />
         </View>
     );

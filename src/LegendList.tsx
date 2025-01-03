@@ -25,7 +25,7 @@ import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext
 import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 import type { InternalState, LegendListProps } from "./types";
 import { useInit } from "./useInit";
-import { } from "./utils";
+import {} from "./utils";
 import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_DRAW_DISTANCE = 250;
@@ -216,7 +216,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 state.belowAnchorElementPositions = buildElementPositionsBelowAnchor();
                 state.rowHeights.clear();
             }
-           
 
             const doAdd = () => {
                 const totalSize = state.totalSize;
@@ -224,17 +223,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 let resultSize = totalSize;
                 if (applyAdjustValue !== undefined) {
                     resultSize -= applyAdjustValue;
-                    console.log("Adjust requested");
                     refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff) => {
                         // event state.scroll will contain invalid value, until next handleScroll
                         // apply adjustment
                         state.scroll -= diff;
                     });
                 }
-
                 set$(ctx, "totalSize", resultSize);
-
-                console.log("addTotalSize", totalSize, totalSizeBelowAnchor, add, key, isAboveAnchor);
 
                 if (alignItemsAtEnd) {
                     doUpdatePaddingTop();
@@ -302,8 +297,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return res;
         };
 
-        const calculateItemsInView = useCallback((speed: number, from = 'default') => {
-            console.log('calculateItemsInView', from);
+        const calculateItemsInView = useCallback((speed: number) => {
             const state = refState.current!;
             const {
                 data,
@@ -325,14 +319,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
             const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
-
-            console.log(
-                "scroll",
-                scroll,
-                "scrollstate",
-                scrollState,
-                "scrollAdjust",
-                previousScrollAdjust, 'scrollExtra', scrollExtra, 'topPad', topPad);
 
             const scrollBottom = scroll + scrollLength;
 
@@ -452,28 +438,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endNoBuffer,
             });
 
-          
-            // if (numColumns > 1) {
-            //     startBuffered = correctByModule(startBuffered, numColumns)
-            //     startNoBuffer = correctByModule(startNoBuffer, numColumns)
-            //     endBuffered = correctByModuleUp(endBuffered, numColumns)
-            //     endNoBuffer = correctByModuleUp(endNoBuffer, numColumns)
-            // }
-
-            console.log(
-                "scroll",
-                scroll,
-                "scrollAdjust",
-                previousScrollAdjust,
-                "start",
-                startBuffered,
-                startNoBuffer,
-                endNoBuffer,
-                endBuffered,
-                scroll,
-            );
-
-          
+            // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, scroll);
 
             if (startBuffered !== null && endBuffered !== null) {
                 const prevNumContainers = ctx.values.get("numContainers") as number;
@@ -758,7 +723,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // setTimeout is called instead of requestAnimationFrame because it should be called much faster then between frames
                 // requestAnimationFrame(fn) is not the same as setTimeout(fn, 0) - the former will fire after all the frames have flushed, whereas the latter will fire as quickly as possible (over 1000x per second on a iPhone 5S).
                 setTimeout(() => {
-                    calculateItemsInView(refState.current!.scrollVelocity, 'render thread');
+                    calculateItemsInView(refState.current!.scrollVelocity, "render thread");
                     doMaintainScrollAtEnd(false);
                     checkAtTop();
                     checkAtBottom();
@@ -1065,7 +1030,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 // Update current scroll state
                 state.scrollPrev = state.scroll;
-                console.log("HandleScroll")
                 state.scrollPrevTime = state.scrollTime;
                 state.scroll = newScroll;
                 state.scrollTime = currentTime;
