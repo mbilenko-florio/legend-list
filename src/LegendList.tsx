@@ -158,6 +158,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 belowAnchorElementPositions: undefined,
                 rowHeights: new Map(),
                 startReachedBlockedByTimer: false,
+                elementWasMeasured: new Map(),
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -176,7 +177,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     console.warn("[legend-list] maintainVisibleContentPosition was not able to find an anchor element");
                 }
             }
-            set$(ctx, "scrollAdjust", 0);
+            set$(ctx, "scrollAdjust", 0, true);
         }
 
         const getAnchorElementIndex = () => {
@@ -229,7 +230,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         state.scroll -= diff;
                     });
                 }
-                set$(ctx, "totalSize", resultSize);
+                set$(ctx, "totalSize", resultSize, true);
 
                 if (alignItemsAtEnd) {
                     doUpdatePaddingTop();
@@ -491,12 +492,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             set$(ctx, `containerItemKey${containerId}`, id);
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
-                            set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
+                            set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW,true);
                             set$(ctx, `containerColumn${containerId}`, -1);
+                            set$(ctx, `containerDidLayout${i}`, 0,true);
 
                             if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
                                 console.warn(
-                                    "[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemSize. numContainers:",
+                                    "r[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemSize. numContainers:",
                                     numContainers,
                                 );
                             }
@@ -531,16 +533,23 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 (pos + size >= scroll && pos <= scrollBottom) ||
                                 (prevPos + size >= scroll && prevPos <= scrollBottom)
                             ) {
-                                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW,true);
                             }
                         } else {
                             const pos = positions.get(id) || 0;
                             const column = columns.get(id) || 1;
+                            const isMeasured = state.elementWasMeasured.get(id);
                             const prevPos = peek$(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
+                            const prevWasMeasured = peek$(ctx, `containerColumn${i}`);
+
+                            if (prevWasMeasured !== isMeasured) {
+                                set$(ctx, `containerDidLayout${i}`, isMeasured ? 1 : 0, true);
+                            }
 
                             if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
-                                set$(ctx, `containerPosition${i}`, pos);
+                                set$(ctx, `containerPosition${i}`, pos,true);
+                              
                             }
                             if (column >= 0 && column !== prevColumn) {
                                 set$(ctx, `containerColumn${i}`, column);
@@ -568,7 +577,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const { scrollLength, totalSize } = refState.current!;
                 const listPaddingTop = peek$<number>(ctx, "stylePaddingTop") || 0;
                 const paddingTop = Math.max(0, Math.floor(scrollLength - totalSize - listPaddingTop));
-                set$(ctx, "paddingTop", paddingTop);
+                set$(ctx, "paddingTop", paddingTop, true);
             }
         };
 
@@ -707,7 +716,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
                     if (!keyExtractorProp || (itemKey && refState.current?.indexByKey.get(itemKey) === undefined)) {
                         set$(ctx, `containerItemKey${i}`, undefined);
-                        set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                        set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW,true);
+                        set$(ctx, `containerDidLayout${i}`,0,true);
                         set$(ctx, `containerColumn${i}`, -1);
                     }
                 }
@@ -864,8 +874,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
-                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW,true);
                 set$(ctx, `containerColumn${i}`, -1);
+                set$(ctx, `containerDidLayout${i}`,0,true);
             }
 
             set$(ctx, "numContainers", numContainers);
@@ -886,6 +897,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             const row = Math.floor(index / numColumns);
             const prevSize = getRowHeight(row);
+
+            state.elementWasMeasured.set(itemKey, true);
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 let diff: number;

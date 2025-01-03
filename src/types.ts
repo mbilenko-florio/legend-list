@@ -52,6 +52,7 @@ export interface InternalState {
     positions: Map<string, number>;
     columns: Map<string, number>;
     sizes: Map<string, number>;
+    elementWasMeasured: Map<string, boolean>;
     sizesLaidOut: Map<string, number> | undefined;
     pendingAdjust: number;
     animFrameLayout: any;
