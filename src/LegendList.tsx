@@ -473,7 +473,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
 
                             const index = refState.current?.indexByKey.get(key)!;
-                            const pos = peek$<number>(ctx, `containerPosition${u}`);
+                            const pos = peek$<number>(ctx, `containerAnimatedData${u}`).position;
 
                             if (index < startBuffered || index > endBuffered) {
                                 const distance = Math.abs(pos - top);
@@ -492,9 +492,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             set$(ctx, `containerItemKey${containerId}`, id);
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
-                            set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW,true);
-                            set$(ctx, `containerColumn${containerId}`, -1);
-                            set$(ctx, `containerDidLayout${i}`, 0,true);
+                            set$(
+                                ctx,
+                                `containerAnimatedData${id}`,
+                                {
+                                    position: POSITION_OUT_OF_VIEW,
+                                    numColumn: -1,
+                                    didLayout: false,
+                                },
+                                true,
+                            );
 
                             if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
                                 console.warn(
@@ -525,7 +532,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
                             // This is fairly complex because we want to avoid setting container position if it's not even in view
                             // because it will trigger a render
-                            const prevPos = peek$<number>(ctx, `containerPosition${i}`);
+                            const prevPos = peek$<number>(ctx, `containerAnimatedData${i}`).position;
                             const pos = positions.get(id) || 0;
                             const size = getItemSize(id, itemIndex, data[i]);
 
@@ -533,26 +540,53 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 (pos + size >= scroll && pos <= scrollBottom) ||
                                 (prevPos + size >= scroll && prevPos <= scrollBottom)
                             ) {
-                                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW,true);
+                                set$(
+                                    ctx,
+                                    `containerAnimatedData${i}`,
+                                    {
+                                        id,
+                                        position: POSITION_OUT_OF_VIEW,
+                                        numColumn: -1,
+                                        didLayout: false,
+                                    },
+                                    true,
+                                );
                             }
                         } else {
                             const pos = positions.get(id) || 0;
                             const column = columns.get(id) || 1;
                             const isMeasured = state.elementWasMeasured.get(id);
-                            const prevPos = peek$(ctx, `containerPosition${i}`);
-                            const prevColumn = peek$(ctx, `containerColumn${i}`);
-                            const prevWasMeasured = peek$(ctx, `containerColumn${i}`);
-
-                            if (prevWasMeasured !== isMeasured) {
-                                set$(ctx, `containerDidLayout${i}`, isMeasured ? 1 : 0, true);
-                            }
-
-                            if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
-                                set$(ctx, `containerPosition${i}`, pos,true);
-                              
-                            }
-                            if (column >= 0 && column !== prevColumn) {
-                                set$(ctx, `containerColumn${i}`, column);
+                            const prev = peek$<number>(ctx, `containerAnimatedData${i}`);
+                            if (prev) {
+                                const prevPos = prev.position;
+                                const prevColumn = prev.numColumn;
+                                const prevWasMeasured = prev.didLayout;
+                                if (prevPos !== pos || prevColumn !== column || prevWasMeasured !== isMeasured) {
+                                    set$(
+                                        ctx,
+                                        `containerAnimatedData${i}`,
+                                        {
+                                            id,
+                                            i,
+                                            position: pos,
+                                            numColumn: column,
+                                            didLayout: isMeasured,
+                                        },
+                                        true,
+                                    );
+                                }
+                            } else {
+                                set$(
+                                    ctx,
+                                    `containerAnimatedData${i}`,
+                                    {
+                                        id,
+                                        position: pos,
+                                        numColumn: column,
+                                        didLayout: isMeasured,
+                                    },
+                                    true,
+                                );
                             }
                         }
                     }
@@ -709,8 +743,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             addTotalSize(null, totalSize, totalSizeBelowIndex);
             setTimeout(() => {
-                set$(ctx, "anchorIndex", anchorElementIndex,true);
-            },0);
+                set$(ctx, "anchorIndex", anchorElementIndex, true);
+            }, 0);
 
             if (!isFirst) {
                 // Reset containers that aren't used anymore because the data has changed
@@ -719,9 +753,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
                     if (!keyExtractorProp || (itemKey && refState.current?.indexByKey.get(itemKey) === undefined)) {
                         set$(ctx, `containerItemKey${i}`, undefined);
-                        set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW,true);
-                        set$(ctx, `containerDidLayout${i}`,0,true);
-                        set$(ctx, `containerColumn${i}`, -1);
+                        set$(
+                            ctx,
+                            `containerAnimatedData${i}`,
+                            {
+                                position: POSITION_OUT_OF_VIEW,
+                                numColumn: -1,
+                                didLayout: false,
+                            },
+                            true,
+                        );
                     }
                 }
 
@@ -866,7 +907,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return renderedItem;
         }, []);
 
-      
         useInit(() => {
             refState.current!.viewabilityConfigCallbackPairs = setupViewability(props);
 
@@ -878,9 +918,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
-                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW,true);
-                set$(ctx, `containerColumn${i}`, -1);
-                set$(ctx, `containerDidLayout${i}`,0,true);
+                set$(
+                    ctx,
+                    `containerAnimatedData${i}`,
+                    {
+                        position: POSITION_OUT_OF_VIEW,
+                        numColumn: -1,
+                        didLayout: false,
+                    },
+                    true,
+                );
             }
 
             set$(ctx, "numContainers", numContainers);
@@ -956,14 +1003,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const scrollVelocity = state.scrollVelocity;
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
-                    if (!peek$(ctx, `containerDidLayout${containerId}`)) {
-                        state.animFrameLayout = requestAnimationFrame(() => {
-                            state.animFrameLayout = null;
-                            calculateItemsInView(state.scrollVelocity);
-                        });
-                    } else {
-                        calculateItemsInView(state.scrollVelocity);
-                    }
+                    // if (!peek$(ctx, `containerDidLayout${containerId}`)) {
+                    //     state.animFrameLayout = requestAnimationFrame(() => {
+                    //         state.animFrameLayout = null;
+                    //         calculateItemsInView(state.scrollVelocity);
+                    //     });
+                    // } else {
+                    calculateItemsInView(state.scrollVelocity);
+                    // }
                 }
             }
         }, []);

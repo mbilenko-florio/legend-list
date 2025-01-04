@@ -3,14 +3,22 @@ import { useSyncExternalStore } from "react";
 import { type SharedValue, makeMutable } from "react-native-reanimated";
 import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 
+export type ContainerAnimatedData = {
+    position: number;
+    bottomAnchorPositio?: number;
+    numColumn: number;
+    didLayout: boolean;
+
+}
 
 export type ListenerType =
     | "numContainers"
     | "numContainersPooled"
     | `containerItemKey${number}`
-    | `containerPosition${number}`
-    | `containerColumn${number}`
-    | `containerDidLayout${number}`
+    | `containerAnimatedData${number}`
+    // | `containerPosition${number}`
+    // | `containerColumn${number}`
+    // | `containerDidLayout${number}`
     | "numColumns"
     | `lastItemKey`
     | "totalSize"
