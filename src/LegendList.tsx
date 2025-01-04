@@ -19,12 +19,14 @@ import {
     type ScrollView,
     StyleSheet,
 } from "react-native";
+import { runOnJS, useAnimatedScrollHandler, useSharedValue, withTiming } from "react-native-reanimated";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
 import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 import type { InternalState, LegendListProps } from "./types";
 import { useInit } from "./useInit";
+import { useValue$ } from "./useValue$";
 import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_DRAW_DISTANCE = 250;
@@ -116,6 +118,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         };
 
         const initialContentOffset = initialScrollOffset ?? useMemo(calculateInitialOffset, []);
+        const scrollBrake = useValue$("scrollBrake");
 
         if (!refState.current) {
             const initialScrollLength = Dimensions.get("window")[horizontal ? "width" : "height"];
@@ -178,6 +181,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             set$(ctx, "scrollAdjust", 0, true);
+            set$(ctx, "scrollBrake", 0, true);
+            set$(ctx, "lastLaidOutCoordinate", 0, true);
         }
 
         const getAnchorElementIndex = () => {
@@ -319,7 +324,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
+            
+            const scroll = scrollState - previousScrollAdjust - scrollBrake.value - topPad - scrollExtra;
 
             const scrollBottom = scroll + scrollLength;
 
@@ -743,7 +749,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             addTotalSize(null, totalSize, totalSizeBelowIndex);
             setTimeout(() => {
-                set$(ctx, "anchorIndex", anchorElementIndex, true);
+                if (refState.current?.anchorElement?.coordinate) {
+                    set$(ctx, "anchorPosition", refState.current?.anchorElement?.coordinate, true);
+                }
             }, 0);
 
             if (!isFirst) {
@@ -1137,6 +1145,27 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             [],
         );
 
+        const lastLaidOutCoordinate = useValue$("lastLaidOutCoordinate");
+        const scrollHeight = refState.current.scrollLength;
+
+        const scrollBrakePosition = useSharedValue(undefined);
+      
+        const animatedScrollHandler = useAnimatedScrollHandler((event) => {
+            const offset = event.contentOffset.y;
+            runOnJS(handleScroll)({ nativeEvent: event });
+
+            if (offset + scrollHeight > lastLaidOutCoordinate.value) {
+                const blankingAmount = offset + scrollHeight - lastLaidOutCoordinate.value;
+                //console.log(offset+scrollHeight,lastLaidOutCoordinate.value)
+                if (blankingAmount > 2000) {
+                    console.log("blanking!", blankingAmount);
+                    scrollBrake.value = withTiming(1000)
+                }
+            }
+        });
+
+       
+
         return (
             <ListComponent
                 {...rest}
@@ -1145,7 +1174,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 initialContentOffset={initialContentOffset}
                 getRenderedItem={getRenderedItem}
                 updateItemSize={updateItemSize}
-                handleScroll={handleScroll}
+                handleScroll={animatedScrollHandler}
                 onLayout={onLayout}
                 recycleItems={recycleItems}
                 alignItemsAtEnd={alignItemsAtEnd}

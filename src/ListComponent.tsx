@@ -4,7 +4,6 @@ import {
     type LayoutChangeEvent,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
-    ScrollView,
     type ScrollView as ScrollViewType,
     View,
 } from "react-native";
@@ -86,13 +85,15 @@ export const ListComponent = React.memo(function ListComponent({
     //     return StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>;
     // }, [otherAxisSize]);
 
+    const scrollBrake = useValue$("scrollBrake");
+
      const additionalSize = useAnimatedStyle(() => {
-        return { marginTop: animScrollAdjust.value, paddingTop: animPaddingTop.value };
+        return { marginTop: animScrollAdjust.value + scrollBrake.value, paddingTop: animPaddingTop.value };
      });
 
 
     return (
-        <ScrollView
+        <Animated.ScrollView
             {...rest}
             style={style}
             maintainVisibleContentPosition={maintainVisibleContentPosition ? { minIndexForVisible: 0 } : undefined}
@@ -145,6 +146,6 @@ export const ListComponent = React.memo(function ListComponent({
                 updateItemSize={updateItemSize}
             />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
-        </ScrollView>
+        </Animated.ScrollView>
     );
 });

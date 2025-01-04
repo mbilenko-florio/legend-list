@@ -23,24 +23,31 @@ export const Container = ({
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
-    const animatedData = useValue$(`containerAnimatedData${id}`,() => undefined);
-    const numColumns = use$<number>("numColumns");
+    const animatedData = useValue$(`containerAnimatedData${id}`, () => undefined);
+    const anchorPosition = useValue$("anchorPosition");
+    const lastLaidOutCoordinate = useValue$("lastLaidOutCoordinate");
 
-  
+
     const style = useAnimatedStyle(() => {
-       if (!animatedData.value) {
+        if (!animatedData.value) {
             return {};
         }
-        const {position, numColumn, didLayout} = animatedData.value;
-        const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((numColumn.value - 1) / numColumns) * 100}%` : 0;
-        const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
-      
+        const { position, numColumn } = animatedData.value;
+        const otherAxisPos: DimensionValue | undefined =
+        numColumn > 1 ? `${((numColumn.value - 1) / numColumn) * 100}%` : 0;
+        const otherAxisSize: DimensionValue | undefined = numColumn > 1 ? `${(1 / numColumn) * 100}%` : undefined;
+
+        let bottomAnchor = false;
+        if (anchorPosition.value != null && position < anchorPosition.value && position > -10000000) {
+            bottomAnchor = true;
+        }
+
         const style: StyleProp<ViewStyle> = horizontal
             ? {
                   flexDirection: "row",
                   position: "absolute",
                   top: otherAxisPos,
-                  bottom: numColumns > 1 ? null : 0,
+                  bottom: numColumn > 1 ? null : 0,
                   height: otherAxisSize,
                   left: position,
                   //opacity: animVisible
@@ -48,12 +55,17 @@ export const Container = ({
             : {
                   position: "absolute",
                   left: otherAxisPos,
-                  right: numColumns > 1 ? null : 0,
+                  right: numColumn > 1 ? null : 0,
                   width: otherAxisSize,
-                  top: position,
-                  opacity: didLayout ? 1 : 0.3,
+                  top: 0,
+                  transform: [{ translateY: position }],
               };
-       // console.log(animatedData.value);
+        // if (bottomAnchor) {
+        //     style.transform = [{ translateY: position, transformOrigin: "bottom" }];
+        // }
+        //     style.top = position;
+        // }
+       // console.log(animatedData.value, bottomAnchor);
         return style;
     });
 
@@ -75,6 +87,12 @@ export const Container = ({
                     const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
 
                     updateItemSize(id, key, size);
+
+                    
+                    const coordinate = animatedData.value.position+size;
+                    if (coordinate > lastLaidOutCoordinate.value) {
+                        lastLaidOutCoordinate.value = coordinate
+                    }
 
                     // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
                     // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));

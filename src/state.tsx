@@ -16,9 +16,8 @@ export type ListenerType =
     | "numContainersPooled"
     | `containerItemKey${number}`
     | `containerAnimatedData${number}`
-    // | `containerPosition${number}`
-    // | `containerColumn${number}`
-    // | `containerDidLayout${number}`
+    | `lastLaidOutCoordinate`
+    | 'scrollBrake'
     | "numColumns"
     | `lastItemKey`
     | "totalSize"
@@ -27,7 +26,7 @@ export type ListenerType =
     | "scrollAdjust"
     | "headerSize"
     | "footerSize"
-    | "anchorIndex"
+    | "anchorPosition"
     | "otherAxisSize";
 
 export interface StateContext {
