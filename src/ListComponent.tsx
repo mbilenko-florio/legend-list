@@ -88,6 +88,7 @@ export const ListComponent = React.memo(function ListComponent({
     const scrollBrake = useValue$("scrollBrake");
 
      const additionalSize = useAnimatedStyle(() => {
+        console.log("animScrollAdjust", scrollBrake.value);
         return { marginTop: animScrollAdjust.value + scrollBrake.value, paddingTop: animPaddingTop.value };
      });
 
