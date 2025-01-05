@@ -21,7 +21,7 @@ export class ScrollAdjustHandler {
         this.pendingAdjust = adjust;
 
         const doAjdust = () => {
-            set$(this.context, "scrollAdjust", this.pendingAdjust);
+            set$(this.context, "scrollAdjust", this.pendingAdjust, true);
             onAdjusted(oldAdjustTop - this.pendingAdjust);
             this.busy = false;
         };

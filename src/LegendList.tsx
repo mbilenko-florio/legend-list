@@ -176,7 +176,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     console.warn("[legend-list] maintainVisibleContentPosition was not able to find an anchor element");
                 }
             }
-            set$(ctx, "scrollAdjust", 0);
+            set$(ctx, "scrollAdjust", 0, true);
         }
 
         const getAnchorElementIndex = () => {
@@ -229,7 +229,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         state.scroll -= diff;
                     });
                 }
-                set$(ctx, "totalSize", resultSize);
+                set$(ctx, "totalSize", resultSize, true);
 
                 if (alignItemsAtEnd) {
                     doUpdatePaddingTop();
@@ -537,7 +537,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         } else {
                             const pos = positions.get(id) || 0;
                             const column = columns.get(id) || 1;
-                            const elementVisible = state.sizesLaidOut.get(id) !== undefined;
+                            
+                            let elementVisible = true;
+                        
+                            if (maintainVisibleContentPosition && itemIndex < anchorElementIndex) {
+                                const elementMeasured = state.sizesLaidOut.get(id) !== undefined
+                                elementVisible =  elementMeasured;
+                            }
                             const prevPos = peek$(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
                             const prevVisible = peek$(ctx, `containerDidLayout${i}`);
@@ -550,7 +556,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
                             if (elementVisible !== prevVisible ) {
                                 // console.log("Setting elementVisible", elementVisible, id, state.sizesLaidOut);
-                                set$(ctx, `containerDidLayout${i}`, elementVisible ? 1: 0.5, true);
+                                set$(ctx, `containerDidLayout${i}`, elementVisible ? 1: 0, true);
                             }
                         }
                     }
@@ -575,7 +581,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const { scrollLength, totalSize } = refState.current!;
                 const listPaddingTop = peek$<number>(ctx, "stylePaddingTop") || 0;
                 const paddingTop = Math.max(0, Math.floor(scrollLength - totalSize - listPaddingTop));
-                set$(ctx, "paddingTop", paddingTop);
+                set$(ctx, "paddingTop", paddingTop, true);
             }
         };
 
