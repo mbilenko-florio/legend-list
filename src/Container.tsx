@@ -64,15 +64,11 @@ export const Container = ({
 
                     updateItemSize(id, key, size);
 
-                    const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
-                    set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
+                    // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
+                    // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
 
-                    const measured = peek$(ctx, `containerDidLayout${id}`);
-                    if (!measured) {
-                        requestAnimationFrame(() => {
-                            set$(ctx, `containerDidLayout${id}`, 1, true);
-                        });
-                    }
+                   
+                    
                 }
             }}
         >

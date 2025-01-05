@@ -97,15 +97,25 @@ export const getAnimatedValue = (ctx: StateContext, signalName: ListenerType, in
     return [value, isNew] as const;
 };
 
-export function set$(ctx: StateContext, signalName: ListenerType, value: any, animated?: boolean) {
+export function set$(ctx: StateContext, signalName: ListenerType, value: any) {
     const { listeners, values } = ctx;
     if (values.get(signalName) !== value) {
         values.set(signalName, value);
-        if (animated) {
-            const [animValue, isNew] = getAnimatedValue(ctx, signalName, value);
-            if (!isNew) {
-                animValue.setValue(value);
+        const setListeners = listeners.get(signalName);
+        if (setListeners) {
+            for (const listener of setListeners) {
+                listener(value);
             }
+        }
+    }
+}
+export function setAnimated$(ctx: StateContext, signalName: ListenerType, value: any) {
+    const { listeners, values } = ctx;
+    if (values.get(signalName) !== value) {
+        values.set(signalName, value);
+        const [animValue, isNew] = getAnimatedValue(ctx, signalName, value);
+        if (!isNew) {
+            animValue.setValue(value);
         }
         const setListeners = listeners.get(signalName);
         if (setListeners) {
