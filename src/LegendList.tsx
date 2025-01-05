@@ -549,6 +549,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 set$(ctx, `containerColumn${i}`, column);
                             }
                             if (elementVisible !== prevVisible ) {
+                                // console.log("Setting elementVisible", elementVisible, id, state.sizesLaidOut);
                                 set$(ctx, `containerDidLayout${i}`, elementVisible ? 1: 0.5, true);
                             }
                         }
@@ -895,6 +896,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const row = Math.floor(index / numColumns);
             const prevSize = getRowHeight(row);
 
+            sizesLaidOut.set(itemKey, size);
+
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 let diff: number;
 
@@ -917,8 +920,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     diff = size - prevSize;
                 }
 
-                sizesLaidOut.set(itemKey, size);
-
                 if (__DEV__ && !estimatedItemSize && !getEstimatedItemSize) {
                   
                     if (state.timeoutSizeMessage) {
@@ -929,7 +930,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         state.timeoutSizeMessage = undefined;
                         let total = 0;
                         let num = 0;
-                        for (const [key, size] of sizesLaidOut!) {
+                        for (const [key, size] of sizesLaidOut) {
                             num++;
                             total += size;
                         }

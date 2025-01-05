@@ -49,6 +49,7 @@ export const Container = ({
 
     style.opacity = visible;
 
+  
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
 
@@ -66,6 +67,7 @@ export const Container = ({
                     // Round to nearest quater pixel to avoid accumulating rounding errors
                     const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
 
+                    console.log("size", key, size);
                     updateItemSize(id, key, size);
 
                     const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
@@ -73,7 +75,9 @@ export const Container = ({
 
                     const measured = peek$(ctx, `containerDidLayout${id}`);
                     if (!measured) {
+                        setTimeout(() => {
                         set$(ctx, `containerDidLayout${id}`, 1, true);
+                        },0);
                     }
                 }
             }}
