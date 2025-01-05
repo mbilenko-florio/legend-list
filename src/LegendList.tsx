@@ -152,7 +152,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scrollHistory: [],
                 scrollVelocity: 0,
                 contentSize: { width: 0, height: 0 },
-                sizesLaidOut: __DEV__ ? new Map() : undefined,
+                sizesLaidOut: new Map(),
                 timeoutSizeMessage: 0,
                 scrollTimer: undefined,
                 belowAnchorElementPositions: undefined,
@@ -492,6 +492,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
                             set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
+                            set$(ctx, `containerDidLayout${containerId}`, 0);
                             set$(ctx, `containerColumn${containerId}`, -1);
 
                             if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
@@ -536,14 +537,19 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         } else {
                             const pos = positions.get(id) || 0;
                             const column = columns.get(id) || 1;
+                            const elementVisible = state.sizesLaidOut.get(id) !== undefined;
                             const prevPos = peek$(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
+                            const prevVisible = peek$(ctx, `containerDidLayout${i}`);
 
                             if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
                                 set$(ctx, `containerPosition${i}`, pos);
                             }
                             if (column >= 0 && column !== prevColumn) {
                                 set$(ctx, `containerColumn${i}`, column);
+                            }
+                            if (elementVisible !== prevVisible ) {
+                                set$(ctx, `containerDidLayout${i}`, elementVisible ? 1: 0.5, true);
                             }
                         }
                     }
@@ -708,6 +714,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     if (!keyExtractorProp || (itemKey && refState.current?.indexByKey.get(itemKey) === undefined)) {
                         set$(ctx, `containerItemKey${i}`, undefined);
                         set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                        set$(ctx, `containerDidLayout${i}`, 0, true);
                         set$(ctx, `containerColumn${i}`, -1);
                     }
                 }
@@ -865,6 +872,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             for (let i = 0; i < numContainers; i++) {
                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                set$(ctx, `containerDidLayout${i}`, 0, true);
                 set$(ctx, `containerColumn${i}`, -1);
             }
 
@@ -880,7 +888,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return;
             }
             const state = refState.current!;
-            const { sizes, indexByKey, idsInFirstRender, columns, sizesLaidOut } = state;
+            const { sizes, indexByKey, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
             const numColumns = peek$<number>(ctx, "numColumns");
 
@@ -909,8 +917,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     diff = size - prevSize;
                 }
 
+                sizesLaidOut.set(itemKey, size);
+
                 if (__DEV__ && !estimatedItemSize && !getEstimatedItemSize) {
-                    sizesLaidOut!.set(itemKey, size);
+                  
                     if (state.timeoutSizeMessage) {
                         clearTimeout(state.timeoutSizeMessage);
                     }

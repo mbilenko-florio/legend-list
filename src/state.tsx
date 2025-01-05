@@ -1,14 +1,15 @@
 import * as React from "react";
 import { useSyncExternalStore } from "react";
+import { Animated } from "react-native";
 import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 
-// This is an implementation of a simple state management system, inspired by Legend State.
-// It stores values and listeners in Maps, with peek$ and set$ functions to get and set values.
-// The set$ function also triggers the listeners.
-//
-// This is definitely not general purpose and has one big optimization/caveat: use$ is only ever called
-// once for each unique name. So we don't need to manage a Set of listeners or dispose them,
-// which saves needing useEffect hooks or managing listeners in a Set.
+export type ContainerAnimatedData = {
+    position: number;
+    bottomAnchorPositio?: number;
+    numColumn: number;
+    didLayout: boolean;
+
+}
 
 export type ListenerType =
     | "numContainers"
@@ -25,11 +26,13 @@ export type ListenerType =
     | "scrollAdjust"
     | "headerSize"
     | "footerSize"
+    | "anchorPosition"
     | "otherAxisSize";
 
 export interface StateContext {
     listeners: Map<ListenerType, Set<(value: any) => void>>;
     values: Map<ListenerType, any>;
+    animatedValues: Map<ListenerType, Animated.Value>;
     mapViewabilityCallbacks: Map<string, ViewabilityCallback>;
     mapViewabilityValues: Map<string, ViewToken>;
     mapViewabilityAmountCallbacks: Map<number, ViewabilityAmountCallback>;
@@ -42,6 +45,7 @@ export function StateProvider({ children }: { children: React.ReactNode }) {
     const [value] = React.useState(() => ({
         listeners: new Map(),
         values: new Map(),
+        animatedValues: new Map(),
         mapViewabilityCallbacks: new Map<string, ViewabilityCallback>(),
         mapViewabilityValues: new Map<string, ViewToken>(),
         mapViewabilityAmountCallbacks: new Map<number, ViewabilityAmountCallback>(),
@@ -81,10 +85,28 @@ export function peek$<T>(ctx: StateContext, signalName: ListenerType): T {
     return values.get(signalName);
 }
 
-export function set$(ctx: StateContext, signalName: ListenerType, value: any) {
+export const getAnimatedValue = (ctx: StateContext, signalName: ListenerType, initialValue?: any) => {
+    const { animatedValues } = ctx;
+    let value = animatedValues.get(signalName);
+    let isNew = false;
+    if (!value) {
+        isNew = true;
+        value = new Animated.Value(initialValue);
+        animatedValues.set(signalName, value);
+    }
+    return [value, isNew] as const;
+}
+
+export function set$(ctx: StateContext, signalName: ListenerType, value: any, animated?: boolean) {
     const { listeners, values } = ctx;
     if (values.get(signalName) !== value) {
         values.set(signalName, value);
+        if (animated) {
+            const [animValue, isNew] = getAnimatedValue(ctx, signalName, value);
+            if (!isNew) {
+                animValue.setValue(value);
+            }
+        }
         const setListeners = listeners.get(signalName);
         if (setListeners) {
             for (const listener of setListeners) {

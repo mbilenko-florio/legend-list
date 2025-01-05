@@ -52,7 +52,7 @@ export interface InternalState {
     positions: Map<string, number>;
     columns: Map<string, number>;
     sizes: Map<string, number>;
-    sizesLaidOut: Map<string, number> | undefined;
+    sizesLaidOut: Map<string, number>;
     pendingAdjust: number;
     animFrameLayout: any;
     isStartReached: boolean;
