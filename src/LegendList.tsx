@@ -537,14 +537,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         } else {
                             const pos = positions.get(id) || 0;
                             const column = columns.get(id) || 1;
-                            
-                         
-                           
-                            const elementMeasured = state.sizesLaidOut.get(id) !== undefined
-                            let elementVisible = elementMeasured;
+
+                            const elementIsMeasured = state.sizesLaidOut.get(id) !== undefined;
+                            let elementVisible = true;
                             if (maintainVisibleContentPosition && itemIndex < anchorElementIndex) {
                                 // if element is above anchor, display it only if it's measured
-                                elementVisible =  elementMeasured;
+                                elementVisible = elementIsMeasured;
                             }
                             const prevPos = peek$(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
@@ -556,9 +554,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             if (column >= 0 && column !== prevColumn) {
                                 set$(ctx, `containerColumn${i}`, column);
                             }
-                            if (elementVisible !== prevVisible ) {
+                            if (elementVisible !== prevVisible) {
                                 // console.log("Setting elementVisible", elementVisible, id, state.sizesLaidOut);
-                                setAnimated$(ctx, `containerDidLayout${i}`, elementVisible ? 1: 0);
+                                setAnimated$(ctx, `containerDidLayout${i}`, elementVisible ? 1 : 0);
                             }
                         }
                     }
@@ -929,7 +927,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
 
                 if (__DEV__ && !estimatedItemSize && !getEstimatedItemSize) {
-                  
                     if (state.timeoutSizeMessage) {
                         clearTimeout(state.timeoutSizeMessage);
                     }
