@@ -3,13 +3,13 @@ import { useSyncExternalStore } from "react";
 import { Animated } from "react-native";
 import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 
-export type ContainerAnimatedData = {
-    position: number;
-    bottomAnchorPositio?: number;
-    numColumn: number;
-    didLayout: boolean;
-
-}
+// This is an implementation of a simple state management system, inspired by Legend State.
+// It stores values and listeners in Maps, with peek$ and set$ functions to get and set values.
+// The set$ function also triggers the listeners.
+//
+// This is definitely not general purpose and has one big optimization/caveat: use$ is only ever called
+// once for each unique name. So we don't need to manage a Set of listeners or dispose them,
+// which saves needing useEffect hooks or managing listeners in a Set.
 
 export type ListenerType =
     | "numContainers"
@@ -95,7 +95,7 @@ export const getAnimatedValue = (ctx: StateContext, signalName: ListenerType, in
         animatedValues.set(signalName, value);
     }
     return [value, isNew] as const;
-}
+};
 
 export function set$(ctx: StateContext, signalName: ListenerType, value: any, animated?: boolean) {
     const { listeners, values } = ctx;

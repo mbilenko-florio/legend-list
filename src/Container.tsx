@@ -3,9 +3,6 @@ import { Animated, type DimensionValue, type LayoutChangeEvent, type StyleProp, 
 import { peek$, set$, use$, useStateContext } from "./state";
 import { useValue$ } from "./useValue$";
 
-type MeasureMethod = "offscreen" | "invisible";
-const MEASURE_METHOD = "invisible" as MeasureMethod;
-
 export const Container = ({
     id,
     recycleItems,
@@ -27,7 +24,6 @@ export const Container = ({
     const visible = useValue$(`containerDidLayout${id}`);
     const numColumns = use$<number>("numColumns");
 
-  
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
     const style: StyleProp<ViewStyle> = horizontal
@@ -49,7 +45,6 @@ export const Container = ({
 
     style.opacity = visible;
 
-  
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
 
@@ -75,9 +70,7 @@ export const Container = ({
 
                     const measured = peek$(ctx, `containerDidLayout${id}`);
                     if (!measured) {
-                        setTimeout(() => {
                         set$(ctx, `containerDidLayout${id}`, 1, true);
-                        },0);
                     }
                 }
             }}
