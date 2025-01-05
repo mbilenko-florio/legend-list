@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Animated, type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
-import { peek$, set$, use$, useStateContext } from "./state";
+import { peek$, use$, useStateContext } from "./state";
 import { useValue$ } from "./useValue$";
 
 export const Container = ({
@@ -19,7 +19,7 @@ export const Container = ({
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
-    const position = use$<number>(`containerPosition${id}`);
+    const position = useValue$(`containerPosition${id}`);
     const column = use$<number>(`containerColumn${id}`) || 0;
     const visible = useValue$(`containerDidLayout${id}`);
     const numColumns = use$<number>("numColumns");

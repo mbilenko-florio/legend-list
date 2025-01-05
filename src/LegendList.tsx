@@ -532,7 +532,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 (pos + size >= scroll && pos <= scrollBottom) ||
                                 (prevPos + size >= scroll && prevPos <= scrollBottom)
                             ) {
-                                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                                setAnimated$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                             }
                         } else {
                             const pos = positions.get(id) || 0;
@@ -549,7 +549,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             const prevVisible = peek$(ctx, `containerDidLayout${i}`);
 
                             if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
-                                set$(ctx, `containerPosition${i}`, pos);
+                                setAnimated$(ctx, `containerPosition${i}`, pos);
                             }
                             if (column >= 0 && column !== prevColumn) {
                                 set$(ctx, `containerColumn${i}`, column);
@@ -720,7 +720,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
                     if (!keyExtractorProp || (itemKey && refState.current?.indexByKey.get(itemKey) === undefined)) {
                         set$(ctx, `containerItemKey${i}`, undefined);
-                        set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                        setAnimated$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                         setAnimated$(ctx, `containerDidLayout${i}`, 0);
                         set$(ctx, `containerColumn${i}`, -1);
                     }
@@ -878,7 +878,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
-                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                setAnimated$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                 setAnimated$(ctx, `containerDidLayout${i}`, 0);
                 set$(ctx, `containerColumn${i}`, -1);
             }
