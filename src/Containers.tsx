@@ -22,6 +22,8 @@ export const Containers = React.memo(function Containers({
     const numContainers = use$<number>("numContainersPooled");
     const animSize = useValue$("totalSize");
 
+    console.log("Containers render", numContainers);
+
     const containers = [];
     for (let i = 0; i < numContainers; i++) {
         containers.push(
@@ -32,6 +34,8 @@ export const Containers = React.memo(function Containers({
                 horizontal={horizontal}
                 getRenderedItem={getRenderedItem}
                 updateItemSize={updateItemSize}
+                // specifying inline separator makes Containers rerender on each data change
+                // should we do memo of ItemSeparatorComponent?
                 ItemSeparatorComponent={ItemSeparatorComponent}
             />,
         );

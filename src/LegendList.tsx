@@ -484,11 +484,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         }
                         if (furthestIndex >= 0) {
                             set$(ctx, `containerItemKey${furthestIndex}`, id);
+                            const index = refState.current?.indexByKey.get(id)!;
+                            set$(ctx, `containerItemData${furthestIndex}`, data[index]);
                         } else {
                             const containerId = numContainers;
 
                             numContainers++;
                             set$(ctx, `containerItemKey${containerId}`, id);
+                            const index = refState.current?.indexByKey.get(id)!;
+                            set$(ctx, `containerItemData${furthestIndex}`, data[index]);
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
                             set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
@@ -538,12 +542,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             const column = columns.get(id) || 1;
                             const prevPos = peek$(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
+                            const prevData = peek$(ctx, `containerItemData${i}`);
 
                             if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
                                 set$(ctx, `containerPosition${i}`, pos);
                             }
                             if (column >= 0 && column !== prevColumn) {
                                 set$(ctx, `containerColumn${i}`, column);
+                            }
+                            if (prevData !== item) {
+                                set$(ctx, `containerItemData${i}`, data[itemIndex]);
                             }
                         }
                     }

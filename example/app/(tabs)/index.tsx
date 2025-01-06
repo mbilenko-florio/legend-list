@@ -47,6 +47,10 @@ const data: ListElement[] = [
         title: "🚧🚧🚧Infinite chat🚧🚧🚧",
         url: "/chat-infinite",
     },
+    {
+        title: "Mutable elements",
+        url: "/mutable-cells",
+    },
     // Add more items as needed
 ].map(
     (v, i) =>

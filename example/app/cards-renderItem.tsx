@@ -105,6 +105,9 @@ const renderRightActions = () => {
     );
 };
 
+// Inline Separator makes containers rerender each data change
+const Separator = () => <View style={{ height: 10 }} />;
+
 export const ItemCard = ({
     item,
     index,
@@ -174,7 +177,7 @@ export const ItemCard = ({
                             text: "List Item 3",
                         },
                     ]}
-                    ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+                    ItemSeparatorComponent={Separator}
                     renderItem={({ item }) => (
                         <View style={styles.nestedListItem}>
                             <Text>{item.text}</Text>

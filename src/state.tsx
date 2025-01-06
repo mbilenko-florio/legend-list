@@ -14,6 +14,7 @@ export type ListenerType =
     | "numContainers"
     | "numContainersPooled"
     | `containerItemKey${number}`
+    | `containerItemData${number}`
     | `containerPosition${number}`
     | `containerColumn${number}`
     | `containerDidLayout${number}`
