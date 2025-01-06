@@ -22,8 +22,6 @@ export const Containers = React.memo(function Containers({
     const numContainers = use$<number>("numContainersPooled");
     const animSize = useValue$("totalSize");
 
-    console.log("Containers render", numContainers);
-
     const containers = [];
     for (let i = 0; i < numContainers; i++) {
         containers.push(
