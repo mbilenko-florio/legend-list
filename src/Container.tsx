@@ -59,7 +59,6 @@ export const Container = ({
     const data = use$<string>(`containerItemData${id}`); // to detect data changes
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
-    console.log("renderedItem", id, renderedItem, data);
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
