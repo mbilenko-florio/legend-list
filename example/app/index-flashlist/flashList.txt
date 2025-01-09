@@ -1,0 +1,14 @@
+LEGENDLIST  D  clearGapsAndOverlaps 0 0 idx: 0 t:0 b: 165  l:0 r:1080
+LEGENDLIST  D  neighbour t:220 b:385 l:0 r:1080
+LEGENDLIST  D  ->adjusting neighbour  neighbour.top 165 bottom 330
+LEGENDLIST  D  clearGapsAndOverlaps 1 165 idx: 1 t:165 b: 330  l:0 r:1080
+LEGENDLIST  D  neighbour t:440 b:605 l:0 r:1080
+LEGENDLIST  D  ->adjusting neighbour  neighbour.top 330 bottom 495
+LEGENDLIST  D  clearGapsAndOverlaps 2 330 idx: 2 t:330 b: 495  l:0 r:1080
+LEGENDLIST  D  neighbour t:660 b:825 l:0 r:1080
+LEGENDLIST  D  ->adjusting neighbour  neighbour.top 495 bottom 660
+LEGENDLIST  D  clearGapsAndOverlaps 3 495 idx: 3 t:495 b: 660  l:0 r:1080
+LEGENDLIST  D  neighbour t:880 b:1045 l:0 r:1080
+LEGENDLIST  D  ->adjusting neighbour  neighbour.top 660 bottom 825
+LEGENDLIST  D  clearGapsAndOverlaps 4 660 idx: 4 t:660 b: 825  l:0 r:1080
+LEGENDLIST  D  neighbour t:1100 b:1265 l:0 r:1080

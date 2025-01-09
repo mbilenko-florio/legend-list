@@ -1,5 +1,5 @@
 import { ThemedText } from "@/components/ThemedText";
-import { LegendList } from "@legendapp/list";
+import { FlashList } from "@shopify/flash-list";
 import { Link, type LinkProps } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -80,7 +80,7 @@ const ListItem = ({ title, url }: ListElement) => (
 const ListElements = () => {
     return (
         <SafeAreaView style={styles.container}>
-            <LegendList
+            <FlashList
                 estimatedItemSize={80}
                 data={data}
                 renderItem={({ item }) => <ListItem {...item} />}
