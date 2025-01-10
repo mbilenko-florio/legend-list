@@ -42,6 +42,15 @@ export default function TabLayout() {
                     ),
                 }}
             />
+             <Tabs.Screen
+                name="cards-fc"
+                options={{
+                    title: "Cards FL",
+                    tabBarIcon: ({ color }) => (
+                        <IconSymbol size={28} name="chevron.left.forwardslash.chevron.right" color={color} />
+                    ),
+                }}
+            />
             <Tabs.Screen
                 name="moviesL"
                 options={{

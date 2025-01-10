@@ -27,18 +27,18 @@ const data: ListElement[] = [
         title: "Cards FlatList",
         url: "/cards-flatlist",
     },
-    {
-        title: "Cards FlashList",
-        url: "/cards-flashlist",
-    },
+    // {
+    //     title: "Cards FlashList",
+    //     url: "/cards-flashlist",
+    // },
     {
         title: "Cards Columns",
         url: "/cards-columns",
     },
-    {
-        title: "Movies FlashList",
-        url: "/movies-flashlist",
-    },
+    // {
+    //     title: "Movies FlashList",
+    //     url: "/movies-flashlist",
+    // },
     {
         title: "Bidirectional Infinite List",
         url: "/bidirectional-infinite-list",
@@ -51,10 +51,10 @@ const data: ListElement[] = [
         title: "Mutable elements",
         url: "/mutable-cells",
     },
-    {
-        title: "Index flashlist",
-        url: "/index-flashlist",
-    }
+    // {
+    //     title: "Index flashlist",
+    //     url: "/index-flashlist",
+    // }
     // Add more items as needed
 ].map(
     (v, i) =>
@@ -85,6 +85,7 @@ const ListElements = () => {
                 data={data}
                 renderItem={({ item }) => <ListItem {...item} />}
                 keyExtractor={(item) => item.id.toString()}
+                useFlashListContainers
             />
         </SafeAreaView>
     );

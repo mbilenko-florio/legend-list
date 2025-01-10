@@ -2,7 +2,6 @@
 // Full credit to Alex Moreaux (@Almouro) for the original code
 
 import { LegendList, type LegendListRenderItemProps } from "@legendapp/list";
-import { FlashList } from "@shopify/flash-list";
 import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
 import { IMAGE_SIZE, type Movie, type Playlist, getImageUrl } from "../api";
 import { playlists as playlistData } from "../api/data/playlist";
@@ -155,7 +154,7 @@ const listStyles = StyleSheet.create({
 const Movies = ({ isLegend, recycleItems }: { isLegend: boolean; recycleItems?: boolean }) => {
     const playlists = require("../api/data/rows.json");
 
-    const ListComponent = isLegend ? LegendList : FlashList;
+    const ListComponent =  LegendList ;
     const DRAW_DISTANCE = isLegend ? 0 : 0;
     console.log("is legend", isLegend, DRAW_DISTANCE);
 
