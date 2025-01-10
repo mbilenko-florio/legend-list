@@ -1,7 +1,7 @@
+import { CellContainer } from "flashlist-autolayout";
 import React, { useMemo } from "react";
-import { View, type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
-import { peek$, use$, useStateContext } from "./state";
-
+import { type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { peek$, use$, useStateContext } from "../state";
 
 type MeasureMethod = "offscreen" | "invisible";
 const MEASURE_METHOD = "invisible" as MeasureMethod;
@@ -61,12 +61,18 @@ export const Container = ({
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
 
+
+    const indexByKey = use$('indexByKey') || {};
+    const index = indexByKey.get(itemKey);
+    console.log("Render", itemKey, index, position);  
+
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
     return (
-        <View
+        <CellContainer
             style={style}
+            index={index}
             onLayout={(event: LayoutChangeEvent) => {
                 const key = peek$<string>(ctx, `containerItemKey${id}`);
                 if (key !== undefined) {
@@ -91,6 +97,6 @@ export const Container = ({
                 {renderedItem}
                 {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
             </React.Fragment>
-        </View>
+        </CellContainer>
     );
 };

@@ -66,6 +66,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             onStartReached,
             ListEmptyComponent,
             refScrollView,
+            useFlashListContainers,
             ...rest
         } = props;
         const { style, contentContainerStyle } = props;
@@ -177,6 +178,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             set$(ctx, "scrollAdjust", 0);
+            set$(ctx, "indexByKey", {});
         }
 
         const getAnchorElementIndex = () => {
@@ -689,6 +691,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             // getAnchorElementIndex needs indexByKey, build it first
             refState.current.indexByKey = indexByKey;
+            set$(ctx, "indexByKey", indexByKey);
             const anchorElementIndex = getAnchorElementIndex();
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
@@ -1116,6 +1119,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 ListEmptyComponent={data.length === 0 ? ListEmptyComponent : undefined}
                 maintainVisibleContentPosition={maintainVisibleContentPosition}
                 style={style}
+                useFlashListContainers={useFlashListContainers || false}
             />
         );
     }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;

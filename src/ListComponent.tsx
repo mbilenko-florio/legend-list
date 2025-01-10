@@ -13,6 +13,7 @@ import { Containers } from "./Containers";
 import { peek$, set$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
 import { useValue$ } from "./useValue$";
+import { FlashListContainers } from "./flash-list/Containers";
 
 interface ListComponentProps
     extends Omit<
@@ -32,6 +33,7 @@ interface ListComponentProps
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onLayout: (event: LayoutChangeEvent) => void;
     maintainVisibleContentPosition: boolean;
+    useFlashListContainers: boolean;
 }
 
 const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {
@@ -64,6 +66,7 @@ export const ListComponent = React.memo(function ListComponent({
     updateItemSize,
     refScrollView,
     maintainVisibleContentPosition,
+    useFlashListContainers,
     ...rest
 }: ListComponentProps) {
     const ctx = useStateContext();
@@ -86,6 +89,8 @@ export const ListComponent = React.memo(function ListComponent({
     // }, [otherAxisSize]);
 
     const additionalSize = { marginTop: animScrollAdjust, paddingTop: animPaddingTop };
+
+    const ContainersComponent = useFlashListContainers ? FlashListContainers: Containers  ;
 
     return (
         <ScrollView
@@ -131,7 +136,7 @@ export const ListComponent = React.memo(function ListComponent({
                 <Animated.View style={ListEmptyComponentStyle}>{getComponent(ListEmptyComponent)}</Animated.View>
             )}
 
-            <Containers
+            <ContainersComponent
                 horizontal={horizontal!}
                 recycleItems={recycleItems!}
                 getRenderedItem={getRenderedItem}
