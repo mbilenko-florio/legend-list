@@ -1,11 +1,9 @@
 import { defineConfig } from 'tsup';
 
-const Exclude = new Set(['.DS_Store']);
-
-const external = ['react', 'react-native'];
+const external = ['react', 'react-native', 'react-native-reanimated', '@legendapp/list'];
 
 export default defineConfig({
-    entry: ['src/index.ts'],
+    entry: ['src/index.ts', 'src/animated.tsx', 'src/reanimated.tsx'],
     format: ['cjs', 'esm'],
     external,
     dts: true,

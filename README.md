@@ -67,12 +67,7 @@ There's not a lot of code here so hopefully it's easy to contribute. If you want
 
 ## TODO list
 
--   onViewableItemsChanged
--   Adjust scroll when item heights change above the viewable area so they don't jump
--   A prop to start with items at the bottom like a chat interface, just needs to pad the top with screen height - items height
--   Other important missing features from FlatList or other lists libraries
--   Optimizations:
-    -   Loop over only potentially changed items when adjusting heights rather than data array
+See [Road to v1](https://github.com/LegendApp/legend-list/issues/28)
 
 ## Community
 

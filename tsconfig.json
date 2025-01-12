@@ -32,7 +32,10 @@
             ],
             "react-native": [
                 "node_modules/react-native"
-            ]
+            ],
+            "@legendapp/list": [
+                "src/index"
+            ],
         },
         "resolveJsonModule": true,
         "noEmit": true

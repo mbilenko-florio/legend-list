@@ -32,6 +32,8 @@ export const Containers = React.memo(function Containers({
                 horizontal={horizontal}
                 getRenderedItem={getRenderedItem}
                 updateItemSize={updateItemSize}
+                // specifying inline separator makes Containers rerender on each data change
+                // should we do memo of ItemSeparatorComponent?
                 ItemSeparatorComponent={ItemSeparatorComponent}
             />,
         );
