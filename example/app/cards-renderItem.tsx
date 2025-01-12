@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
 import Swipeable, { type SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
+import { opacity } from "react-native-redash";
 
 export interface Item {
     id: string;
@@ -119,26 +120,9 @@ export const ItemCard = ({
     const refSwipeable = useRef<SwipeableMethods>();
 
     // A useState that resets when the item is recycled
-    const [isExpanded, setIsExpanded] = useRecyclingState ? useRecyclingState(() => false) : useState(() => false);
+    const [isExpanded, setIsExpanded] = useState(false);
 
-    // A callback when the item is recycled
-    useRecyclingEffect?.(({ item, prevItem, index, prevIndex }) => {
-        refSwipeable?.current?.close();
-    });
-
-    // A callback when the item viewability (from viewabilityConfig) changes
-    useViewability?.("viewability", ({ item, isViewable, index }) => {
-        // console.log('viewable', viewToken.index, viewToken.isViewable);
-    });
-
-    // @ts-ignore
-    const opacity = useViewabilityAmount ? useAnimatedValue(1) : 1;
-    useViewabilityAmount?.(({ sizeVisible, size, percentOfScroller }) => {
-        // @ts-ignore
-        // opacity.setValue(Math.max(0, Math.min(1, sizeVisible / Math.min(400, size || 400)) ** 1.5));
-        // console.log('viewable', sizeVisible, size, percentOfScroller);
-    });
-
+    let opacity = 1
     // Math.abs needed for negative indices
     const indexForData = Math.abs(item.id.includes("new") ? 100 + +item.id.replace("new", "") : +item.id);
 
