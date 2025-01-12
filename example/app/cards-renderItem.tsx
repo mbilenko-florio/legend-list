@@ -121,23 +121,28 @@ export const ItemCard = ({
     // A useState that resets when the item is recycled
     const [isExpanded, setIsExpanded] = useRecyclingState ? useRecyclingState(() => false) : useState(() => false);
 
+    const swipableState = useRef(false);
+
     // A callback when the item is recycled
     useRecyclingEffect?.(({ item, prevItem, index, prevIndex }) => {
-        refSwipeable?.current?.close();
+        if (swipableState.current) {
+            // this is expensive operation, run .close() only if the swipeable is open
+            refSwipeable?.current?.close();
+        }
     });
 
     // A callback when the item viewability (from viewabilityConfig) changes
-    useViewability?.("viewability", ({ item, isViewable, index }) => {
-        // console.log('viewable', viewToken.index, viewToken.isViewable);
-    });
+    // useViewability?.("viewability", ({ item, isViewable, index }) => {
+    //     // console.log('viewable', viewToken.index, viewToken.isViewable);
+    // });
 
     // @ts-ignore
     const opacity = useViewabilityAmount ? useAnimatedValue(1) : 1;
-    useViewabilityAmount?.(({ sizeVisible, size, percentOfScroller }) => {
-        // @ts-ignore
-        // opacity.setValue(Math.max(0, Math.min(1, sizeVisible / Math.min(400, size || 400)) ** 1.5));
-        // console.log('viewable', sizeVisible, size, percentOfScroller);
-    });
+    // useViewabilityAmount?.(({ sizeVisible, size, percentOfScroller }) => {
+    //     // @ts-ignore
+    //     // opacity.setValue(Math.max(0, Math.min(1, sizeVisible / Math.min(400, size || 400)) ** 1.5));
+    //     // console.log('viewable', sizeVisible, size, percentOfScroller);
+    // });
 
     // Math.abs needed for negative indices
     const indexForData = Math.abs(item.id.includes("new") ? 100 + +item.id.replace("new", "") : +item.id);
@@ -195,6 +200,12 @@ export const ItemCard = ({
                 overshootRight={true}
                 containerStyle={styles.swipeableContainer}
                 ref={refSwipeable as any}
+                onSwipeableWillOpen={() => {
+                    swipableState.current = true;
+                }}
+                onSwipeableWillClose={() => {
+                    swipableState.current = false;
+                }}
             >
                 <Pressable
                     onPress={(e) => {
