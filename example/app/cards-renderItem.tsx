@@ -121,11 +121,11 @@ export const ItemCard = ({
     // A useState that resets when the item is recycled
     const [isExpanded, setIsExpanded] = useRecyclingState ? useRecyclingState(() => false) : useState(() => false);
 
-    const swipableState = useRef(false);
+    const swipeableState = useRef(false);
 
     // A callback when the item is recycled
     useRecyclingEffect?.(({ item, prevItem, index, prevIndex }) => {
-        if (swipableState.current) {
+        if (swipeableState.current) {
             // this is expensive operation, run .close() only if the swipeable is open
             refSwipeable?.current?.close();
         }
@@ -201,10 +201,10 @@ export const ItemCard = ({
                 containerStyle={styles.swipeableContainer}
                 ref={refSwipeable as any}
                 onSwipeableWillOpen={() => {
-                    swipableState.current = true;
+                    swipeableState.current = true;
                 }}
                 onSwipeableWillClose={() => {
-                    swipableState.current = false;
+                    swipeableState.current = false;
                 }}
             >
                 <Pressable
