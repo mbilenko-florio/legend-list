@@ -68,6 +68,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             ListEmptyComponent,
             scrollEventThrottle,
             refScrollView,
+            containerType = 'react',
             ...rest
         } = props;
         const { style, contentContainerStyle } = props;
@@ -1208,6 +1209,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 ListEmptyComponent={data.length === 0 ? ListEmptyComponent : undefined}
                 maintainVisibleContentPosition={maintainVisibleContentPosition}
                 scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
+                containerType={containerType}
                 style={style}
             />
         );

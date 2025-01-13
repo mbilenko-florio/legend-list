@@ -1,30 +1,22 @@
 import React, { useMemo } from "react";
 import { Animated, type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
-import { peek$, use$, useStateContext } from "./state";
-import { useValue$ } from "./useValue$";
+import { peek$, use$, useStateContext } from "../state";
+import { useValue$ } from "../useValue$";
+import type { ContainerProps } from "./types";
 
-export const Container = ({
+export const AnimatedContainer = ({
     id,
     recycleItems,
     horizontal,
     getRenderedItem,
     updateItemSize,
     ItemSeparatorComponent,
-}: {
-    id: number;
-    recycleItems?: boolean;
-    horizontal: boolean;
-    getRenderedItem: (key: string, containerId: number) => React.ReactNode;
-    updateItemSize: (containerId: number, itemKey: string, size: number) => void;
-    ItemSeparatorComponent?: React.ReactNode;
-}) => {
+}: ContainerProps) => {
     const ctx = useStateContext();
     const column = use$<number>(`containerColumn${id}`) || 0;
     const position = useValue$(`containerPosition${id}`);
     const visible = useValue$(`containerDidLayout${id}`);
     const numColumns = use$<number>("numColumns");
-
-    
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;

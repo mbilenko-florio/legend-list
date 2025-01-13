@@ -10,6 +10,8 @@ import {
 } from "react-native";
 
 import { Containers } from "./Containers";
+import { AnimatedContainer } from "./Containers/AnimatedContainer";
+import { ReactStateContainer } from "./Containers/ReactStateContainer";
 import { peek$, set$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
 import { useValue$ } from "./useValue$";
@@ -32,6 +34,7 @@ interface ListComponentProps
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onLayout: (event: LayoutChangeEvent) => void;
     maintainVisibleContentPosition: boolean;
+    containerType: 'react' | 'animated';
 }
 
 const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {
@@ -64,6 +67,7 @@ export const ListComponent = React.memo(function ListComponent({
     updateItemSize,
     refScrollView,
     maintainVisibleContentPosition,
+    containerType,
     ...rest
 }: ListComponentProps) {
     const ctx = useStateContext();
@@ -137,6 +141,7 @@ export const ListComponent = React.memo(function ListComponent({
                 getRenderedItem={getRenderedItem}
                 ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
                 updateItemSize={updateItemSize}
+                ContainerComponent={containerType === 'animated' ? AnimatedContainer : ReactStateContainer}
             />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
         </ScrollView>
