@@ -77,7 +77,7 @@ const MovieRow = ({
     const movies = playlistData[playlist.id]();
     const DRAW_DISTANCE_ROW = isLegend ? 500 : 250;
     let opacity = 0;
-    if (isLegend) {
+    if (isLegend && useRecyclingState) {
         const [_opacity, setOpacity] = useRecyclingState<number>(() => {
             if (setOpacity) {
                 requestAnimationFrame(() => setOpacity(1));
@@ -169,7 +169,7 @@ const Movies = ({ isLegend, recycleItems }: { isLegend: boolean; recycleItems?: 
                     ListComponent={ListComponent}
                     isLegend={isLegend}
                     playlist={playlist}
-                    useRecyclingState={useRecyclingState}
+                    //useRecyclingState={useRecyclingState}
                     // useRecyclingEffect={useRecyclingEffect}
                 />
             )}

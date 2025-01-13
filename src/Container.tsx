@@ -21,7 +21,7 @@ export const Container = ({
     const ctx = useStateContext();
     const column = use$<number>(`containerColumn${id}`) || 0;
     const position = useValue$(`containerPosition${id}`);
-    const visible = useValue$(`containerDidLayout${id}`);
+    const visible = use$(`containerDidLayout${id}`);
     const numColumns = use$<number>("numColumns");
 
     
@@ -45,15 +45,13 @@ export const Container = ({
               top: position,
           };
 
-   style.opacity = visible;
+    style.opacity = visible;
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
     const data = use$<string>(`containerItemData${id}`); // to detect data changes
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
-
-    // console.log("Rendered Item", itemKey);
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
@@ -66,7 +64,6 @@ export const Container = ({
                 if (key !== undefined) {
                     // Round to nearest quater pixel to avoid accumulating rounding errors
                     const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
-
                     updateItemSize(id, key, size);
 
                     // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
