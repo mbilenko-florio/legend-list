@@ -21,7 +21,7 @@ export const Container = ({
     const ctx = useStateContext();
     const column = use$<number>(`containerColumn${id}`) || 0;
     const position = useValue$(`containerPosition${id}`);
-    const visible = use$(`containerDidLayout${id}`);
+    const visible = useValue$(`containerDidLayout${id}`);
     const numColumns = use$<number>("numColumns");
 
     
