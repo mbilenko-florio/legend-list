@@ -26,7 +26,8 @@ export type ListenerType =
     | "stylePaddingTop"
     | "scrollAdjust"
     | "headerSize"
-    | "footerSize";
+    | "footerSize" 
+    | "containerRenderMode"
 // | "otherAxisSize";
 
 export interface StateContext {
@@ -90,17 +91,8 @@ export function peek$<T>(ctx: StateContext, signalName: ListenerType): T {
     return values.get(signalName);
 }
 
-export const getAnimatedValue = (ctx: StateContext, signalName: ListenerType, initialValue?: any) => {
-    const { animatedValues } = ctx;
-    let value = animatedValues.get(signalName);
-    let isNew = false;
-    if (!value) {
-        isNew = true;
-        value = new Animated.Value(initialValue);
-        animatedValues.set(signalName, value);
-    }
-    return [value, isNew] as const;
-};
+
+
 
 export function set$(ctx: StateContext, signalName: ListenerType, value: any) {
     const { listeners, values } = ctx;
@@ -114,11 +106,31 @@ export function set$(ctx: StateContext, signalName: ListenerType, value: any) {
         }
     }
 }
-export function setAnimated$(ctx: StateContext, signalName: ListenerType, value: any) {
+
+
+export const getAnimatedValue = (ctx: StateContext, signalName: ListenerType) => {
+    const { animatedValues } = ctx;
+    return animatedValues.get(signalName);
+};
+
+const getOrCreateAnimatedValue = (ctx: StateContext, signalName: ListenerType, initialValue?: any, forceCreateNewAnimatedValue?: boolean) => {
+    const { animatedValues } = ctx;
+    let value = animatedValues.get(signalName);
+    let isNew = false;
+    if (!value || forceCreateNewAnimatedValue) {
+        console.log("Creating new animated value for", signalName, initialValue);
+        isNew = true;
+        value = new Animated.Value(initialValue);
+        animatedValues.set(signalName, value);
+    }
+    return [value, isNew] as const;
+};
+
+export function setAnimated$(ctx: StateContext, signalName: ListenerType, value: any, options: {newAnimatedValue?: boolean} = {}) {
     const { listeners, values } = ctx;
     if (values.get(signalName) !== value) {
         values.set(signalName, value);
-        const [animValue, isNew] = getAnimatedValue(ctx, signalName, value);
+        const [animValue, isNew] = getOrCreateAnimatedValue(ctx, signalName, value, options.newAnimatedValue || false);
         if (!isNew) {
             animValue.setValue(value);
         }
@@ -130,3 +142,5 @@ export function setAnimated$(ctx: StateContext, signalName: ListenerType, value:
         }
     }
 }
+
+

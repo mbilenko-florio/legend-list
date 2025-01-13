@@ -181,6 +181,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             setAnimated$(ctx, "scrollAdjust", 0);
+            set$(ctx, "containerRenderMode", "react");
         }
 
         const getAnchorElementIndex = () => {
@@ -514,6 +515,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             set$(ctx, `containerItemKey${furthestIndex}`, id);
                             const index = refState.current?.indexByKey.get(id)!;
                             set$(ctx, `containerItemData${furthestIndex}`, data[index]);
+                           
+                            const shouldDispatchNewAnimated = false;//peek$(ctx,'containerRenderMode') === 'react';
+                            //console.log("Creating animated value", id, top,shouldDispatchNewAnimated);
+                            setAnimated$(ctx, `containerPosition${furthestIndex}`,top, {newAnimatedValue: shouldDispatchNewAnimated});
+                            setAnimated$(ctx, `containerDidLayout${furthestIndex}`, 0,{newAnimatedValue: shouldDispatchNewAnimated});
                         } else {
                             const containerId = numContainers;
 
@@ -524,7 +530,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
                             set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
-                            set$(ctx, `containerDidLayout${containerId}`, 0);
+                            setAnimated$(ctx, `containerDidLayout${containerId}`, 0);
                             set$(ctx, `containerColumn${containerId}`, -1);
 
                             if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
@@ -583,6 +589,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                             if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
                                 setAnimated$(ctx, `containerPosition${i}`, pos);
+                                console.log("Updating animated value", id, pos);
                             }
                             if (column >= 0 && column !== prevColumn) {
                                 set$(ctx, `containerColumn${i}`, column);
@@ -601,7 +608,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             if (layoutsPending.size > 0) {
                 for (const containerId of layoutsPending) {
-                    set$(ctx, `containerDidLayout${containerId}`, true);
+                    setAnimated$(ctx, `containerDidLayout${containerId}`, true);
                 }
                 layoutsPending.clear();
             }
@@ -1033,7 +1040,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             } else {
                 // Size is the same as estimated so mark it as laid out
-                set$(ctx, `containerDidLayout${containerId}`, true);
+                setAnimated$(ctx, `containerDidLayout${containerId}`, true);
             }
         }, []);
 
@@ -1109,6 +1116,19 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const scrollDiff = newest.scroll - oldest.scroll;
                     const timeDiff = newest.time - oldest.time;
                     velocity = timeDiff > 0 ? scrollDiff / timeDiff : 0;
+                }
+
+                // console.log("V",velocity)
+                if (Math.abs(velocity) > 3){
+                    if (peek$(ctx,'containerRenderMode') === 'react') {
+                        set$(ctx,'containerRenderMode','animated')
+                        console.log("Animated reuseMode")
+                    }
+                } else {
+                    if (peek$(ctx,'containerRenderMode') === 'animated') {
+                        set$(ctx,'containerRenderMode','react')
+                        console.log("Back to react mode")
+                    }
                 }
 
                 // Update current scroll state

@@ -19,10 +19,12 @@ export const Container = ({
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
-    const position = useValue$(`containerPosition${id}`);
     const column = use$<number>(`containerColumn${id}`) || 0;
+    const position = useValue$(`containerPosition${id}`);
     const visible = useValue$(`containerDidLayout${id}`);
     const numColumns = use$<number>("numColumns");
+
+    
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
@@ -50,6 +52,8 @@ export const Container = ({
     const data = use$<string>(`containerItemData${id}`); // to detect data changes
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
+
+    // console.log("Rendered Item", itemKey);
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
