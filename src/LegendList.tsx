@@ -516,7 +516,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             const index = refState.current?.indexByKey.get(id)!;
                             set$(ctx, `containerItemData${furthestIndex}`, data[index]);
                            
-                            const shouldDispatchNewAnimated = false;//peek$(ctx,'containerRenderMode') === 'react';
+                            const shouldDispatchNewAnimated = peek$(ctx,'containerRenderMode') === 'react';
                             //console.log("Creating animated value", id, top,shouldDispatchNewAnimated);
                             setAnimated$(ctx, `containerPosition${furthestIndex}`,top, {newAnimatedValue: shouldDispatchNewAnimated});
                             setAnimated$(ctx, `containerDidLayout${furthestIndex}`, 0,{newAnimatedValue: shouldDispatchNewAnimated});
