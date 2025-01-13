@@ -1,6 +1,6 @@
 {
     "expo": {
-        "name": "list-test",
+        "name": "anim",
         "slug": "list-test",
         "version": "1.0.0",
         "orientation": "portrait",
@@ -17,7 +17,7 @@
                 "foregroundImage": "./assets/images/adaptive-icon.png",
                 "backgroundColor": "#ffffff"
             },
-            "package": "com.legendapp.listtest"
+            "package": "com.legendapp.listtestanim"
         },
         "web": {
             "bundler": "metro",
