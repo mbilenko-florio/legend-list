@@ -1120,7 +1120,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
 
                 // console.log("V",velocity)
-                if (Math.abs(velocity) > 3){
+                if (Math.abs(velocity) > 4){
                     if (peek$(ctx,'containerRenderMode') === 'react') {
                         set$(ctx,'containerRenderMode','animated')
                         console.log("Animated reuseMode")

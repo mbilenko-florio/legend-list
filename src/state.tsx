@@ -118,7 +118,7 @@ const getOrCreateAnimatedValue = (ctx: StateContext, signalName: ListenerType, i
     let value = animatedValues.get(signalName);
     let isNew = false;
     if (!value || forceCreateNewAnimatedValue) {
-        console.log("Creating new animated value for", signalName, initialValue);
+        //console.log("Creating new animated value for", signalName, initialValue);
         isNew = true;
         value = new Animated.Value(initialValue);
         animatedValues.set(signalName, value);

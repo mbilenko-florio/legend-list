@@ -45,7 +45,7 @@ export const Container = ({
               top: position,
           };
 
-    style.opacity = visible;
+   style.opacity = visible;
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
