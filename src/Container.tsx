@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { View, type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type ViewStyle } from "react-native";
 import { peek$, use$, useStateContext } from "./state";
 
 
@@ -77,13 +77,6 @@ export const Container = ({
 
                     // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
                     // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
-
-                    //const measured = peek$(ctx, `containerDidLayout${id}`);
-                    // if (!measured) {
-                    //     requestAnimationFrame(() => {
-                    //         set$(ctx, `containerDidLayout${id}`, true);
-                    //     });
-                    // }
                 }
             }}
         >
