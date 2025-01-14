@@ -5,11 +5,12 @@ const path = require('path');
 const projectRoot = __dirname;
 // This can be replaced with `find-yarn-workspace-root`
 const listRoot = path.resolve(projectRoot, '../src');
+const flashList = path.resolve(projectRoot, '../flashlist-autolayout');
 
 const config = getDefaultConfig(projectRoot);
 
 // 1. Watch all files within the monorepo
-config.watchFolders = [listRoot];
+config.watchFolders = [listRoot,flashList];
 // 2. Let Metro know where to resolve packages and in what order
 config.resolver.nodeModulesPaths = [path.resolve(projectRoot, 'node_modules'), path.resolve(listRoot, 'node_modules')];
 

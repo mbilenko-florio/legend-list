@@ -1,6 +1,6 @@
 import { CellContainer } from "flashlist-autolayout";
 import React, { useMemo } from "react";
-import { type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import type { DimensionValue, LayoutChangeEvent, StyleProp, ViewStyle } from "react-native";
 import { peek$, use$, useStateContext } from "../state";
 
 type MeasureMethod = "offscreen" | "invisible";

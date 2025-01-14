@@ -1,9 +1,11 @@
-import * as React from "react";
-import { Animated, type StyleProp, type ViewStyle } from "react-native";
-import { Container } from "./Container";
+
+import Animated from "react-native-reanimated";
 import { use$ } from "../state";
 import { useValue$ } from "../useValue$";
-import { AutoLayoutView } from "flashlist-autolayout";
+import { CellContainer,AutoLayoutView } from "flashlist-autolayout";
+import React from "react";
+import { Container } from "./Container";
+import { StyleProp, View, ViewStyle } from "react-native";
 
 const AutoLayoutViewAnimated = Animated.createAnimatedComponent(AutoLayoutView);
 
@@ -42,19 +44,36 @@ export const FlashListContainers = React.memo(function Containers({
         );
     }
 
+    // containers.push(  <CellContainer
+    //     style={{position: "absolute", top: 10000000, left: 0, right: 0}}
+    //     index={100000}
+    //    >
+    //    <PlaceHolder />
+    //    </CellContainer>
+    // );
+
     const style: StyleProp<ViewStyle> = horizontal ? { width: animSize } : { height: animSize };
 
-    return  <AutoLayoutViewAnimated
-    style={style}
-    disableAutoLayout={false}
-    onBlankAreaEvent={(evt) => {
-       // console.log("Blank area event", evt);
-    }}
-    onLayout={(p) => {
-       console.log("layout", p.nativeEvent.layout);
-    }}
-    windowSize={709}
->
-    {containers}
-</AutoLayoutViewAnimated>
+    return (
+        <AutoLayoutViewAnimated
+            style={style}
+            disableAutoLayout={false}
+            onBlankAreaEvent={(evt) => {
+                // console.log("Blank area event", evt);
+            }}
+            onLayout={(p) => {
+                console.log("layout", p.nativeEvent.layout);
+            }}
+            windowSize={709}
+        >
+            {containers}
+        </AutoLayoutViewAnimated>
+    );
 });
+const PlaceHolder = () => {
+    return (
+        
+            <View style={{  height: 100, borderRadius: 45 }} />
+
+    );
+};

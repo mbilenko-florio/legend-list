@@ -90,7 +90,7 @@ export const ListComponent = React.memo(function ListComponent({
 
     const additionalSize = { marginTop: animScrollAdjust, paddingTop: animPaddingTop };
 
-    const ContainersComponent = useFlashListContainers ? FlashListContainers: Containers  ;
+    const ContainersComponent = useFlashListContainers ? FlashListContainers: Containers;
 
     return (
         <ScrollView
