@@ -51,10 +51,6 @@ const data: ListElement[] = [
         title: "Mutable elements",
         url: "/mutable-cells",
     },
-    // {
-    //     title: "Index flashlist",
-    //     url: "/index-flashlist",
-    // }
     // Add more items as needed
 ].map(
     (v, i) =>
