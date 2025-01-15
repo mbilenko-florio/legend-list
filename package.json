@@ -40,9 +40,6 @@
         "lint:fix": "bunx biome lint --write ./src && bunx biome format --write ./src && bunx biome check --write ./src && bun run lint:fix:example",
         "lint:fix:example": "bunx biome lint --write ./example/app && bunx biome format --write ./example/app && bunx biome check --write ./example/app"
     },
-    "dependencies": {
-      
-    },
     "peerDependencies": {
         "react": "*",
         "react-native": "*",

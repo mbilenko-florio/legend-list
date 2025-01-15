@@ -123,8 +123,6 @@ export const ItemCard = ({
 
     const swipeableState = useRef(false);
 
-    const swipeableState = useRef(false);
-
     // A callback when the item is recycled
     useRecyclingEffect?.(({ item, prevItem, index, prevIndex }) => {
         if (swipeableState.current) {
