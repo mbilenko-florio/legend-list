@@ -47,7 +47,7 @@ export const Container = ({
           };
 
     if (MEASURE_METHOD === "invisible") {
-        //style.opacity = visible ? 1 : 0;
+        style.opacity = visible ? 1 : 0;
     } else if (MEASURE_METHOD === "offscreen") {
         const additional = horizontal
             ? { top: visible ? otherAxisPos : -10000000 }
