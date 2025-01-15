@@ -5,6 +5,7 @@ import { LegendList, type LegendListRenderItemProps } from "@legendapp/list";
 import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
 import { IMAGE_SIZE, type Movie, type Playlist, getImageUrl } from "../api";
 import { playlists as playlistData } from "../api/data/playlist";
+import { FlashList } from "@shopify/flash-list";
 
 
 const itemCount = 0;
@@ -67,29 +68,16 @@ const MovieRow = ({
     playlist,
     ListComponent,
     isLegend,
-    useRecyclingState,
+   // useRecyclingState,
 }: {
     playlist: Playlist;
     ListComponent: typeof FlashList | typeof LegendList;
     isLegend: boolean;
-    useRecyclingState: LegendListRenderItemProps<Playlist>["useRecyclingState"];
+    // useRecyclingState: LegendListRenderItemProps<Playlist>["useRecyclingState"];
 }) => {
     const movies = playlistData[playlist.id]();
-    const DRAW_DISTANCE_ROW = isLegend ? 500 : 250;
-    let opacity = 0;
-    if (isLegend) {
-        const [_opacity, setOpacity] = useRecyclingState<number>(() => {
-            if (setOpacity) {
-                requestAnimationFrame(() => setOpacity(1));
-                return 0;
-            }
-            return 1;
-        });
-        opacity = _opacity;
-    } else {
-        opacity = 1;
-    }
-
+    const DRAW_DISTANCE_ROW = 250;
+   
     // const listRef = useRef<FlashList<Movie>>(null);
 
     //   const {onMomentumScrollBegin, onScroll} = useRememberListScroll(
@@ -123,7 +111,7 @@ const MovieRow = ({
             <Text numberOfLines={1} style={rowStyles.title}>
                 {playlist.title}
             </Text>
-            <View style={[rowStyles.container, { opacity }]}>
+            <View style={[rowStyles.container]}>
                 <ListComponent
                     contentContainerStyle={rowStyles.listContainer}
                     // See https://shopify.github.io/flash-list/docs/fundamentals/performant-components/#remove-key-prop
@@ -138,7 +126,11 @@ const MovieRow = ({
                     // ref={listRef}
                     //   onMomentumScrollBegin={onMomentumScrollBegin}
                     //   onScroll={onScroll}
-                    drawDistance={DRAW_DISTANCE_ROW}
+                    drawDistance={100}
+                    recycleItems={true}
+                    useFlashListContainers
+                    initialNumContainers={4}
+                   
                 />
             </View>
         </>
@@ -155,11 +147,12 @@ const listStyles = StyleSheet.create({
 const Movies = ({ isLegend, recycleItems }: { isLegend: boolean; recycleItems?: boolean }) => {
     const playlists = require("../api/data/rows.json");
 
-    const ListComponent =  LegendList ;
+    const ListComponent =  isLegend ? LegendList : FlashList
     const DRAW_DISTANCE = isLegend ? 0 : 0;
     console.log("is legend", isLegend, DRAW_DISTANCE);
 
     return (
+        <>
         <ListComponent
             data={playlists}
             keyExtractor={(playlist: Playlist) => playlist.id}
@@ -169,15 +162,32 @@ const Movies = ({ isLegend, recycleItems }: { isLegend: boolean; recycleItems?: 
                     ListComponent={ListComponent}
                     isLegend={isLegend}
                     playlist={playlist}
-                    useRecyclingState={useRecyclingState}
+                    // useRecyclingState={useRecyclingState}
                     // useRecyclingEffect={useRecyclingEffect}
                 />
             )}
             contentContainerStyle={listStyles.container}
             drawDistance={DRAW_DISTANCE}
             recycleItems={recycleItems}
+            useFlashListContainers
+            SkeletonComponent={SkeletonComponent}
+           
         />
+        </>
     );
 };
+
+const SkeletonComponent = () => {
+    return <View style={rowStyles.container}>
+    <Text style={rowStyles.title}>Loading...</Text>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View  style={{...cardStyles.image, margin: 4,backgroundColor: 'grey', flex:1}}/>
+        <View  style={{...cardStyles.image, margin: 4, backgroundColor: 'grey', flex:1}}/>
+        <View  style={{...cardStyles.image, margin: 4, backgroundColor: 'grey', flex:1}}/>
+        <View  style={{...cardStyles.image, margin: 4, backgroundColor: 'grey', flex:1}}/>
+      
+    </View>
+    </View>
+}
 
 export default Movies;

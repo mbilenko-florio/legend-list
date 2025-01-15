@@ -764,7 +764,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             // getAnchorElementIndex needs indexByKey, build it first
             refState.current.indexByKey = indexByKey;
-            set$(ctx, "indexByKey", indexByKey);
+
+          
             const anchorElementIndex = getAnchorElementIndex();
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
@@ -782,7 +783,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     maxSizeInRow = 0;
                 }
             }
-            addTotalSize(null, totalSize, totalSizeBelowIndex);
+         
+            if (isFirst) {
+                set$(ctx, "indexByKey", indexByKey);
+                addTotalSize(null, totalSize, totalSizeBelowIndex);
+            } else {
+                setTimeout(() => {
+                    set$(ctx, "indexByKey", indexByKey);
+                    addTotalSize(null, totalSize, totalSizeBelowIndex);
+                }, 0);
+            }
         }
 
         useEffect(() => {
@@ -936,7 +946,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
 
             set$(ctx, "numContainers", numContainers);
-            set$(ctx, "numContainersPooled", numContainers);
+            set$(ctx, "numContainersPooled", numContainers*2);
+            console.log(numContainers)
 
             calculateItemsInView(refState.current!.scrollVelocity);
         });
