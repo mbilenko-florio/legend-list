@@ -1,11 +1,10 @@
 
-import Animated from "react-native-reanimated";
 import { use$ } from "../state";
 import { useValue$ } from "../useValue$";
-import { CellContainer,AutoLayoutView } from "flashlist-autolayout";
+import { AutoLayoutView, CellContainer } from "flashlist-autolayout";
 import React from "react";
+import { Animated, Dimensions, StyleProp, View, ViewStyle } from "react-native";
 import { Container } from "./Container";
-import { StyleProp, View, ViewStyle } from "react-native";
 
 const AutoLayoutViewAnimated = Animated.createAnimatedComponent(AutoLayoutView);
 
@@ -30,7 +29,7 @@ export const FlashListContainers = React.memo(function Containers({
     const containers = [];
     for (let i = 0; i < numContainers; i++) {
         containers.push(
-            <Container
+            <Container 
                 id={i}
                 key={i}
                 recycleItems={recycleItems}
@@ -44,13 +43,14 @@ export const FlashListContainers = React.memo(function Containers({
         );
     }
 
-    // containers.push(  <CellContainer
-    //     style={{position: "absolute", top: 10000000, left: 0, right: 0}}
-    //     index={100000}
-    //    >
-    //    <PlaceHolder />
-    //    </CellContainer>
-    // );
+    containers.push(  <CellContainer
+        style={{position: "absolute", top: 100000, left: 0, right: 0}}
+        index={100000}
+        key={'container'}
+       >
+            <PlaceHolder />
+       </CellContainer>
+    );
 
     const style: StyleProp<ViewStyle> = horizontal ? { width: animSize } : { height: animSize };
 
@@ -73,7 +73,19 @@ export const FlashListContainers = React.memo(function Containers({
 const PlaceHolder = () => {
     return (
         
-            <View style={{  height: 100, borderRadius: 45 }} />
+            <View style={{height: 300, borderRadius: 10, backgroundColor: 'white', margin:10, padding:8 }} >
+                <View style={ {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 12,
+        backgroundColor: 'lightgrey'
+    }}></View>
+                <View style={{height: 40, backgroundColor: 'lightgrey', margin: 10}} />
+                <View style={{height: 40, backgroundColor: 'lightgrey', margin: 10}} />
+                <View style={{height: 40, backgroundColor: 'lightgrey', margin: 10}} />
+                <View style={{height: 40, backgroundColor: 'lightgrey', margin: 10}} />
+            </View>
 
     );
 };

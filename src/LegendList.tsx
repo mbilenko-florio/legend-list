@@ -17,6 +17,7 @@ import {
     type NativeScrollEvent,
     type NativeSyntheticEvent,
     Platform,
+    requireNativeComponent,
     type ScrollView,
     StyleSheet,
 } from "react-native";
@@ -27,6 +28,12 @@ import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback
 import type { InternalState, LegendListProps } from "./types";
 import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
+import {CellContainer} from "flashlist-autolayout"
+
+console.log("Require early")
+// todo this early init for some reason don't really work
+const AL = requireNativeComponent("ALCellContainer");
+const AL1 = requireNativeComponent("ALAutoLayoutView");
 
 const DEFAULT_DRAW_DISTANCE = 250;
 const POSITION_OUT_OF_VIEW = -10000000;

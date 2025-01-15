@@ -2,6 +2,7 @@ import * as React from "react";
 import { Animated, type StyleProp, type ViewStyle } from "react-native";
 import { use$ } from "./state";
 import { useValue$ } from "./useValue$";
+import { Container } from "./Container";
 
 interface ContainersProps {
     horizontal: boolean;
@@ -27,7 +28,7 @@ export const Containers = React.memo(function Containers({
     const containers = [];
     for (let i = 0; i < numContainers; i++) {
         containers.push(
-            <ContainerComponent
+            <Container
                 id={i}
                 key={i}
                 recycleItems={recycleItems}
