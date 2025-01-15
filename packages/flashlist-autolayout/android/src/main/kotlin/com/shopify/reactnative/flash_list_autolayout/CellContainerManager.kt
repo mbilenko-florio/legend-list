@@ -10,8 +10,8 @@ import com.facebook.react.viewmanagers.ALCellContainerManagerDelegate
 import com.facebook.react.viewmanagers.ALCellContainerManagerInterface
 
 @ReactModule(name = "ALCellContainerManager.REACT_CLASS")
-class ALCellContainerManager: ViewGroupManager<ALCellContainerImpl>(), ALCellContainerManagerInterface<ALCellContainerImpl> {
-    private val mDelegate: ALCellContainerManagerDelegate<ALCellContainerImpl, ALCellContainerManager>
+class CellContainerManager: ViewGroupManager<CellContainerImpl>(), ALCellContainerManagerInterface<CellContainerImpl> {
+    private val mDelegate: ALCellContainerManagerDelegate<CellContainerImpl, CellContainerManager>
         = ALCellContainerManagerDelegate(this)
 
     companion object {
@@ -23,14 +23,14 @@ class ALCellContainerManager: ViewGroupManager<ALCellContainerImpl>(), ALCellCon
         return REACT_CLASS
     }
 
-    override fun getDelegate(): ViewManagerDelegate<ALCellContainerImpl> = mDelegate
+    override fun getDelegate(): ViewManagerDelegate<CellContainerImpl> = mDelegate
 
-    override fun createViewInstance(context: ThemedReactContext): ALCellContainerImpl {
-        return ALCellContainerImpl(context)
+    override fun createViewInstance(context: ThemedReactContext): CellContainerImpl {
+        return CellContainerImpl(context)
     }
 
     @ReactProp(name = "index")
-    override fun setIndex(view: ALCellContainerImpl, index: Int) {
+    override fun setIndex(view: CellContainerImpl, index: Int) {
         view.index = index
     }
 }

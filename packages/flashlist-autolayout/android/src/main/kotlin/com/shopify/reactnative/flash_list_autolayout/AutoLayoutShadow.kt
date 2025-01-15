@@ -19,7 +19,7 @@ class AutoLayoutShadow {
 
     /** Checks for overlaps or gaps between adjacent items and then applies a correction (Only Grid layouts with varying spans)
      * Performance: RecyclerListView renders very small number of views and this is not going to trigger multiple layouts on Android side. Not expecting any major perf issue. */
-    fun clearGapsAndOverlaps(sortedItems: Array<ALCellContainer>) {
+    fun clearGapsAndOverlaps(sortedItems: Array<CellContainer>) {
         var maxBound = 0
         var minBound = Int.MAX_VALUE
         var maxBoundNeighbour = 0
@@ -101,7 +101,7 @@ class AutoLayoutShadow {
 
     /** It's important to avoid correcting views outside the render window. An item that isn't being recycled might still remain in the view tree. If views outside get considered then gaps between
      * unused items will cause algorithm to fail.*/
-    private fun isWithinBounds(cell: ALCellContainer): Boolean {
+    private fun isWithinBounds(cell: CellContainer): Boolean {
         return true;
     }
 }

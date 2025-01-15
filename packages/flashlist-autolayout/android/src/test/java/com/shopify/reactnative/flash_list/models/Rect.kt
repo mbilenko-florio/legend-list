@@ -1,9 +1,9 @@
 package org.legend_list.flash_list_autolayout.models
 
-import org.legend_list.flash_list_autolayout.ALCellContainer
+import org.legend_list.flash_list_autolayout.CellContainer
 
 class Rect (h: Int? = 0, w: Int? = 0):
-    ALCellContainer {
+    CellContainer {
     private var left = 0
     private var right = 0
     private var top = 0

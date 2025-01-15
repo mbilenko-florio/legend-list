@@ -6,7 +6,7 @@ import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 
-class ALAutoLayoutPackage : ReactPackage {
+class AutoLayoutPackage : ReactPackage {
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
     return listOf()
   }
@@ -14,8 +14,8 @@ class ALAutoLayoutPackage : ReactPackage {
   override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
     Log.d("ALAutoLayoutPackage", "createViewManagers")
       return listOf(
-        ALAutoLayoutViewManager(),
-        ALCellContainerManager()
+        AutoLayoutViewManager(),
+        CellContainerManager()
     )
   }
 }

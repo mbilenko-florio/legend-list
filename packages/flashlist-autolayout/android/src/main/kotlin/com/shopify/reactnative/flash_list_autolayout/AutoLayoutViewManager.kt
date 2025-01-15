@@ -11,9 +11,9 @@ import kotlin.math.roundToInt
 
 /** ViewManager for AutoLayoutView - Container for all RecyclerListView children. Automatically removes all gaps and overlaps for GridLayouts with flexible spans.
  * Note: This cannot work for masonry layouts i.e, pinterest like layout */
-@ReactModule(name = ALAutoLayoutViewManager.REACT_CLASS)
-class ALAutoLayoutViewManager: ViewGroupManager<ALAutoLayoutView>(), ALAutoLayoutViewManagerInterface<ALAutoLayoutView> {
-    private val mDelegate: ALAutoLayoutViewManagerDelegate<ALAutoLayoutView, ALAutoLayoutViewManager> =
+@ReactModule(name = AutoLayoutViewManager.REACT_CLASS)
+class AutoLayoutViewManager: ViewGroupManager<AutoLayoutView>(), ALAutoLayoutViewManagerInterface<AutoLayoutView> {
+    private val mDelegate: ALAutoLayoutViewManagerDelegate<AutoLayoutView, AutoLayoutViewManager> =
         ALAutoLayoutViewManagerDelegate(this)
 
     companion object {
@@ -24,10 +24,10 @@ class ALAutoLayoutViewManager: ViewGroupManager<ALAutoLayoutView>(), ALAutoLayou
         return REACT_CLASS
     }
 
-    override fun getDelegate(): ViewManagerDelegate<ALAutoLayoutView> = mDelegate
+    override fun getDelegate(): ViewManagerDelegate<AutoLayoutView> = mDelegate
 
-    override fun createViewInstance(context: ThemedReactContext): ALAutoLayoutView {
-        return ALAutoLayoutView(context).also { it.pixelDensity = context.resources.displayMetrics.density.toDouble() }
+    override fun createViewInstance(context: ThemedReactContext): AutoLayoutView {
+        return AutoLayoutView(context).also { it.pixelDensity = context.resources.displayMetrics.density.toDouble() }
     }
 
     override fun getExportedCustomDirectEventTypeConstants() = mutableMapOf(
@@ -35,32 +35,32 @@ class ALAutoLayoutViewManager: ViewGroupManager<ALAutoLayoutView>(), ALAutoLayou
     )
 
     @ReactProp(name = "horizontal")
-    override fun setHorizontal(view: ALAutoLayoutView, isHorizontal: Boolean) {
+    override fun setHorizontal(view: AutoLayoutView, isHorizontal: Boolean) {
         view.alShadow.horizontal = isHorizontal
     }
 
     @ReactProp(name = "disableAutoLayout")
-    override fun setDisableAutoLayout(view: ALAutoLayoutView, disableAutoLayout: Boolean) {
+    override fun setDisableAutoLayout(view: AutoLayoutView, disableAutoLayout: Boolean) {
         view.disableAutoLayout = disableAutoLayout
     }
 
     @ReactProp(name = "scrollOffset")
-    override fun setScrollOffset(view: ALAutoLayoutView, scrollOffset: Double) {
+    override fun setScrollOffset(view: AutoLayoutView, scrollOffset: Double) {
         view.alShadow.scrollOffset = convertToPixelLayout(scrollOffset, view.pixelDensity)
     }
 
     @ReactProp(name = "windowSize")
-    override fun setWindowSize(view: ALAutoLayoutView, windowSize: Double) {
+    override fun setWindowSize(view: AutoLayoutView, windowSize: Double) {
         view.alShadow.windowSize = convertToPixelLayout(windowSize, view.pixelDensity)
     }
 
     @ReactProp(name = "renderAheadOffset")
-    override fun setRenderAheadOffset(view: ALAutoLayoutView, renderOffset: Double) {
+    override fun setRenderAheadOffset(view: AutoLayoutView, renderOffset: Double) {
         view.alShadow.renderOffset = convertToPixelLayout(renderOffset, view.pixelDensity)
     }
 
     @ReactProp(name = "enableInstrumentation")
-    override fun setEnableInstrumentation(view: ALAutoLayoutView, enableInstrumentation: Boolean) {
+    override fun setEnableInstrumentation(view: AutoLayoutView, enableInstrumentation: Boolean) {
         view.enableInstrumentation = enableInstrumentation
     }
 

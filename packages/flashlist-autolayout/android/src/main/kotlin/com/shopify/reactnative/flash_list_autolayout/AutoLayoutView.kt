@@ -2,7 +2,6 @@ package org.legend_list.flash_list_autolayout
 
 import android.content.Context
 import android.graphics.Canvas
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
@@ -15,7 +14,7 @@ import com.facebook.react.views.view.ReactViewGroup
 
 /** Container for all RecyclerListView children. This will automatically remove all gaps and overlaps for GridLayouts with flexible spans.
  * Note: This cannot work for masonry layouts i.e, pinterest like layout */
-class ALAutoLayoutView(context: Context) : ReactViewGroup(context) {
+class AutoLayoutView(context: Context) : ReactViewGroup(context) {
     val alShadow = AutoLayoutShadow()
     var enableInstrumentation = false
     var disableAutoLayout = false
@@ -54,9 +53,9 @@ class ALAutoLayoutView(context: Context) : ReactViewGroup(context) {
      * Performance: Sort is needed. Given relatively low number of views in RecyclerListView render tree this should be a non issue.*/
     private fun fixLayout() {
         if (childCount > 1 && !disableAutoLayout) {
-            var positionSortedViews: Array<ALCellContainer> = Array(childCount) {
+            var positionSortedViews: Array<CellContainer> = Array(childCount) {
                 val child = getChildAt(it)
-                if (child is ALCellContainer) {
+                if (child is CellContainer) {
                     child
                 } else {
                     throw IllegalStateException("CellRendererComponent outer view should always be CellContainer. Learn more here: https://shopify.github.io/flash-list/docs/usage#cellrenderercomponent.")
@@ -118,7 +117,7 @@ class ALAutoLayoutView(context: Context) : ReactViewGroup(context) {
         return (parent as? ViewGroup)?.let {
             for (i in 0 until it.childCount) {
                 val view = it.getChildAt(i)
-                if (view is ALCellContainer && view.index == -1) {
+                if (view is CellContainer && view.index == -1) {
                     return@let view
                 }
             }

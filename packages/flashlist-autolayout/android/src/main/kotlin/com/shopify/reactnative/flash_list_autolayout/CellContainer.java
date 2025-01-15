@@ -1,6 +1,6 @@
 package org.legend_list.flash_list_autolayout;
 
-public interface ALCellContainer {
+public interface CellContainer {
     void setIndex(int value);
     int getIndex();
     void setLeft(int value);
