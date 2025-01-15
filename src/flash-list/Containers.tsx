@@ -14,6 +14,7 @@ interface ContainersProps {
     ItemSeparatorComponent?: React.ReactNode;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     getRenderedItem: (key: string, containerId: number) => React.ReactNode;
+    SkeletonComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
 }
 
 export const FlashListContainers = React.memo(function Containers({
@@ -22,6 +23,7 @@ export const FlashListContainers = React.memo(function Containers({
     ItemSeparatorComponent,
     updateItemSize,
     getRenderedItem,
+    SkeletonComponent,
 }: ContainersProps) {
     const numContainers = use$<number>("numContainersPooled");
     const animSize = useValue$("totalSize");
@@ -43,14 +45,32 @@ export const FlashListContainers = React.memo(function Containers({
         );
     }
 
+    if (SkeletonComponent) {
     containers.push(  <CellContainer
         style={{position: "absolute", top: 100000, left: 0, right: 0}}
         index={100000}
         key={'container'}
        >
-            <PlaceHolder />
+            <SkeletonComponent />
        </CellContainer>
     );
+    containers.push(  <CellContainer
+        style={{position: "absolute", top: 100300, left: 0, right: 0}}
+        index={100001}
+        key={'container2'}
+       >
+            <SkeletonComponent />
+       </CellContainer>
+    );
+    containers.push(  <CellContainer
+        style={{position: "absolute", top: 100600, left: 0, right: 0}}
+        index={100002}
+        key={'container3'}
+       >
+            <SkeletonComponent />
+       </CellContainer>
+    );
+}
 
     const style: StyleProp<ViewStyle> = horizontal ? { width: animSize } : { height: animSize };
 
@@ -62,7 +82,7 @@ export const FlashListContainers = React.memo(function Containers({
                 // console.log("Blank area event", evt);
             }}
             onLayout={(p) => {
-                console.log("layout", p.nativeEvent.layout);
+                //console.log("layout", p.nativeEvent.layout);
             }}
             windowSize={709}
         >
@@ -70,22 +90,4 @@ export const FlashListContainers = React.memo(function Containers({
         </AutoLayoutViewAnimated>
     );
 });
-const PlaceHolder = () => {
-    return (
-        
-            <View style={{height: 300, borderRadius: 10, backgroundColor: 'white', margin:10, padding:8 }} >
-                <View style={ {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        marginRight: 12,
-        backgroundColor: 'lightgrey'
-    }}></View>
-                <View style={{height: 40, backgroundColor: 'lightgrey', margin: 10}} />
-                <View style={{height: 40, backgroundColor: 'lightgrey', margin: 10}} />
-                <View style={{height: 40, backgroundColor: 'lightgrey', margin: 10}} />
-                <View style={{height: 40, backgroundColor: 'lightgrey', margin: 10}} />
-            </View>
 
-    );
-};

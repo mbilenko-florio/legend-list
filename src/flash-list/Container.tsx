@@ -64,7 +64,7 @@ export const Container = ({
 
     const indexByKey = use$('indexByKey') || {};
     const index = indexByKey.get(itemKey);
-    console.log("Render", itemKey, index, position);  
+
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.

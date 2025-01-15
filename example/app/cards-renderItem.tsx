@@ -119,7 +119,7 @@ export const ItemCard = ({
     const refSwipeable = useRef<SwipeableMethods>();
 
     // A useState that resets when the item is recycled
-    const [isExpanded, setIsExpanded] = useRecyclingState ? useRecyclingState(() => false) : useState(() => false);
+    const [isExpanded, setIsExpanded] = useState(() => false);
 
     const swipeableState = useRef(false);
 
@@ -259,6 +259,43 @@ export const ItemCard = ({
                 </Pressable>
             </Swipeable>
         </Animated.View>
+    );
+};
+
+export const CardSkeleton = () => {
+    return <Image style={{ height: 310, width: '100%', backgroundColor: 'blue', resizeMode: 'stretch' }} source={require('./moblur.png')} />;
+}
+
+export const CardSkeleton1 = () => {
+    return (
+        
+            <View style={{height: 300, borderRadius: 10, backgroundColor: 'white', margin:10, padding:10, }} >
+                <View style={{flexDirection: 'row'}}>
+                <View style={ {
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    marginRight: 12,
+                    backgroundColor: 'grey',
+                    paddingBottom: 10,
+                    marginBottom: 15,
+                }}/>
+                  <View style={{height: 12, backgroundColor: '#7a7a7a', margin: 5, marginBottom: 8, width: 120} } />
+                </View>
+                <View style={{height: 12, backgroundColor: '#7a7a7a', margin: 5, marginBottom: 8, width: 120} } />
+                <View style={{height: 10, backgroundColor: 'lightgrey', margin: 5}} />
+                <View style={{height: 10, backgroundColor: 'lightgrey', margin: 5}} />
+                <View style={{height: 10, backgroundColor: 'lightgrey', margin: 5}} />
+                <View style={{height: 10, backgroundColor: 'lightgrey', margin: 5}} />
+                <View style={{height: 10, backgroundColor: 'lightgrey', margin: 5}} />
+                <View style={{height: 10, backgroundColor: 'lightgrey', margin: 5}} />
+                <View style={{height: 10, backgroundColor: 'lightgrey', margin: 5}} />
+                <View style={{height: 10, backgroundColor: 'lightgrey', margin: 5}} />
+             
+               
+              
+            </View>
+
     );
 };
 

@@ -27,18 +27,18 @@ const data: ListElement[] = [
         title: "Cards FlatList",
         url: "/cards-flatlist",
     },
-    // {
-    //     title: "Cards FlashList",
-    //     url: "/cards-flashlist",
-    // },
+    {
+        title: "Cards FlashList",
+        url: "/cards-flashlist",
+    },
     {
         title: "Cards Columns",
         url: "/cards-columns",
     },
-    // {
-    //     title: "Movies FlashList",
-    //     url: "/movies-flashlist",
-    // },
+    {
+        title: "Movies FlashList",
+        url: "/movies-flashlist",
+    },
     {
         title: "Bidirectional Infinite List",
         url: "/bidirectional-infinite-list",

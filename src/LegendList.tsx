@@ -76,6 +76,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             scrollEventThrottle,
             refScrollView,
             useFlashListContainers,
+            SkeletonComponent,
             ...rest
         } = props;
         const { style, contentContainerStyle } = props;
@@ -170,6 +171,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 startReachedBlockedByTimer: false,
                 layoutsPending: new Set(),
                 scrollForNextCalculateItemsInView: undefined,
+                
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -939,7 +941,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
 
             set$(ctx, "numContainers", numContainers);
-            set$(ctx, "numContainersPooled", numContainers * 2);
+            set$(ctx, "numContainersPooled", numContainers);
 
             calculateItemsInView(refState.current!.scrollVelocity);
         });
@@ -1185,6 +1187,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
                 style={style}
                 useFlashListContainers={useFlashListContainers || false}
+                SkeletonComponent={SkeletonComponent}
             />
         );
     }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;

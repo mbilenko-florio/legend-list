@@ -34,6 +34,7 @@ interface ListComponentProps
     onLayout: (event: LayoutChangeEvent) => void;
     maintainVisibleContentPosition: boolean;
     useFlashListContainers: boolean;
+    SkeletonComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
 }
 
 const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {
@@ -67,6 +68,7 @@ export const ListComponent = React.memo(function ListComponent({
     refScrollView,
     maintainVisibleContentPosition,
     useFlashListContainers,
+    SkeletonComponent,
     ...rest
 }: ListComponentProps) {
     const ctx = useStateContext();
@@ -142,6 +144,7 @@ export const ListComponent = React.memo(function ListComponent({
                 getRenderedItem={getRenderedItem}
                 ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
                 updateItemSize={updateItemSize}
+                SkeletonComponent={SkeletonComponent}
             />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
         </ScrollView>

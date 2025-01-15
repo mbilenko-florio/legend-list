@@ -43,6 +43,7 @@ export type LegendListPropsBase<
     viewabilityConfig?: ViewabilityConfig;
     onViewableItemsChanged?: OnViewableItemsChanged | undefined;
     useFlashListContainers?: boolean;
+    SkeletonComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
 };
 
 export type LegendListProps<ItemT> = LegendListPropsBase<ItemT, ComponentProps<typeof ScrollView>>;

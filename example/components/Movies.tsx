@@ -6,6 +6,7 @@ import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
 import { IMAGE_SIZE, type Movie, type Playlist, getImageUrl } from "../api";
 import { playlists as playlistData } from "../api/data/playlist";
 
+
 const itemCount = 0;
 
 const cardStyles = StyleSheet.create({
