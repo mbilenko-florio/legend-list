@@ -85,6 +85,12 @@ export const FlashListContainers = React.memo(function Containers({
                 //console.log("layout", p.nativeEvent.layout);
             }}
             windowSize={709}
+            onAutoLayout={(evt) => {
+                // does this really make sense?
+                // onLayout comes much earlier
+                // is there case where layout events come out of order?
+                console.log("Auto layout event", evt);
+            }}
         >
             {containers}
         </AutoLayoutViewAnimated>

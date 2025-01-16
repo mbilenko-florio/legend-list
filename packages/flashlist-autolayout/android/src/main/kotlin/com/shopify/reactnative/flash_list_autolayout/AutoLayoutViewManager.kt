@@ -32,6 +32,7 @@ class AutoLayoutViewManager: ViewGroupManager<AutoLayoutView>(), ALAutoLayoutVie
 
     override fun getExportedCustomDirectEventTypeConstants() = mutableMapOf(
         "onBlankAreaEvent" to mutableMapOf("registrationName" to "onBlankAreaEvent"),
+        "onAutoLayout" to mutableMapOf("registrationName" to "onAutoLayout"),
     )
 
     @ReactProp(name = "horizontal")
@@ -67,4 +68,10 @@ class AutoLayoutViewManager: ViewGroupManager<AutoLayoutView>(), ALAutoLayoutVie
     private fun convertToPixelLayout(dp: Double, density: Double): Int {
         return (dp * density).roundToInt()
     }
+
+    @ReactProp(name = "enableAutoLayoutInfo")
+    override fun setEnableAutoLayoutInfo(view: AutoLayoutView, enableAutoLayoutInfo: Boolean) {
+        view.enableAutoLayoutInfo = enableAutoLayoutInfo
+    }
+
 }

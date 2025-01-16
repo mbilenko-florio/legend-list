@@ -65,11 +65,12 @@ export const Container = ({
             index={index}
             onLayout={(event: LayoutChangeEvent) => {
                 const key = peek$<string>(ctx, `containerItemKey${id}`);
+                console.log("onLayout", key, event.nativeEvent.layout.height);
                 if (key !== undefined) {
                     // Round to nearest quater pixel to avoid accumulating rounding errors
                     const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
 
-                    updateItemSize(id, key, size);
+                  //  updateItemSize(id, key, size);
 
                     // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
                     // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));

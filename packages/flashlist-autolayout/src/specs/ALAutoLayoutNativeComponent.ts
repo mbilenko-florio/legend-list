@@ -11,6 +11,18 @@ type BlankAreaEvent = Readonly<{
   offsetEnd: Int32;
 }>;
 
+
+
+type AutoLayoutEvent = Readonly<{
+  layouts: {
+    key: Int32;
+    y: Int32;
+    height: Int32;
+  }[];
+  autoLayoutId: Int32;
+}>;
+
+
 interface NativeProps extends ViewProps {
   horizontal?: boolean;
   scrollOffset?: Double;
@@ -18,7 +30,9 @@ interface NativeProps extends ViewProps {
   renderAheadOffset?: Double;
   enableInstrumentation?: boolean;
   disableAutoLayout?: boolean;
+  enableAutoLayoutInfo?: boolean;
   onBlankAreaEvent?: DirectEventHandler<BlankAreaEvent>;
+  onAutoLayout?: DirectEventHandler<AutoLayoutEvent>;
 }
 
 export default codegenNativeComponent<NativeProps>("ALAutoLayoutView");

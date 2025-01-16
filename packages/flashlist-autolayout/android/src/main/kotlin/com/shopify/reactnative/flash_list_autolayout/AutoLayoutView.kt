@@ -2,13 +2,18 @@ package org.legend_list.flash_list_autolayout
 
 import android.content.Context
 import android.graphics.Canvas
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.WritableArray
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.EventDispatcher
+import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.facebook.react.views.view.ReactViewGroup
 
 
@@ -18,7 +23,8 @@ class AutoLayoutView(context: Context) : ReactViewGroup(context) {
     val alShadow = AutoLayoutShadow()
     var enableInstrumentation = false
     var disableAutoLayout = false
-
+    var enableAutoLayoutInfo = false
+    var autoLayoutId = -1
     var pixelDensity = 1.0;
 
     /** Overriding draw instead of onLayout. RecyclerListView uses absolute positions for each and every item which means that changes in child layouts may not trigger onLayout on this container. The same layout
@@ -65,7 +71,13 @@ class AutoLayoutView(context: Context) : ReactViewGroup(context) {
             // remove items that index is -1
             positionSortedViews = positionSortedViews.filter { it.index != -1 }.toTypedArray()
             alShadow.offsetFromStart = if (alShadow.horizontal) left else top
-            alShadow.clearGapsAndOverlaps(positionSortedViews)
+            val modifiedItems = alShadow.clearGapsAndOverlaps(positionSortedViews)
+
+           // if (enableAutoLayoutInfo) {
+            if (modifiedItems.size > 0) {
+                emitAutoLayout(modifiedItems) //?? does this make sense?
+            }
+          //  }
 
         }
     }
@@ -152,5 +164,26 @@ class AutoLayoutView(context: Context) : ReactViewGroup(context) {
                 )
             )
         }
+    }
+    /** TODO: Check migration to Fabric */
+    private fun emitAutoLayout(sortedItems: Array<CellContainer>) {
+        val event: WritableMap = Arguments.createMap()
+        event.putInt("autoLayoutId", autoLayoutId)
+
+        val layoutsArray: WritableArray = Arguments.createArray()
+        for (cell in sortedItems) {
+            val cellMap: WritableMap = Arguments.createMap()
+            cellMap.putInt("key", cell.index)
+            cellMap.putDouble("y", cell.top / pixelDensity)
+            cellMap.putDouble("height", cell.height / pixelDensity)
+            layoutsArray.pushMap(cellMap)
+        }
+        event.putArray("layouts", layoutsArray)
+
+        val reactContext = context as ReactContext
+        reactContext
+            .getJSModule(RCTEventEmitter::class.java)
+            .receiveEvent(id, "onAutoLayout", event)
+        Log.d("LEGENDLIST", "AutoLayoutView emitAutoLayout")
     }
 }

@@ -947,7 +947,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             set$(ctx, "numContainers", numContainers);
             set$(ctx, "numContainersPooled", numContainers*2);
-            console.log(numContainers)
 
             calculateItemsInView(refState.current!.scrollVelocity);
         });
