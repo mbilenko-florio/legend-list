@@ -6,7 +6,6 @@ import {
     type NativeScrollEvent,
     type NativeSyntheticEvent,
     ScrollView,
-    type ScrollView as ScrollViewType,
     View,
 } from "react-native";
 
@@ -27,7 +26,7 @@ interface ListComponentProps
     > {
     horizontal: boolean;
     initialContentOffset: number | undefined;
-    refScroller: React.MutableRefObject<ScrollViewType>;
+    refScrollView: React.Ref<ScrollView>;
     getRenderedItem: (key: string, containerId: number) => ReactNode;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
@@ -63,7 +62,7 @@ export const ListComponent = React.memo(function ListComponent({
     ListEmptyComponentStyle,
     getRenderedItem,
     updateItemSize,
-    refScroller,
+    refScrollView,
     maintainVisibleContentPosition,
     ...rest
 }: ListComponentProps) {
@@ -111,7 +110,7 @@ export const ListComponent = React.memo(function ListComponent({
                         : { x: 0, y: initialContentOffset }
                     : undefined
             }
-            ref={refScroller}
+            ref={refScrollView}
         >
             <Animated.View style={additionalSize} />
             {ListHeaderComponent && (
@@ -129,9 +128,7 @@ export const ListComponent = React.memo(function ListComponent({
                 </Animated.View>
             )}
             {ListEmptyComponent && (
-                <Animated.View style={ListEmptyComponentStyle}>
-                    {getComponent(ListEmptyComponent)}
-                </Animated.View>
+                <Animated.View style={ListEmptyComponentStyle}>{getComponent(ListEmptyComponent)}</Animated.View>
             )}
 
             <Containers
