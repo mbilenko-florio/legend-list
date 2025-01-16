@@ -951,13 +951,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             calculateItemsInView(refState.current!.scrollVelocity);
         });
 
+
+
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
             const data = refState.current?.data;
             if (!data) {
                 return;
             }
             const state = refState.current!;
-            const { sizes, indexByKey, idsInFirstRender, columns, sizesLaidOut } = state;
+            const { sizes, indexByKey, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
             const numColumns = peek$<number>(ctx, "numColumns");
 
@@ -1037,6 +1039,85 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             } else {
                 // Size is the same as estimated so mark it as laid out
                 set$(ctx, `containerDidLayout${containerId}`, true);
+            }
+        }, []);
+
+        const updateItemPosition = useCallback((index: number, y: number, size: number) => {
+            const data = refState.current?.data;
+            if (!data) {
+                return;
+            }
+            const state = refState.current!;
+            const itemKey = getId(index)!;
+            const { sizes, columns, sizesLaidOut, positions } = state;
+            const numColumns = peek$<number>(ctx, "numColumns");
+
+            const row = Math.floor(index / numColumns);
+            const prevSize = getRowHeight(row);
+
+            if (!prevSize || Math.abs(prevSize - size) > 0.5) {
+                let diff: number;
+
+                if (numColumns > 1) {
+                    const prevMaxSizeInRow = getRowHeight(row);
+                    sizes.set(itemKey, size);
+
+                    const column = columns.get(itemKey);
+                    const loopStart = index - (column! - 1);
+                    let nextMaxSizeInRow = 0;
+                    for (let i = loopStart; i < loopStart + numColumns; i++) {
+                        const id = getId(i)!;
+                        const size = getItemSize(id, i, data[i]);
+                        nextMaxSizeInRow = Math.max(nextMaxSizeInRow, size);
+                    }
+
+                    diff = nextMaxSizeInRow - prevMaxSizeInRow;
+                } else {
+                    sizes.set(itemKey, size);
+                    diff = size - prevSize;
+                }
+
+                if (__DEV__ && !estimatedItemSize && !getEstimatedItemSize) {
+                    sizesLaidOut!.set(itemKey, size);
+                    if (state.timeoutSizeMessage) {
+                        clearTimeout(state.timeoutSizeMessage);
+                    }
+
+                    state.timeoutSizeMessage = setTimeout(() => {
+                        state.timeoutSizeMessage = undefined;
+                        let total = 0;
+                        let num = 0;
+                        for (const [key, size] of sizesLaidOut!) {
+                            num++;
+                            total += size;
+                        }
+                        const avg = Math.round(total / num);
+
+                        console.warn(
+                            `[legend-list] estimatedItemSize or getEstimatedItemSize are not defined. Based on the ${num} items rendered so far, the optimal estimated size is ${avg}.`,
+                        );
+                    }, 1000);
+                }
+
+                // Reset scrollForNextCalculateItemsInView because a position may have changed making the previous
+                // precomputed scroll range invalid
+                refState.current!.scrollForNextCalculateItemsInView = undefined;
+
+                positions.set(itemKey, y);// force position update to sync naitve module
+                addTotalSize(itemKey, diff, 0);
+
+            }
+        }, []);
+
+        const allContainerUpdated = useCallback(() => {
+            doMaintainScrollAtEnd(true);
+            const state = refState.current!;
+
+            // TODO: Could this be optimized to only calculate items in view that have changed?
+            const scrollVelocity = state.scrollVelocity;
+            // Calculate positions if not currently scrolling and have a calculate already pending
+            if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
+                    calculateItemsInView(state.scrollVelocity);
             }
         }, []);
 
@@ -1183,6 +1264,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 initialContentOffset={initialContentOffset}
                 getRenderedItem={getRenderedItem}
                 updateItemSize={updateItemSize}
+                allContainersUpdated={allContainerUpdated}
+                updateItemPosition={updateItemPosition}
                 handleScroll={handleScroll}
                 onLayout={onLayout}
                 recycleItems={recycleItems}

@@ -11,14 +11,12 @@ export const Container = ({
     recycleItems,
     horizontal,
     getRenderedItem,
-    updateItemSize,
     ItemSeparatorComponent,
 }: {
     id: number;
     recycleItems?: boolean;
     horizontal: boolean;
     getRenderedItem: (key: string, containerId: number) => React.ReactNode;
-    updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
@@ -63,26 +61,7 @@ export const Container = ({
         <CellContainer
             style={style}
             index={index}
-            onLayout={(event: LayoutChangeEvent) => {
-                const key = peek$<string>(ctx, `containerItemKey${id}`);
-                console.log("onLayout", key, event.nativeEvent.layout.height);
-                if (key !== undefined) {
-                    // Round to nearest quater pixel to avoid accumulating rounding errors
-                    const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
-
-                  //  updateItemSize(id, key, size);
-
-                    // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
-                    // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
-
-                    //const measured = peek$(ctx, `containerDidLayout${id}`);
-                    // if (!measured) {
-                    //     requestAnimationFrame(() => {
-                    //         set$(ctx, `containerDidLayout${id}`, true);
-                    //     });
-                    // }
-                }
-            }}
+          
         >
             <React.Fragment key={recycleItems ? undefined : itemKey}>
                 {renderedItem}

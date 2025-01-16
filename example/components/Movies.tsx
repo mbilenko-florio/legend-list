@@ -2,11 +2,11 @@
 // Full credit to Alex Moreaux (@Almouro) for the original code
 
 import { LegendList, type LegendListRenderItemProps } from "@legendapp/list";
-import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { IMAGE_SIZE, type Movie, type Playlist, getImageUrl } from "../api";
 import { playlists as playlistData } from "../api/data/playlist";
 import { FlashList } from "@shopify/flash-list";
-
+import {Image} from 'expo-image'
 
 const itemCount = 0;
 
@@ -30,7 +30,7 @@ const MoviePortrait = ({ movie }: { movie: Movie }) => {
                 key={movie.id}
                 source={{ uri: getImageUrl(movie.poster_path) }}
                 style={cardStyles.image}
-                fadeDuration={0}
+                transition={0}
             />
         </View>
     );
@@ -170,21 +170,26 @@ const Movies = ({ isLegend, recycleItems }: { isLegend: boolean; recycleItems?: 
             drawDistance={DRAW_DISTANCE}
             recycleItems={recycleItems}
             useFlashListContainers
-            SkeletonComponent={SkeletonComponent}
+            //SkeletonComponent={SkeletonComponent}
            
         />
         </>
     );
 };
 
+const blurhash =
+  '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
+
+
+
 const SkeletonComponent = () => {
     return <View style={rowStyles.container}>
     <Text style={rowStyles.title}>Loading...</Text>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <View  style={{...cardStyles.image, margin: 4,backgroundColor: 'grey', flex:1}}/>
-        <View  style={{...cardStyles.image, margin: 4, backgroundColor: 'grey', flex:1}}/>
-        <View  style={{...cardStyles.image, margin: 4, backgroundColor: 'grey', flex:1}}/>
-        <View  style={{...cardStyles.image, margin: 4, backgroundColor: 'grey', flex:1}}/>
+        <Image  style={{...cardStyles.image, margin: 4,backgroundColor: 'grey', flex:1}}   placeholder={{ blurhash }}/>
+        <Image  style={{...cardStyles.image, margin: 4, backgroundColor: 'grey', flex:1}} placeholder={{ blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdnj' }}/>
+        <Image  style={{...cardStyles.image, margin: 4, backgroundColor: 'grey', flex:1}} placeholder={{ blurhash: 'LKN]Rv%2Tw=w]~RBVZRi};RPxuwH' }}/>
+        <Image  style={{...cardStyles.image, margin: 4, backgroundColor: 'grey', flex:1}} placeholder={{ blurhash: 'LGF5?xYk^6#M@-5c,1J5@[or[Q6.' }}/>
       
     </View>
     </View>

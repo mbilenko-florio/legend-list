@@ -13,7 +13,9 @@ interface ContainersProps {
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ReactNode;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
+    updateItemPosition: (index: number, y: number, size: number) => void;
     getRenderedItem: (key: string, containerId: number) => React.ReactNode;
+    allContainersUpdated: () => void;
     SkeletonComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
 }
 
@@ -21,7 +23,8 @@ export const FlashListContainers = React.memo(function Containers({
     horizontal,
     recycleItems,
     ItemSeparatorComponent,
-    updateItemSize,
+    updateItemPosition,
+    allContainersUpdated,
     getRenderedItem,
     SkeletonComponent,
 }: ContainersProps) {
@@ -37,7 +40,6 @@ export const FlashListContainers = React.memo(function Containers({
                 recycleItems={recycleItems}
                 horizontal={horizontal}
                 getRenderedItem={getRenderedItem}
-                updateItemSize={updateItemSize}
                 // specifying inline separator makes Containers rerender on each data change
                 // should we do memo of ItemSeparatorComponent?
                 ItemSeparatorComponent={ItemSeparatorComponent}
@@ -89,7 +91,12 @@ export const FlashListContainers = React.memo(function Containers({
                 // does this really make sense?
                 // onLayout comes much earlier
                 // is there case where layout events come out of order?
-                console.log("Auto layout event", evt);
+                //console.log("Auto layout event", evt);
+                for (let i=0;i<evt.layouts.length;i++) {
+                    const { key, y, height } = evt.layouts[i];
+                    updateItemPosition(key, y, height);
+                }
+                allContainersUpdated();
             }}
         >
             {containers}

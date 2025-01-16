@@ -24,13 +24,11 @@ class AutoLayoutShadow {
         var maxBound = 0
         var minBound = Int.MAX_VALUE
         var maxBoundNeighbour = 0
+        var wasInconsecutive = false
         lastMaxBoundOverall = 0
-        Log.d("LEGENDLIST", "fixlayout ${sortedItems.size}")
         for (i in 0 until sortedItems.size - 1) {
             val cell = sortedItems[i]
-            var top = cell.top
-            var index = cell.index
-            //Log.d("LEGENDLIST", "clearGapsAndOverlaps $i $top idx: $index t:${cell.top} b: ${cell.bottom}  l:${cell.left} r:${cell.right}")
+            //Log.d("LEGENDLIST", "clearGapsAndOverlaps $i idx: $index t:${cell.top} b: ${cell.bottom}  l:${cell.left} r:${cell.right}")
 
             val neighbour = sortedItems[i + 1]
             val isNeighbourSkeleton = neighbour.index >= 100000 // TODO have more solid way to check this
@@ -53,28 +51,29 @@ class AutoLayoutShadow {
                                 neighbour.top = cell.top
                             }
                         } else {
-
-
                             val newTop = maxBound + neighbour.height
                             val isModified = neighbour.bottom != newTop || neighbour.top != maxBound
 
-                            Log.d(
-                                "LEGENDLIST",
-                                "->before adjust ${cell.index} neighbour.top ${neighbour.top} bottom ${neighbour.bottom} ${isModified}"
-                            )
+//                            Log.d(
+//                                "LEGENDLIST",
+//                                "->before adjust ${cell.index} neighbour.top ${neighbour.top} bottom ${neighbour.bottom} ${isModified}"
+//                            )
 
                             neighbour.bottom = newTop
                             neighbour.top = maxBound
                             if (!isNeighbourSkeleton && isModified) {
                                 // not interested in skeleton views
                                 modifiedItems.add(neighbour)
-                                Log.d("LEGENDLIST", "->adjusting neighbour     neighbour.top ${neighbour.top} bottom ${neighbour.bottom}" )
+                               // Log.d("LEGENDLIST", "->adjusting neighbour     neighbour.top ${neighbour.top} bottom ${neighbour.bottom}" )
                             }
 
                         }
+                    } else {
+                        Log.d("LEGENDLIST", "found inconsecutive ${cell.index} ${neighbour.index}")
                     }
                     if (isWithinBounds(neighbour)) {
                         maxBoundNeighbour = kotlin.math.max(maxBound, neighbour.bottom)
+
                     }
                 } else {
                     maxBound = kotlin.math.max(maxBound, cell.right);

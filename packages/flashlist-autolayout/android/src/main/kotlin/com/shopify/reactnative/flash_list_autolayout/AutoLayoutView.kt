@@ -184,6 +184,5 @@ class AutoLayoutView(context: Context) : ReactViewGroup(context) {
         reactContext
             .getJSModule(RCTEventEmitter::class.java)
             .receiveEvent(id, "onAutoLayout", event)
-        Log.d("LEGENDLIST", "AutoLayoutView emitAutoLayout")
     }
 }

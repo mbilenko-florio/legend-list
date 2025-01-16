@@ -30,6 +30,8 @@ interface ListComponentProps
     refScrollView: React.Ref<ScrollView>;
     getRenderedItem: (key: string, containerId: number) => ReactNode;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
+    allContainersUpdated: () => void;
+    updateItemPosition?: (index: number, y: number, size: number) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onLayout: (event: LayoutChangeEvent) => void;
     maintainVisibleContentPosition: boolean;
@@ -65,6 +67,8 @@ export const ListComponent = React.memo(function ListComponent({
     ListEmptyComponentStyle,
     getRenderedItem,
     updateItemSize,
+    allContainersUpdated,
+    updateItemPosition,
     refScrollView,
     maintainVisibleContentPosition,
     useFlashListContainers,
@@ -144,6 +148,8 @@ export const ListComponent = React.memo(function ListComponent({
                 getRenderedItem={getRenderedItem}
                 ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
                 updateItemSize={updateItemSize}
+                updateItemPosition={updateItemPosition}
+                allContainersUpdated={allContainersUpdated}
                 SkeletonComponent={SkeletonComponent}
             />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}

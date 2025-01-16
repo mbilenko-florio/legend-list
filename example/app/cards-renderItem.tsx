@@ -262,11 +262,11 @@ export const ItemCard = ({
     );
 };
 
-export const CardSkeleton = () => {
+export const CardSkeletonBlur = () => {
     return <Image style={{ height: 310, width: '100%', backgroundColor: 'blue', resizeMode: 'stretch' }} source={require('./moblur.png')} />;
 }
 
-export const CardSkeleton1 = () => {
+export const CardSkeleton = () => {
     return (
         
             <View style={{height: 300, borderRadius: 10, backgroundColor: 'white', margin:10, padding:10, }} >

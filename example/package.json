@@ -16,7 +16,6 @@
         "preset": "jest-expo"
     },
     "dependencies": {
-        "flashlist-autolayout": "link:flashlist-autolayout",
         "@expo/vector-icons": "^14.0.2",
         "@legendapp/motion": "^2.4.0",
         "@legendapp/state": "^3.0.0-beta.19",
@@ -30,6 +29,7 @@
         "expo-dev-client": "~5.0.9",
         "expo-font": "~13.0.3",
         "expo-haptics": "~14.0.1",
+        "expo-image": "~2.0.4",
         "expo-linear-gradient": "~14.0.2",
         "expo-linking": "~7.0.4",
         "expo-router": "~4.0.16",
@@ -38,6 +38,7 @@
         "expo-symbols": "~0.2.1",
         "expo-system-ui": "~4.0.7",
         "expo-web-browser": "~14.0.2",
+        "flashlist-autolayout": "link:flashlist-autolayout",
         "react": "18.3.1",
         "react-compiler-runtime": "^19.0.0-beta-df7b47d-20241124",
         "react-dom": "18.3.1",

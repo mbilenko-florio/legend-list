@@ -1,4 +1,4 @@
-import { type Item, renderItem } from "@/app/cards-renderItem";
+import { CardSkeleton, type Item, renderItem } from "@/app/cards-renderItem";
 import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constants/constants";
 import { useScrollTest } from "@/constants/useScrollTest";
 import { LegendList, type LegendListRef } from "@legendapp/list";
@@ -61,6 +61,7 @@ export default function Cards({ numColumns = 1 }: CardsProps) {
                     </View>
                 }
                 useFlashListContainers={true}
+                SkeletonComponent={CardSkeleton}
                 // viewabilityConfigCallbackPairs={[
                 //     {
                 //         viewabilityConfig: { id: "viewability", viewAreaCoveragePercentThreshold: 50 },
