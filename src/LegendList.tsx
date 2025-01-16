@@ -21,7 +21,7 @@ import {
 } from "react-native";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
-import { type ListenerType, StateProvider, listen$, peek$, set$, setAnimated$, useStateContext } from "./state";
+import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
 import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 import type { InternalState, LegendListProps } from "./types";
 import { useInit } from "./useInit";
@@ -176,7 +176,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     console.warn("[legend-list] maintainVisibleContentPosition was not able to find an anchor element");
                 }
             }
-            setAnimated$(ctx, "scrollAdjust", 0);
+            set$(ctx, "scrollAdjust", 0);
         }
 
         const getAnchorElementIndex = () => {
@@ -229,7 +229,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         state.scroll -= diff;
                     });
                 }
-                setAnimated$(ctx, "totalSize", resultSize);
+                set$(ctx, "totalSize", resultSize);
 
                 if (alignItemsAtEnd) {
                     doUpdatePaddingTop();
@@ -556,7 +556,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
                             if (elementVisible !== prevVisible) {
                                 // console.log("Setting elementVisible", elementVisible, id, state.sizesLaidOut);
-                                setAnimated$(ctx, `containerDidLayout${i}`, elementVisible ? 1 : 0);
+                                set$(ctx, `containerDidLayout${i}`, elementVisible ? 1 : 0);
                             }
                         }
                     }
@@ -581,7 +581,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const { scrollLength, totalSize } = refState.current!;
                 const listPaddingTop = peek$<number>(ctx, "stylePaddingTop") || 0;
                 const paddingTop = Math.max(0, Math.floor(scrollLength - totalSize - listPaddingTop));
-                setAnimated$(ctx, "paddingTop", paddingTop);
+                set$(ctx, "paddingTop", paddingTop);
             }
         };
 
@@ -721,7 +721,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     if (!keyExtractorProp || (itemKey && refState.current?.indexByKey.get(itemKey) === undefined)) {
                         set$(ctx, `containerItemKey${i}`, undefined);
                         set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
-                        setAnimated$(ctx, `containerDidLayout${i}`, 0);
+                        set$(ctx, `containerDidLayout${i}`, 0);
                         set$(ctx, `containerColumn${i}`, -1);
                     }
                 }
@@ -879,7 +879,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             for (let i = 0; i < numContainers; i++) {
                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
-                setAnimated$(ctx, `containerDidLayout${i}`, 0);
+                set$(ctx, `containerDidLayout${i}`, 0);
                 set$(ctx, `containerColumn${i}`, -1);
             }
 

@@ -1,7 +1,9 @@
 import React, { useMemo } from "react";
-import { Animated, type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
-import { peek$, set$, use$, useStateContext } from "./state";
-import { useValue$ } from "./useValue$";
+import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type ViewStyle } from "react-native";
+import { peek$, use$, useStateContext } from "./state";
+
+type MeasureMethod = "offscreen" | "invisible";
+const MEASURE_METHOD = "invisible" as MeasureMethod;
 
 export const Container = ({
     id,
@@ -21,12 +23,12 @@ export const Container = ({
     const ctx = useStateContext();
     const position = use$<number>(`containerPosition${id}`);
     const column = use$<number>(`containerColumn${id}`) || 0;
-    const visible = useValue$(`containerDidLayout${id}`);
+    const visible = use$<boolean>(`containerDidLayout${id}`);
     const numColumns = use$<number>("numColumns");
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
-    const style: StyleProp<ViewStyle> = horizontal
+    let style: StyleProp<ViewStyle> = horizontal
         ? {
               flexDirection: "row",
               position: "absolute",
@@ -43,18 +45,26 @@ export const Container = ({
               top: position,
           };
 
-    style.opacity = visible;
+    if (MEASURE_METHOD === "invisible") {
+        style.opacity = visible ? 1 : 0;
+    } else if (MEASURE_METHOD === "offscreen") {
+        const additional = horizontal
+            ? { top: visible ? otherAxisPos : -10000000 }
+            : { left: visible ? otherAxisPos : -10000000 };
+        style = { ...style, ...additional };
+    }
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
+    const data = use$<string>(`containerItemData${id}`); // to detect data changes
 
-    const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey]);
+    const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
     return (
-        <Animated.View
+        <View
             style={style}
             onLayout={(event: LayoutChangeEvent) => {
                 const key = peek$<string>(ctx, `containerItemKey${id}`);
@@ -66,9 +76,6 @@ export const Container = ({
 
                     // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
                     // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
-
-                   
-                    
                 }
             }}
         >
@@ -76,6 +83,6 @@ export const Container = ({
                 {renderedItem}
                 {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
             </React.Fragment>
-        </Animated.View>
+        </View>
     );
 };

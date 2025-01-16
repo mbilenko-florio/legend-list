@@ -1,4 +1,4 @@
-import { type StateContext, peek$, setAnimated$, } from "./state";
+import { type StateContext, peek$, set$ } from "./state";
 
 
 export class ScrollAdjustHandler {
@@ -21,7 +21,7 @@ export class ScrollAdjustHandler {
         this.pendingAdjust = adjust;
 
         const doAjdust = () => {
-            setAnimated$(this.context, "scrollAdjust", this.pendingAdjust);
+            set$(this.context, "scrollAdjust", this.pendingAdjust);
             onAdjusted(oldAdjustTop - this.pendingAdjust);
             this.busy = false;
         };

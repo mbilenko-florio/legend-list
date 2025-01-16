@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useSyncExternalStore } from "react";
-import { Animated } from "react-native";
 import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
 
 // This is an implementation of a simple state management system, inspired by Legend State.
@@ -15,6 +14,7 @@ export type ListenerType =
     | "numContainers"
     | "numContainersPooled"
     | `containerItemKey${number}`
+    | `containerItemData${number}`
     | `containerPosition${number}`
     | `containerColumn${number}`
     | `containerDidLayout${number}`
@@ -25,14 +25,12 @@ export type ListenerType =
     | "stylePaddingTop"
     | "scrollAdjust"
     | "headerSize"
-    | "footerSize"
-    | "anchorPosition"
-    | "otherAxisSize";
+    | "footerSize";
+// | "otherAxisSize";
 
 export interface StateContext {
     listeners: Map<ListenerType, Set<(value: any) => void>>;
     values: Map<ListenerType, any>;
-    animatedValues: Map<ListenerType, Animated.Value>;
     mapViewabilityCallbacks: Map<string, ViewabilityCallback>;
     mapViewabilityValues: Map<string, ViewToken>;
     mapViewabilityAmountCallbacks: Map<number, ViewabilityAmountCallback>;
@@ -45,7 +43,6 @@ export function StateProvider({ children }: { children: React.ReactNode }) {
     const [value] = React.useState(() => ({
         listeners: new Map(),
         values: new Map(),
-        animatedValues: new Map(),
         mapViewabilityCallbacks: new Map<string, ViewabilityCallback>(),
         mapViewabilityValues: new Map<string, ViewToken>(),
         mapViewabilityAmountCallbacks: new Map<number, ViewabilityAmountCallback>(),
@@ -58,12 +55,17 @@ export function useStateContext() {
     return React.useContext(ContextState)!;
 }
 
+function createSelectorFunctions<T>(ctx: StateContext, signalName: ListenerType) {
+    return {
+        subscribe: (cb: (value: any) => void) => listen$(ctx, signalName, cb),
+        get: () => peek$(ctx, signalName) as T,
+    };
+}
+
 export function use$<T>(signalName: ListenerType): T {
     const ctx = React.useContext(ContextState)!;
-    const value = useSyncExternalStore(
-        (onStoreChange) => listen$(ctx, signalName, onStoreChange),
-        () => ctx.values.get(signalName),
-    );
+    const { subscribe, get } = React.useMemo(() => createSelectorFunctions<T>(ctx, signalName), []);
+    const value = useSyncExternalStore<T>(subscribe, get);
 
     return value;
 }
@@ -85,38 +87,10 @@ export function peek$<T>(ctx: StateContext, signalName: ListenerType): T {
     return values.get(signalName);
 }
 
-export const getAnimatedValue = (ctx: StateContext, signalName: ListenerType, initialValue?: any) => {
-    const { animatedValues } = ctx;
-    let value = animatedValues.get(signalName);
-    let isNew = false;
-    if (!value) {
-        isNew = true;
-        value = new Animated.Value(initialValue);
-        animatedValues.set(signalName, value);
-    }
-    return [value, isNew] as const;
-};
-
 export function set$(ctx: StateContext, signalName: ListenerType, value: any) {
     const { listeners, values } = ctx;
     if (values.get(signalName) !== value) {
         values.set(signalName, value);
-        const setListeners = listeners.get(signalName);
-        if (setListeners) {
-            for (const listener of setListeners) {
-                listener(value);
-            }
-        }
-    }
-}
-export function setAnimated$(ctx: StateContext, signalName: ListenerType, value: any) {
-    const { listeners, values } = ctx;
-    if (values.get(signalName) !== value) {
-        values.set(signalName, value);
-        const [animValue, isNew] = getAnimatedValue(ctx, signalName, value);
-        if (!isNew) {
-            animValue.setValue(value);
-        }
         const setListeners = listeners.get(signalName);
         if (setListeners) {
             for (const listener of setListeners) {
