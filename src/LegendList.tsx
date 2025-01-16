@@ -160,8 +160,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 belowAnchorElementPositions: undefined,
                 rowHeights: new Map(),
                 startReachedBlockedByTimer: false,
-                layoutsPending: new Set(),
                 scrollForNextCalculateItemsInView: undefined,
+                layoutsPending: false,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -181,6 +181,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             set$(ctx, "scrollAdjust", 0);
+            set$(ctx, "didFirstMeasure", 0);
         }
 
         const getAnchorElementIndex = () => {
@@ -524,7 +525,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
                             set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
-                            set$(ctx, `containerDidLayout${containerId}`, 0);
+                            set$(ctx, `containerVisible${containerId}`, true);
                             set$(ctx, `containerColumn${containerId}`, -1);
 
                             if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
@@ -576,9 +577,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 // if element is above anchor, display it only if it's measured
                                 elementVisible = elementIsMeasured;
                             }
+                            console.log("ElementVisible",id, elementVisible,elementIsMeasured)
                             const prevPos = peek$(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
-                            const prevVisible = peek$(ctx, `containerDidLayout${i}`);
+                            const prevVisible = peek$(ctx, `containerVisible${i}`);
                             const prevData = peek$(ctx, `containerItemData${i}`);
 
                             if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
@@ -589,9 +591,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
                             if (elementVisible !== prevVisible) {
                                 // console.log("Setting elementVisible", elementVisible, id, state.sizesLaidOut);
-                                set$(ctx, `containerDidLayout${i}`, elementVisible ? 1 : 0);
+                                if (prevVisible === false) {
+                                    setTimeout(() => {
+                                        set$(ctx, `containerVisible${i}`, elementVisible);
+                                    },0);
+                                } else {
+                                    set$(ctx, `containerVisible${i}`, elementVisible);
+                                }
+                              
                             }
-                                
+
                             if (prevData !== item) {
                                 set$(ctx, `containerItemData${i}`, data[itemIndex]);
                             }
@@ -600,11 +609,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            if (layoutsPending.size > 0) {
-                for (const containerId of layoutsPending) {
-                    set$(ctx, `containerDidLayout${containerId}`, true);
-                }
-                layoutsPending.clear();
+            if (layoutsPending) {
+              set$(ctx, 'didFirstMeasure', 1);
+              state.layoutsPending = false;
             }
 
             if (refState.current!.viewabilityConfigCallbackPairs) {
@@ -939,7 +946,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             for (let i = 0; i < numContainers; i++) {
                 set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
-                set$(ctx, `containerDidLayout${i}`, 0);
+                set$(ctx, `containerVisible${i}`, true);
                 set$(ctx, `containerColumn${i}`, -1);
             }
 
@@ -963,9 +970,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const prevSize = getRowHeight(row);
 
             sizesLaidOut.set(itemKey, size);
-            const measured = peek$(ctx, `containerDidLayout${containerId}`);
-            if (!measured) {
-                state.layoutsPending.add(containerId);
+            const firstRenderPending = !peek$<number>(ctx, 'didFirstMeasure');
+            if (firstRenderPending) {
+                state.layoutsPending = true
             }
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
@@ -1023,7 +1030,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const scrollVelocity = state.scrollVelocity;
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
-                    if (!peek$(ctx, `containerDidLayout${containerId}`)) {
+                    if (!peek$(ctx, 'didFirstMeasure')) {
                         state.animFrameLayout = requestAnimationFrame(() => {
                             state.animFrameLayout = null;
                             calculateItemsInView(state.scrollVelocity);
@@ -1032,10 +1039,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         calculateItemsInView(state.scrollVelocity);
                     }
                 }
-            } else {
-                // Size is the same as estimated so mark it as laid out
-                set$(ctx, `containerDidLayout${containerId}`, true);
-            }
+            } 
         }, []);
 
         const handleScrollDebounced = useCallback((velocity: number) => {

@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 import { Containers } from "./Containers";
-import { peek$, set$, useStateContext } from "./state";
+import { peek$, set$, use$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
 import { useValue$ } from "./useValue$";
 
@@ -69,6 +69,8 @@ export const ListComponent = React.memo(function ListComponent({
     const ctx = useStateContext();
     const animPaddingTop = useValue$("paddingTop");
     const animScrollAdjust = useValue$("scrollAdjust");
+    const didFirstRender = use$<number>("didFirstMeasure");
+  
 
     // TODO: Try this again? This had bad behaviorof sometimes setting the min size to greater than
     // the screen size
@@ -87,10 +89,11 @@ export const ListComponent = React.memo(function ListComponent({
 
     const additionalSize = { marginTop: animScrollAdjust, paddingTop: animPaddingTop };
 
+
     return (
         <ScrollView
             {...rest}
-            style={style}
+            style={[style, {opacity: didFirstRender}]}
             maintainVisibleContentPosition={maintainVisibleContentPosition ? { minIndexForVisible: 0 } : undefined}
             contentContainerStyle={[
                 contentContainerStyle,

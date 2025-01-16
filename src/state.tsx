@@ -17,7 +17,7 @@ export type ListenerType =
     | `containerItemData${number}`
     | `containerPosition${number}`
     | `containerColumn${number}`
-    | `containerDidLayout${number}`
+    | `containerVisible${number}`
     | "numColumns"
     | `lastItemKey`
     | "totalSize"
@@ -25,7 +25,8 @@ export type ListenerType =
     | "stylePaddingTop"
     | "scrollAdjust"
     | "headerSize"
-    | "footerSize";
+    | "footerSize" 
+    | "didFirstMeasure"
 // | "otherAxisSize";
 
 export interface StateContext {

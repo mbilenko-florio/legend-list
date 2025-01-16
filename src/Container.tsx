@@ -23,7 +23,7 @@ export const Container = ({
     const ctx = useStateContext();
     const position = use$<number>(`containerPosition${id}`);
     const column = use$<number>(`containerColumn${id}`) || 0;
-    const visible = use$<boolean>(`containerDidLayout${id}`);
+    const visible = use$<boolean>(`containerVisible${id}`);
     const numColumns = use$<number>("numColumns");
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
@@ -60,6 +60,7 @@ export const Container = ({
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
 
+    console.log("renderItem", itemKey, visible);
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.

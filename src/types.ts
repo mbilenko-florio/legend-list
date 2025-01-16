@@ -90,7 +90,7 @@ export interface InternalState {
     scrollHistory: Array<{ scroll: number; time: number }>;
     scrollTimer: Timer | undefined;
     startReachedBlockedByTimer: boolean;
-    layoutsPending: Set<number>;
+    layoutsPending: boolean;
     scrollForNextCalculateItemsInView: { top: number; bottom: number } | undefined;
 }
 
