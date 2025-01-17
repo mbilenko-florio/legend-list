@@ -69,7 +69,7 @@ export const ListComponent = React.memo(function ListComponent({
     const ctx = useStateContext();
     const animPaddingTop = useValue$("paddingTop");
     const animScrollAdjust = useValue$("scrollAdjust");
-    const didFirstRender = use$<number>("didFirstMeasure");
+    const didFirstRender = use$<boolean>("didFirstMeasure");
   
 
     // TODO: Try this again? This had bad behaviorof sometimes setting the min size to greater than
@@ -89,11 +89,13 @@ export const ListComponent = React.memo(function ListComponent({
 
     const additionalSize = { marginTop: animScrollAdjust, paddingTop: animPaddingTop };
 
+    const shouldDisplayContent = didFirstRender || !waitForInitialLayout;
+
 
     return (
         <ScrollView
             {...rest}
-            style={[style, {opacity: didFirstRender}]}
+            style={[style, {opacity: shouldDisplayContent ? 1 : 0}]}
             maintainVisibleContentPosition={maintainVisibleContentPosition ? { minIndexForVisible: 0 } : undefined}
             contentContainerStyle={[
                 contentContainerStyle,

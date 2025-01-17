@@ -43,10 +43,10 @@ export const Container = ({
               top: position,
           };
 
-    if (waitForInitialLayout) {
-        const visible = use$<boolean>(`containerDidLayout${id}`);
-        style.opacity = visible ? 1 : 0;
-    }
+//    // if (waitForInitialLayout) {
+//         const visible = use$<boolean>(`containerDidLayout${id}`);
+//         style.opacity = visible ? 1 : 0;
+//     //}
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
@@ -54,7 +54,7 @@ export const Container = ({
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
 
-    console.log("renderItem", itemKey, visible);
+    console.log("renderItem", itemKey);
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.

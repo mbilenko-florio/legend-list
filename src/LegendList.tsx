@@ -181,7 +181,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             set$(ctx, "scrollAdjust", 0);
-            set$(ctx, "didFirstMeasure", 0);
+            set$(ctx, "didFirstMeasure", false);
         }
 
         const getAnchorElementIndex = () => {
@@ -606,7 +606,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
 
             if (layoutsPending) {
-              set$(ctx, 'didFirstMeasure', 1);
+              set$(ctx, 'didFirstMeasure', true);
               state.layoutsPending = false;
             }
 
