@@ -2,13 +2,11 @@ import React, { useMemo } from "react";
 import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type ViewStyle } from "react-native";
 import { peek$, use$, useStateContext } from "./state";
 
-type MeasureMethod = "offscreen" | "invisible";
-const MEASURE_METHOD = "invisible" as MeasureMethod;
-
 export const Container = ({
     id,
     recycleItems,
     horizontal,
+    waitForInitialLayout,
     getRenderedItem,
     updateItemSize,
     ItemSeparatorComponent,
@@ -16,6 +14,7 @@ export const Container = ({
     id: number;
     recycleItems?: boolean;
     horizontal: boolean;
+    waitForInitialLayout: boolean | undefined;
     getRenderedItem: (key: string, containerId: number) => React.ReactNode;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
@@ -23,12 +22,11 @@ export const Container = ({
     const ctx = useStateContext();
     const position = use$<number>(`containerPosition${id}`);
     const column = use$<number>(`containerColumn${id}`) || 0;
-    const visible = use$<boolean>(`containerVisible${id}`);
     const numColumns = use$<number>("numColumns");
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
-    let style: StyleProp<ViewStyle> = horizontal
+    const style: StyleProp<ViewStyle> = horizontal
         ? {
               flexDirection: "row",
               position: "absolute",
@@ -45,13 +43,9 @@ export const Container = ({
               top: position,
           };
 
-    if (MEASURE_METHOD === "invisible") {
+    if (waitForInitialLayout) {
+        const visible = use$<boolean>(`containerDidLayout${id}`);
         style.opacity = visible ? 1 : 0;
-    } else if (MEASURE_METHOD === "offscreen") {
-        const additional = horizontal
-            ? { top: visible ? otherAxisPos : -10000000 }
-            : { left: visible ? otherAxisPos : -10000000 };
-        style = { ...style, ...additional };
     }
 
     const lastItemKey = use$<string>("lastItemKey");

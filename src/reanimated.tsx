@@ -2,7 +2,7 @@ import { LegendList, type LegendListProps, type LegendListPropsBase, type Legend
 import React, { type ComponentProps } from "react";
 import Animated from "react-native-reanimated";
 
-type KeysToOmit = "getEstimatedItemSize" | "keyExtractor" | "animatedProps" | "renderItem";
+type KeysToOmit = "getEstimatedItemSize" | "keyExtractor" | "animatedProps" | "renderItem" | "onItemSizeChanged";
 
 type PropsBase<ItemT> = LegendListPropsBase<ItemT, ComponentProps<typeof Animated.ScrollView>>;
 

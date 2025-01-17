@@ -76,19 +76,19 @@ const MovieRow = ({
 }) => {
     const movies = playlistData[playlist.id]();
     const DRAW_DISTANCE_ROW = isLegend ? 500 : 250;
-    let opacity = 0;
-    if (isLegend) {
-        const [_opacity, setOpacity] = useRecyclingState<number>(() => {
-            if (setOpacity) {
-                requestAnimationFrame(() => setOpacity(1));
-                return 0;
-            }
-            return 1;
-        });
-        opacity = _opacity;
-    } else {
-        opacity = 1;
-    }
+    // let opacity = 0;
+    // if (isLegend) {
+    //     const [_opacity, setOpacity] = useRecyclingState<number>(() => {
+    //         if (setOpacity) {
+    //             requestAnimationFrame(() => setOpacity(1));
+    //             return 0;
+    //         }
+    //         return 1;
+    //     });
+    //     opacity = _opacity;
+    // } else {
+    // opacity = 1;
+    // }
 
     // const listRef = useRef<FlashList<Movie>>(null);
 
@@ -123,7 +123,7 @@ const MovieRow = ({
             <Text numberOfLines={1} style={rowStyles.title}>
                 {playlist.title}
             </Text>
-            <View style={[rowStyles.container, { opacity }]}>
+            <View style={[rowStyles.container]}>
                 <ListComponent
                     contentContainerStyle={rowStyles.listContainer}
                     // See https://shopify.github.io/flash-list/docs/fundamentals/performant-components/#remove-key-prop
@@ -156,14 +156,17 @@ const Movies = ({ isLegend, recycleItems }: { isLegend: boolean; recycleItems?: 
     const playlists = require("../api/data/rows.json");
 
     const ListComponent = isLegend ? LegendList : FlashList;
-    const DRAW_DISTANCE = isLegend ? 0 : 0;
+
+    // Flashlist appears to internally multiple the draw distance by 2-3 so increase the draw distance
+    // for the Legend version to get the same effect
+    const DRAW_DISTANCE = isLegend ? 500 : 250;
     console.log("is legend", isLegend, DRAW_DISTANCE);
 
     return (
         <ListComponent
             data={playlists}
             keyExtractor={(playlist: Playlist) => playlist.id}
-            estimatedItemSize={cardStyles.image.height + 50}
+            estimatedItemSize={cardStyles.image.height + 52}
             renderItem={({ item: playlist, useRecyclingState }: LegendListRenderItemProps<Playlist>) => (
                 <MovieRow
                     ListComponent={ListComponent}

@@ -22,6 +22,7 @@ export type LegendListPropsBase<
     maintainVisibleContentPosition?: boolean;
     numColumns?: number;
     refScrollView?: React.Ref<ScrollView>;
+    waitForInitialLayout?: boolean;
     // in most cases providing a constant value for item size enough
     estimatedItemSize?: number;
     // in case you have distinct item sizes, you can provide a function to get the size of an item
@@ -42,6 +43,13 @@ export type LegendListPropsBase<
     viewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs | undefined;
     viewabilityConfig?: ViewabilityConfig;
     onViewableItemsChanged?: OnViewableItemsChanged | undefined;
+    onItemSizeChanged?: (info: {
+        size: number;
+        previous: number;
+        index: number;
+        itemKey: string;
+        itemData: ItemT;
+    }) => void;
 };
 
 export type LegendListProps<ItemT> = LegendListPropsBase<ItemT, ComponentProps<typeof ScrollView>>;
@@ -84,7 +92,6 @@ export interface InternalState {
     timeoutSizeMessage: any;
     nativeMarginTop: number;
     indexByKey: Map<string, number>;
-    contentSize: { width: number; height: number };
     viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs | undefined;
     renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
     scrollHistory: Array<{ scroll: number; time: number }>;

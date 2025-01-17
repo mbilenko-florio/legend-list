@@ -8,7 +8,6 @@ import {
     ScrollView,
     View,
 } from "react-native";
-
 import { Containers } from "./Containers";
 import { peek$, set$, use$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
@@ -52,6 +51,7 @@ export const ListComponent = React.memo(function ListComponent({
     recycleItems,
     ItemSeparatorComponent,
     alignItemsAtEnd,
+    waitForInitialLayout,
     handleScroll,
     onLayout,
     ListHeaderComponent,
@@ -137,6 +137,7 @@ export const ListComponent = React.memo(function ListComponent({
             <Containers
                 horizontal={horizontal!}
                 recycleItems={recycleItems!}
+                waitForInitialLayout={waitForInitialLayout}
                 getRenderedItem={getRenderedItem}
                 ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
                 updateItemSize={updateItemSize}

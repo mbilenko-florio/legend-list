@@ -8,6 +8,7 @@ interface ContainersProps {
     horizontal: boolean;
     recycleItems: boolean;
     ItemSeparatorComponent?: React.ReactNode;
+    waitForInitialLayout: boolean | undefined;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     getRenderedItem: (key: string, containerId: number) => React.ReactNode;
 }
@@ -16,6 +17,7 @@ export const Containers = React.memo(function Containers({
     horizontal,
     recycleItems,
     ItemSeparatorComponent,
+    waitForInitialLayout,
     updateItemSize,
     getRenderedItem,
 }: ContainersProps) {
@@ -30,6 +32,7 @@ export const Containers = React.memo(function Containers({
                 key={i}
                 recycleItems={recycleItems}
                 horizontal={horizontal}
+                waitForInitialLayout={waitForInitialLayout}
                 getRenderedItem={getRenderedItem}
                 updateItemSize={updateItemSize}
                 // specifying inline separator makes Containers rerender on each data change
