@@ -26,7 +26,7 @@ export type ListenerType =
     | "scrollAdjust"
     | "headerSize"
     | "footerSize"
-    | "stickyHeaderIndex"
+    | "currentStickyHeaderKey";
 // | "otherAxisSize";
 
 export interface StateContext {

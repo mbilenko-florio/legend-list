@@ -1,3 +1,6 @@
+// code borrowed from react-native https://github.com/facebook/react-native/blob/main/packages/react-native/Libraries/Components/ScrollView/ScrollViewStickyHeader.js
+// what minimum RN version is required for this to work?
+
 import React, { useCallback, useRef, useEffect, useMemo, useState, forwardRef } from "react";
 import { Animated, type LayoutChangeEvent, Platform, StyleSheet } from "react-native";
 import { use$ } from "../state";
@@ -233,7 +236,7 @@ export const ScrollViewStickyHeaderWithForwardedRef = forwardRef<Instance, Props
         }
     };
 
-    const sticky = use$<string | undefined>("stickyHeaderIndex");
+    const sticky = use$<string | undefined>("currentStickyHeaderKey");
     const renderItem = useRenderItem();
     const renderedItem = useMemo(() => sticky !== undefined && renderItem(sticky, 0), [sticky]);
 
@@ -253,10 +256,10 @@ export const ScrollViewStickyHeaderWithForwardedRef = forwardRef<Instance, Props
             /* $FlowFixMe[prop-missing] passthroughAnimatedPropExplicitValues isn't properly
                  included in the Animated.View flow type. */
             ref={ref}
-            style={[styles.header,{ transform: [{ translateY: animatedTranslateY }] }]}
+            style={[styles.header, { transform: [{ translateY: animatedTranslateY }] }]}
             passthroughAnimatedPropExplicitValues={passthroughAnimatedPropExplicitValues}
         >
-           {renderedItem}
+            {renderedItem}
         </Animated.View>
     );
 });
@@ -264,7 +267,10 @@ export const ScrollViewStickyHeaderWithForwardedRef = forwardRef<Instance, Props
 const styles = StyleSheet.create({
     header: {
         zIndex: 10,
-        position: "absolute",top:0,left:0,right:0,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
     },
     fill: {
         flex: 1,

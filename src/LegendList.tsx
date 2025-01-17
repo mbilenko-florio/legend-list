@@ -184,7 +184,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             set$(ctx, "scrollAdjust", 0);
-            set$(ctx, "stickyHeaderIndex", undefined);
+            set$(ctx, "currentStickyHeaderKey", undefined);
         }
 
         const getAnchorElementIndex = () => {
@@ -315,14 +315,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     );
                     console.log("Found sticky index", valueAndIndex, smallestVisibleIndex);
                     if (valueAndIndex) {
-                        set$(ctx,'stickyHeaderIndex', getId(valueAndIndex.value));
+                        set$(ctx,'currentStickyHeaderKey', getId(valueAndIndex.value));
                     } else {
                         console.log("Header sticky index calculation gone wrong."); 
                     }
                 }
             }
             if (stickyVisiblity === false) {
-                set$(ctx, "stickyHeaderIndex", undefined);
+                set$(ctx, "currentStickyHeaderKey", undefined);
             }
         };
 

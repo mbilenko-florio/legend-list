@@ -1,4 +1,4 @@
-
+// code borrowed from https://github.com/Flipkart/recyclerlistview/blob/master/src/utils/BinarySearch.ts
 export interface ValueAndIndex {
     value: number;
     index: number;
