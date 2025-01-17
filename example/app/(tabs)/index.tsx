@@ -74,6 +74,7 @@ const ListItem = ({ title, url }: ListElement) => (
 );
 
 const ListElements = () => {
+    console.info("App started")
     return (
         <SafeAreaView style={styles.container}>
             <LegendList
