@@ -1,7 +1,7 @@
 import { CellContainer } from "flashlist-autolayout";
 import React, { useMemo } from "react";
-import type { DimensionValue, LayoutChangeEvent, StyleProp, ViewStyle } from "react-native";
-import { peek$, use$, useStateContext } from "../state";
+import type { DimensionValue, StyleProp, ViewStyle } from "react-native";
+import { use$, useStateContext } from "../state";
 
 type MeasureMethod = "offscreen" | "invisible";
 const MEASURE_METHOD = "invisible" as MeasureMethod;
@@ -26,7 +26,7 @@ export const Container = ({
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
-    let style: StyleProp<ViewStyle> = horizontal
+    const style: StyleProp<ViewStyle> = horizontal
         ? {
               flexDirection: "row",
               position: "absolute",
@@ -52,6 +52,8 @@ export const Container = ({
 
     const indexByKey = use$('indexByKey') || {};
     const index = indexByKey.get(itemKey);
+
+    console.log("Rendered item", itemKey, index);
 
 
     // Use a reactive View to ensure the container element itself

@@ -21,7 +21,7 @@ import com.facebook.react.views.view.ReactViewGroup
  * Note: This cannot work for masonry layouts i.e, pinterest like layout */
 class AutoLayoutView(context: Context) : ReactViewGroup(context) {
     val alShadow = AutoLayoutShadow()
-    var enableInstrumentation = false
+    var enableInstrumentation = true
     var disableAutoLayout = false
     var enableAutoLayoutInfo = false
     var autoLayoutId = -1
@@ -50,7 +50,12 @@ class AutoLayoutView(context: Context) : ReactViewGroup(context) {
             val distanceFromWindowStart = kotlin.math.max(startOffset - scrollOffset, 0)
             val distanceFromWindowEnd = kotlin.math.max(scrollOffset + scrollContainerSize - endOffset, 0)
 
-            alShadow.computeBlankFromGivenOffset(scrollOffset, distanceFromWindowStart, distanceFromWindowEnd)
+            val blank = alShadow.computeBlankFromGivenOffset(scrollOffset, distanceFromWindowStart, distanceFromWindowEnd)
+            Log.d("LEGENDLIST", "blank ${blank}")
+
+           // parentScrollView.scrollY = parentScrollView.scrollY + blank/2;
+            // parentScrollView.scrollTo(0, parentScrollView.scrollY + blank/4)
+
             emitBlankAreaEvent()
         }
     }

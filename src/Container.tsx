@@ -60,6 +60,7 @@ export const Container = ({
     const data = use$<string>(`containerItemData${id}`); // to detect data changes
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
+    console.log("Rendered item", itemKey);
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
@@ -73,7 +74,9 @@ export const Container = ({
                     // Round to nearest quater pixel to avoid accumulating rounding errors
                     const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
 
+                    console.log("Update item size", id, key, size);
                     updateItemSize(id, key, size);
+
 
                     // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
                     // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));

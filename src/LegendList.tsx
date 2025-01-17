@@ -17,7 +17,6 @@ import {
     type NativeScrollEvent,
     type NativeSyntheticEvent,
     Platform,
-    requireNativeComponent,
     type ScrollView,
     StyleSheet,
 } from "react-native";
@@ -581,6 +580,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
                                 set$(ctx, `containerPosition${i}`, pos);
                             }
+                            // if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
+                            //     const shouldUpdatePostion = containerDataChanged.get(id)
+                            //     if (shouldUpdatePostion || i===0) {
+                            //         set$(ctx, `containerPosition${i}`, pos);
+                            //     }
+                            // }
                             if (column >= 0 && column !== prevColumn) {
                                 set$(ctx, `containerColumn${i}`, column);
                             }
