@@ -49,22 +49,15 @@ export const Container = ({
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
 
-
-    const indexByKey = use$('indexByKey') || {};
+    const indexByKey = use$("indexByKey") || {};
     const index = indexByKey.get(itemKey);
-
-    console.log("Rendered item", itemKey, index);
 
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
     return (
-        <CellContainer
-            style={style}
-            index={index}
-          
-        >
+        <CellContainer style={style} index={index}>
             <React.Fragment key={recycleItems ? undefined : itemKey}>
                 {renderedItem}
                 {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
