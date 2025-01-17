@@ -21,7 +21,7 @@ import com.facebook.react.views.view.ReactViewGroup
  * Note: This cannot work for masonry layouts i.e, pinterest like layout */
 class AutoLayoutView(context: Context) : ReactViewGroup(context) {
     val alShadow = AutoLayoutShadow()
-    var enableInstrumentation = true
+    var enableInstrumentation = false
     var disableAutoLayout = false
     var enableAutoLayoutInfo = false
     var autoLayoutId = -1
@@ -30,6 +30,7 @@ class AutoLayoutView(context: Context) : ReactViewGroup(context) {
     /** Overriding draw instead of onLayout. RecyclerListView uses absolute positions for each and every item which means that changes in child layouts may not trigger onLayout on this container. The same layout
      * can still cause views to overlap. Therefore, it makes sense to override draw to do correction. */
     override fun dispatchDraw(canvas: Canvas) {
+        Log.i("LEGENDLIST", "dispatchDraw")
         fixLayout()
         fixFooter()
         super.dispatchDraw(canvas)

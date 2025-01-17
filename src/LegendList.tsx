@@ -17,6 +17,7 @@ import {
     type NativeScrollEvent,
     type NativeSyntheticEvent,
     Platform,
+    requireNativeComponent,
     type ScrollView,
     StyleSheet,
 } from "react-native";
@@ -32,6 +33,9 @@ import { setupViewability, updateViewableItems } from "./viewability";
 const DEFAULT_DRAW_DISTANCE = 250;
 const POSITION_OUT_OF_VIEW = -10000000;
 const DEFAULT_ITEM_SIZE = 100;
+
+requireNativeComponent("ALCellContainer");
+requireNativeComponent("ALAutoLayoutView");
 
 export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
     forwardRef(function LegendList<T>(props: LegendListProps<T>, forwardedRef: ForwardedRef<LegendListRef>) {

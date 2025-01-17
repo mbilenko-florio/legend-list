@@ -91,7 +91,7 @@ export const FlashListContainers = React.memo(function Containers({
                 // does this really make sense?
                 // onLayout comes much earlier
                 // is there case where layout events come out of order?
-                //console.log("Auto layout event", evt);
+                // console.log("Auto layout event", evt);
                 for (let i=0;i<evt.layouts.length;i++) {
                     const { key, y, height } = evt.layouts[i];
                     updateItemPosition(key, y, height);
