@@ -111,6 +111,8 @@ export const ListComponent = React.memo(function ListComponent({
                         : { x: 0, y: initialContentOffset }
                     : undefined
             }
+            // TODO: make it respect stickyIndices prop
+            // pass any prop here
             stickyHeaderIndices={[0]}
             ref={refScrollView}
             StickyHeaderComponent={ScrollViewStickyHeaderWithForwardedRef}

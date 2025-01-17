@@ -67,8 +67,7 @@ export default function ScrollIndexDemo() {
                 drawDistance={1000}
                 recycleItems={true}
                 stickyIndices={stickyIndices}
-                // alignItemsAtEnd
-                // maintainScrollAtEnd
+                // stickyHeaderHiddenOnScroll // <-- that's also working
                 onEndReached={({ distanceFromEnd }) => {
                     console.log("onEndReached", distanceFromEnd);
                 }}
@@ -76,8 +75,6 @@ export default function ScrollIndexDemo() {
                 //ListHeaderComponentStyle={styles.listHeader}
                 // initialScrollOffset={20000}
                 initialScrollIndex={50}
-                // inverted
-                // horizontal
             />
         </View>
     );
