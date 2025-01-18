@@ -1,12 +1,13 @@
 import React, { useMemo } from "react";
 import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type ViewStyle } from "react-native";
+import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
 import { peek$, use$, useStateContext } from "./state";
+import type { AnchoredPosition } from "./types";
 
 export const Container = ({
     id,
     recycleItems,
     horizontal,
-    waitForInitialLayout,
     getRenderedItem,
     updateItemSize,
     ItemSeparatorComponent,
@@ -20,7 +21,7 @@ export const Container = ({
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
-    const position = use$<number>(`containerPosition${id}`);
+    const position = use$<AnchoredPosition>(`containerPosition${id}`) || ANCHORED_POSITION_OUT_OF_VIEW; 
     const column = use$<number>(`containerColumn${id}`) || 0;
     const numColumns = use$<number>("numColumns");
 
@@ -33,20 +34,15 @@ export const Container = ({
               top: otherAxisPos,
               bottom: numColumns > 1 ? null : 0,
               height: otherAxisSize,
-              left: position,
+              left: position.coordinate,
           }
         : {
               position: "absolute",
               left: otherAxisPos,
               right: numColumns > 1 ? null : 0,
               width: otherAxisSize,
-              top: position,
+              top: position.coordinate,
           };
-
-//    // if (waitForInitialLayout) {
-//         const visible = use$<boolean>(`containerDidLayout${id}`);
-//         style.opacity = visible ? 1 : 0;
-//     //}
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
@@ -54,10 +50,32 @@ export const Container = ({
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
 
-    console.log("renderItem", itemKey);
-    // Use a reactive View to ensure the container element itself
-    // is not rendered when style changes, only the style prop.
-    // This is a big perf boost to do less work rendering.
+    if (position.type === "bottom") {
+        // Use a reactive View to ensure the container element itself
+        // is not rendered when style changes, only the style prop.
+        // This is a big perf boost to do less work rendering.
+        return (
+            <View style={style}>
+                <View
+                    style={{ position: "absolute", bottom: 0 }}
+                    onLayout={(event: LayoutChangeEvent) => {
+                        const key = peek$<string>(ctx, `containerItemKey${id}`);
+                        if (key !== undefined) {
+                            // Round to nearest quater pixel to avoid accumulating rounding errors
+                            const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
+
+                            updateItemSize(id, key, size);
+                        }
+                    }}
+                >
+                    <React.Fragment key={recycleItems ? undefined : itemKey}>
+                        {renderedItem}
+                        {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
+                    </React.Fragment>
+                </View>
+            </View>
+        );
+    }
     return (
         <View
             style={style}
@@ -68,9 +86,6 @@ export const Container = ({
                     const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
 
                     updateItemSize(id, key, size);
-
-                    // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
-                    // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
                 }
             }}
         >

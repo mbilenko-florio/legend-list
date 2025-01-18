@@ -52,6 +52,12 @@ export type LegendListPropsBase<
     }) => void;
 };
 
+export type AnchoredPosition = {
+    type: 'top' | 'bottom';
+    coordinate: number; // used fro display
+    top: number; // used for calculating the position of the container
+}
+
 export type LegendListProps<ItemT> = LegendListPropsBase<ItemT, ComponentProps<typeof ScrollView>>;
 
 export interface InternalState {

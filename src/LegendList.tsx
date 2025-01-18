@@ -22,14 +22,20 @@ import {
 } from "react-native";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
+import { ANCHORED_POSITION_OUT_OF_VIEW, POSITION_OUT_OF_VIEW } from "./constants";
 import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
-import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
+import type {
+    AnchoredPosition,
+    LegendListRecyclingState,
+    LegendListRef,
+    ViewabilityAmountCallback,
+    ViewabilityCallback,
+} from "./types";
 import type { InternalState, LegendListProps } from "./types";
 import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_DRAW_DISTANCE = 250;
-const POSITION_OUT_OF_VIEW = -10000000;
 const DEFAULT_ITEM_SIZE = 100;
 
 export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
@@ -497,7 +503,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
 
                             const index = refState.current?.indexByKey.get(key)!;
-                            const pos = peek$<number>(ctx, `containerPosition${u}`);
+                            const pos = peek$<AnchoredPosition>(ctx, `containerPosition${u}`).top;
 
                             if (index < startBuffered || index > endBuffered) {
                                 const distance = Math.abs(pos - top);
@@ -520,8 +526,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             set$(ctx, `containerItemData${containerId}`, data[index]);
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
-                            set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
-                            set$(ctx, `containerVisible${containerId}`, true);
+                            set$(ctx, `containerPosition${containerId}`, ANCHORED_POSITION_OUT_OF_VIEW);
                             set$(ctx, `containerColumn${containerId}`, -1);
 
                             if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
@@ -553,7 +558,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
                             // This is fairly complex because we want to avoid setting container position if it's not even in view
                             // because it will trigger a render
-                            const prevPos = peek$<number>(ctx, `containerPosition${i}`);
+                            const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`).top;
                             const pos = positions.get(id) || 0;
                             const size = getItemSize(id, itemIndex, data[i]);
 
@@ -561,40 +566,34 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 (pos + size >= scroll && pos <= scrollBottom) ||
                                 (prevPos + size >= scroll && prevPos <= scrollBottom)
                             ) {
-                                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                                set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                             }
                         } else {
-                            const pos = positions.get(id) || 0;
+                            const pos: AnchoredPosition = {
+                                type: "top",
+                                coordinate: positions.get(id) || 0,
+                                top: positions.get(id) || 0,
+                            };
                             const column = columns.get(id) || 1;
 
-                            const elementIsMeasured = state.sizesLaidOut.get(id) !== undefined;
-                            let elementVisible = true;
                             if (maintainVisibleContentPosition && itemIndex < anchorElementIndex) {
-                                // if element is above anchor, display it only if it's measured
-                                elementVisible = elementIsMeasured;
+                                const nextElementId = getId(itemIndex + 1);
+                                const nextPosition = positions.get(nextElementId);
+                                if (nextPosition == null) {
+                                    throw new Error("Next position is null, that should not happen");
+                                }
+                                pos.coordinate = nextPosition;
+                                pos.type = "bottom";
                             }
-                            console.log("ElementVisible",id, elementVisible,elementIsMeasured)
-                            const prevPos = peek$(ctx, `containerPosition${i}`);
+                            const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
-                            const prevVisible = peek$(ctx, `containerVisible${i}`);
                             const prevData = peek$(ctx, `containerItemData${i}`);
 
-                            if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
+                            if (pos.coordinate > POSITION_OUT_OF_VIEW && pos.top !== prevPos.top) {
                                 set$(ctx, `containerPosition${i}`, pos);
                             }
                             if (column >= 0 && column !== prevColumn) {
                                 set$(ctx, `containerColumn${i}`, column);
-                            }
-                            if (elementVisible !== prevVisible) {
-                                // console.log("Setting elementVisible", elementVisible, id, state.sizesLaidOut);
-                                if (prevVisible === false) {
-                                    setTimeout(() => {
-                                        set$(ctx, `containerVisible${i}`, elementVisible);
-                                    },0);
-                                } else {
-                                    set$(ctx, `containerVisible${i}`, elementVisible);
-                                }
-                              
                             }
 
                             if (prevData !== item) {
@@ -606,8 +605,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
 
             if (layoutsPending) {
-              set$(ctx, 'didFirstMeasure', true);
-              state.layoutsPending = false;
+                set$(ctx, "didFirstMeasure", true);
+                state.layoutsPending = false;
             }
 
             if (refState.current!.viewabilityConfigCallbackPairs) {
@@ -734,7 +733,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
                         if (!keyExtractorProp || (itemKey && state.indexByKey.get(itemKey) === undefined)) {
                             set$(ctx, `containerItemKey${i}`, undefined);
-                            set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                            set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                             set$(ctx, `containerColumn${i}`, -1);
                         }
                     }
@@ -946,8 +945,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
-                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
-                set$(ctx, `containerVisible${i}`, true);
+                set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                 set$(ctx, `containerColumn${i}`, -1);
             }
 
@@ -971,9 +969,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const prevSize = getRowHeight(row);
 
             sizesLaidOut.set(itemKey, size);
-            const firstRenderPending = !peek$<number>(ctx, 'didFirstMeasure');
+            const firstRenderPending = !peek$<number>(ctx, "didFirstMeasure");
             if (firstRenderPending) {
-                state.layoutsPending = true
+                state.layoutsPending = true;
             }
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
@@ -1031,7 +1029,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const scrollVelocity = state.scrollVelocity;
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
-                    if (!peek$(ctx, 'didFirstMeasure')) {
+                    if (!peek$(ctx, "didFirstMeasure")) {
                         state.animFrameLayout = requestAnimationFrame(() => {
                             state.animFrameLayout = null;
                             calculateItemsInView(state.scrollVelocity);
