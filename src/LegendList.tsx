@@ -186,7 +186,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             set$(ctx, "scrollAdjust", 0);
-            set$(ctx, "didFirstMeasure", false);
         }
 
         const getAnchorElementIndex = () => {
@@ -997,6 +996,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
 
                 if (__DEV__ && !estimatedItemSize && !getEstimatedItemSize) {
+                    sizesLaidOut!.set(itemKey, size);
                     if (state.timeoutSizeMessage) {
                         clearTimeout(state.timeoutSizeMessage);
                     }
@@ -1005,7 +1005,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         state.timeoutSizeMessage = undefined;
                         let total = 0;
                         let num = 0;
-                        for (const [key, size] of sizesLaidOut) {
+                        for (const [key, size] of sizesLaidOut!) {
                             num++;
                             total += size;
                         }

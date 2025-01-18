@@ -8,9 +8,9 @@ export const Container = ({
     id,
     recycleItems,
     horizontal,
+    waitForInitialLayout,
     getRenderedItem,
     updateItemSize,
-    waitForInitialLayout,
     ItemSeparatorComponent,
 }: {
     id: number;
