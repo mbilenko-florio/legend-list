@@ -577,7 +577,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                             if (maintainVisibleContentPosition && itemIndex < anchorElementIndex) {
                                 const currentRow = Math.floor(itemIndex / numColumnsProp);
-                                pos.relativeCoordinate = pos.top; + getRowHeight(currentRow);
+                                pos.relativeCoordinate = pos.top + getRowHeight(currentRow);
                                 pos.type = "bottom";
                             }
                             const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`);
