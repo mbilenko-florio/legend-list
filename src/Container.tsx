@@ -28,6 +28,7 @@ export const Container = ({
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
+
     const style: StyleProp<ViewStyle> = horizontal
         ? {
               flexDirection: "row",
@@ -45,7 +46,6 @@ export const Container = ({
               top: position.relativeCoordinate,
           };
 
-    console.log(waitForInitialLayout);
     if (waitForInitialLayout) {
         const visible = use$<boolean>(`containerDidLayout${id}`);
         style.opacity = visible ? 1 : 0;
