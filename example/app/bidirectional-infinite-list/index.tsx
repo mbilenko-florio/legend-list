@@ -100,6 +100,7 @@ export default function BidirectionalInfiniteList() {
                         }, 500);
                     }
                 }}
+                numColumns={2}
             />
         </View>
     );
