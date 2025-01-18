@@ -31,20 +31,23 @@ export const Container = ({
 
     const style: StyleProp<ViewStyle> = horizontal
         ? {
-              flexDirection: "row",
               position: "absolute",
-              top: otherAxisPos,
-              bottom: numColumns > 1 ? null : 0,
-              height: otherAxisSize,
               left: position.relativeCoordinate,
           }
         : {
               position: "absolute",
-              left: otherAxisPos,
-              right: numColumns > 1 ? null : 0,
-              width: otherAxisSize,
               top: position.relativeCoordinate,
           };
+
+        const otherAxisStyle = horizontal ? {
+            top: otherAxisPos,
+            bottom: numColumns > 1 ? null : 0,
+            height: otherAxisSize,
+        }: {
+            left: otherAxisPos,
+            right: numColumns > 1 ? null : 0,
+            width: otherAxisSize,
+        }
 
     if (waitForInitialLayout) {
         const visible = use$<boolean>(`containerDidLayout${id}`);
@@ -57,50 +60,40 @@ export const Container = ({
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
 
-    // Use a reactive View to ensure the container element itself
-    // is not rendered when style changes, only the style prop.
-    // This is a big perf boost to do less work rendering.
+    const onLayout = (event: LayoutChangeEvent) => {
+        const key = peek$<string>(ctx, `containerItemKey${id}`);
+        if (key !== undefined) {
+            // Round to nearest quater pixel to avoid accumulating rounding errors
+            const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
+
+            updateItemSize(id, key, size);
+        }
+    };
+
+   
+
+    const contentFragment = (
+        <React.Fragment key={recycleItems ? undefined : itemKey}>
+            {renderedItem}
+            {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
+        </React.Fragment>
+    );
 
     if (position.type === "bottom") {
         return (
             <View style={style}>
-                <View
-                    style={{ position: "absolute", bottom: 0,left: 0, right: 0 }}
-                    onLayout={(event: LayoutChangeEvent) => {
-                        const key = peek$<string>(ctx, `containerItemKey${id}`);
-                        if (key !== undefined) {
-                            // Round to nearest quater pixel to avoid accumulating rounding errors
-                            const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
-
-                            updateItemSize(id, key, size);
-                        }
-                    }}
-                >
-                    <React.Fragment key={recycleItems ? undefined : itemKey}>
-                        {renderedItem}
-                        {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
-                    </React.Fragment>
+                <View style={[{ position: "absolute" },otherAxisStyle]} onLayout={onLayout}>
+                    {contentFragment}
                 </View>
             </View>
         );
     }
+    // Use a reactive View to ensure the container element itself
+    // is not rendered when style changes, only the style prop.
+    // This is a big perf boost to do less work rendering.
     return (
-        <View
-            style={style}
-            onLayout={(event: LayoutChangeEvent) => {
-                const key = peek$<string>(ctx, `containerItemKey${id}`);
-                if (key !== undefined) {
-                    // Round to nearest quater pixel to avoid accumulating rounding errors
-                    const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
-
-                    updateItemSize(id, key, size);
-                }
-            }}
-        >
-            <React.Fragment key={recycleItems ? undefined : itemKey}>
-                {renderedItem}
-                {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
-            </React.Fragment>
+        <View style={[style, otherAxisStyle]} onLayout={onLayout}>
+            {contentFragment}
         </View>
     );
 };
