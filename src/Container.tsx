@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type ViewStyle } from "react-native";
+import { type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
 import { peek$, use$, useStateContext } from "./state";
 import type { AnchoredPosition } from "./types";
@@ -79,19 +80,19 @@ export const Container = ({
 
     if (position.type === "bottom") {
         return (
-            <View style={style}>
-                <View style={[{ position: "absolute", bottom: 0, left: 0, right: 0 }]} onLayout={onLayout}>
+            <LeanView style={style}>
+                <LeanView style={[{ position: "absolute", bottom: 0, left: 0, right: 0 }]} onLayout={onLayout}>
                     {contentFragment}
-                </View>
-            </View>
+                </LeanView>
+            </LeanView>
         );
     }
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
     return (
-        <View style={style} onLayout={onLayout}>
+        <LeanView style={style} onLayout={onLayout}>
             {contentFragment}
-        </View>
+        </LeanView>
     );
 };
