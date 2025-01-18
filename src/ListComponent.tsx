@@ -4,10 +4,9 @@ import {
     type LayoutChangeEvent,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
-    type ScrollView,
     View,
 } from "react-native";
-import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import Animated, { runOnJS, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { Containers } from "./Containers";
 import { peek$, set$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
@@ -25,7 +24,7 @@ interface ListComponentProps
     > {
     horizontal: boolean;
     initialContentOffset: number | undefined;
-    refScrollView: React.Ref<ScrollView>;
+    refScrollView: React.Ref<Animated.ScrollView>;
     getRenderedItem: (key: string, containerId: number) => ReactNode;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
@@ -70,28 +69,59 @@ export const ListComponent = React.memo(function ListComponent({
     const animPaddingTop = useValue$("paddingTop");
     const animScrollAdjust = useValue$("scrollAdjust");
 
-    // TODO: Try this again? This had bad behaviorof sometimes setting the min size to greater than
-    // the screen size
-    // const style = React.useMemo(() => {
-    //     const extraStyle: StyleProp<ViewStyle> = {};
-    //     if (otherAxisSize > 0) {
-    //         if (horizontal) {
-    //             extraStyle.minHeight = otherAxisSize;
-    //         } else {
-    //             extraStyle.minWidth = otherAxisSize;
-    //         }
-    //     }
-    //     console.log("style", StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>);
-    //     return StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>;
-    // }, [otherAxisSize]);
 
-    //const scrollBrake = useValue$("scrollBrake");
+    const scrollBrakePosition = useSharedValue<{ engaged: boolean; value: number }>({ engaged: false, value: 0 });
+    // const scrollOffset = useScrollViewOffset(refScrollView);
 
-     const additionalSize = useAnimatedStyle(() => {
-       // console.log("animScrollAdjust", scrollBrake.value);
+    // scrollOffset.addListener((event) => {
+    //     handleScroll({ nativeEvent: event });
+    // });
+
+    const animatedScrollHandler = useAnimatedScrollHandler((event) => {
+        const offset = event.contentOffset.y;
+        const velocity = event.velocity.y;
+        //console.log(event.velocity.y);
+        runOnJS(handleScroll)({ nativeEvent: event });
+
+        // if (velocity > 20 && !scrollBrakePosition.value.engaged) {
+        //     const val = scrollBrakePosition.value.value + 5;
+
+        //     // scrollBrakePosition.modify((prev) => {
+        //     //     val = prev + 200;
+        //     //     return { engaged: trure, value: val };
+        //     // });
+        //     scrollBrakePosition.value = {
+        //         ...{
+        //             engaged: true,
+        //             value: val,
+        //         },
+        //     };
+        //     console.log("engaging brake", val);
+        //     scrollBrake.value = withTiming(val, { duration: 500 }, () => {
+        //         scrollBrakePosition.value = {
+        //             ...{
+        //                 ...scrollBrakePosition.value,
+        //                 engaged: false,
+        //             },
+        //         };
+        //     });
+        // }
+
+        // if (offset + scrollHeight > lastLaidOutCoordinate.value) {
+        //     const blankingAmount = offset + scrollHeight - lastLaidOutCoordinate.value;
+        //     //console.log(offset+scrollHeight,lastLaidOutCoordinate.value)
+        //     if (blankingAmount > 2000) {
+        //         console.log("blanking!", blankingAmount);
+        //         scrollBrake.value = withTiming(1000)
+        //     }
+        // }
+    });
+
+
+    const additionalSize = useAnimatedStyle(() => {
+        // console.log("animScrollAdjust", scrollBrake.value);
         return { marginTop: animScrollAdjust.value, paddingTop: animPaddingTop.value };
-     });
-
+    });
 
     return (
         <Animated.ScrollView

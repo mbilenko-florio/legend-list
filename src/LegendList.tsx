@@ -20,7 +20,6 @@ import {
     type ScrollView,
     StyleSheet,
 } from "react-native";
-import { runOnJS, useAnimatedScrollHandler, useSharedValue, withTiming, } from "react-native-reanimated";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
@@ -498,7 +497,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
 
                             const index = refState.current?.indexByKey.get(key)!;
-                            const pos = peek$<number>(ctx, `containerAnimatedData${u}`).position;
+                            const pos = peek$<number>(ctx, `containerPosition${u}`);
 
                             if (index < startBuffered || index > endBuffered) {
                                 const distance = Math.abs(pos - top);
@@ -523,7 +522,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
                             set$(
                                 ctx,
-                                `containerAnimatedData${id}`,
+                                `containerPosition${containerId}`,
                                 {
                                     position: POSITION_OUT_OF_VIEW,
                                     numColumn: -1,
@@ -945,7 +944,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             for (let i = 0; i < numContainers; i++) {
                 set$(
                     ctx,
-                    `containerAnimatedData${i}`,
+                    `containerPosition${i}`,
                     {
                         position: POSITION_OUT_OF_VIEW,
                         numColumn: -1,
@@ -1174,46 +1173,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             [],
         );
 
-        const lastLaidOutCoordinate = useValue$("lastLaidOutCoordinate");
-        const scrollHeight = refState.current.scrollLength;
-
-        const scrollBrakePosition = useSharedValue<{ engaged: boolean; value: number }>({ engaged: false, value: 0 });
-
-        const animatedScrollHandler = useAnimatedScrollHandler((event) => {
-            const offset = event.contentOffset.y;
-            const velocity = event.velocity.y;
-            //console.log(event.velocity.y);
-            runOnJS(handleScroll)({ nativeEvent: event });
-
-            if (velocity > 20 && !scrollBrakePosition.value.engaged) {
-                const val = scrollBrakePosition.value.value + 5;
-              
-                // scrollBrakePosition.modify((prev) => {
-                //     val = prev + 200;
-                //     return { engaged: trure, value: val };
-                // });
-                scrollBrakePosition.value = {...{
-                    engaged: true,
-                    value: val
-                }}
-                console.log("engaging brake", val);
-                scrollBrake.value = withTiming(val, { duration: 500 }, () => {
-                    scrollBrakePosition.value = {...{
-                        ...scrollBrakePosition.value,
-                        engaged: false,
-                    }}
-                });
-            }
-
-            // if (offset + scrollHeight > lastLaidOutCoordinate.value) {
-            //     const blankingAmount = offset + scrollHeight - lastLaidOutCoordinate.value;
-            //     //console.log(offset+scrollHeight,lastLaidOutCoordinate.value)
-            //     if (blankingAmount > 2000) {
-            //         console.log("blanking!", blankingAmount);
-            //         scrollBrake.value = withTiming(1000)
-            //     }
-            // }
-        });
+       
 
         return (
             <ListComponent
@@ -1236,7 +1196,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 initialContentOffset={initialContentOffset}
                 getRenderedItem={getRenderedItem}
                 updateItemSize={updateItemSize}
-                handleScroll={animatedScrollHandler}
+                handleScroll={handleScroll}
                 onLayout={onLayout}
                 recycleItems={recycleItems}
                 alignItemsAtEnd={alignItemsAtEnd}
