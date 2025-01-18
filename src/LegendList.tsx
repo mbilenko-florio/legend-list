@@ -576,12 +576,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             const column = columns.get(id) || 1;
 
                             if (maintainVisibleContentPosition && itemIndex < anchorElementIndex) {
-                                const nextElementId = getId(itemIndex + 1);
-                                const nextPosition = positions.get(nextElementId);
-                                if (nextPosition == null) {
-                                    throw new Error("Next position is null, that should not happen");
-                                }
-                                pos.relativeCoordinate = nextPosition;
+                                const currentRow = Math.floor(itemIndex / numColumnsProp);
+                                pos.relativeCoordinate = pos.top; + getRowHeight(currentRow);
                                 pos.type = "bottom";
                             }
                             const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`);

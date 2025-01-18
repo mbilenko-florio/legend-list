@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type ViewStyle } from "react-native";
+import { type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
 import { peek$, use$, useStateContext } from "./state";
 import type { AnchoredPosition } from "./types";
@@ -70,8 +71,6 @@ export const Container = ({
         }
     };
 
-   
-
     const contentFragment = (
         <React.Fragment key={recycleItems ? undefined : itemKey}>
             {renderedItem}
@@ -79,21 +78,21 @@ export const Container = ({
         </React.Fragment>
     );
 
-    if (position.type === "bottom") {
-        return (
-            <View style={style}>
-                <View style={[{ position: "absolute" },otherAxisStyle]} onLayout={onLayout}>
-                    {contentFragment}
-                </View>
-            </View>
-        );
-    }
+    // if (position.type === "bottom") {
+    //     return (
+    //         <View style={style}>
+    //             <View style={[{ position: "absolute" },otherAxisStyle]} onLayout={onLayout}>
+    //                 {contentFragment}
+    //             </View>
+    //         </View>
+    //     );
+    // }
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
     return (
-        <View style={[style, otherAxisStyle]} onLayout={onLayout}>
+        <LeanView style={{...style, ...otherAxisStyle}} onLayout={onLayout}>
             {contentFragment}
-        </View>
+        </LeanView>
     );
 };
