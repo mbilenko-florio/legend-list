@@ -575,11 +575,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             };
                             const column = columns.get(id) || 1;
 
+                            // anchor elements to the bottom if element is below anchor
                             if (maintainVisibleContentPosition && itemIndex < anchorElementIndex) {
                                 const currentRow = Math.floor(itemIndex / numColumnsProp);
-                                pos.relativeCoordinate = pos.top + getRowHeight(currentRow);
+                                const rowHeight = getRowHeight(currentRow);
+                                const elementHeight = getItemSize(id, itemIndex, data[i]);
+                                const diff = rowHeight - elementHeight; // difference between row height and element height
+                                console.log("diff", diff,rowHeight,elementHeight);
+                                pos.relativeCoordinate = pos.top + getRowHeight(currentRow) - diff;
                                 pos.type = "bottom";
                             }
+
                             const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
                             const prevData = peek$(ctx, `containerItemData${i}`);
