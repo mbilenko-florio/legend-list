@@ -520,16 +520,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             set$(ctx, `containerItemData${containerId}`, data[index]);
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
-                            set$(
-                                ctx,
-                                `containerPosition${containerId}`,
-                                {
-                                    position: POSITION_OUT_OF_VIEW,
-                                    numColumn: -1,
-                                    didLayout: false,
-                                },
-                                true,
-                            );
+                            set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
+                            set$(ctx, `containerColumn${containerId}`, -1);
 
                             if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
                                 console.warn(
@@ -568,17 +560,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 (pos + size >= scroll && pos <= scrollBottom) ||
                                 (prevPos + size >= scroll && prevPos <= scrollBottom)
                             ) {
-                                set$(
-                                    ctx,
-                                    `containerPosition${i}`,
-                                    {
-                                        id,
-                                        position: POSITION_OUT_OF_VIEW,
-                                        numColumn: -1,
-                                        didLayout: false,
-                                    },
-                                    true,
-                                );
+                                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
                             }
                         } else {
                             const pos = positions.get(id) || 0;
@@ -942,16 +924,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
-                set$(
-                    ctx,
-                    `containerPosition${i}`,
-                    {
-                        position: POSITION_OUT_OF_VIEW,
-                        numColumn: -1,
-                        didLayout: false,
-                    },
-                    true,
-                );
+                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                set$(ctx, `containerColumn${i}`, -1);
             }
 
             set$(ctx, "numContainers", numContainers);
@@ -1034,14 +1008,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const scrollVelocity = state.scrollVelocity;
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
-                    // if (!peek$(ctx, `containerDidLayout${containerId}`)) {
-                    //     state.animFrameLayout = requestAnimationFrame(() => {
-                    //         state.animFrameLayout = null;
-                    //         calculateItemsInView(state.scrollVelocity);
-                    //     });
-                    // } else {
-                    calculateItemsInView(state.scrollVelocity);
-                    // }
+                    if (!peek$(ctx, `containerDidLayout${containerId}`)) {
+                        state.animFrameLayout = requestAnimationFrame(() => {
+                            state.animFrameLayout = null;
+                            calculateItemsInView(state.scrollVelocity);
+                        });
+                    } else {
+                        calculateItemsInView(state.scrollVelocity);
+                    }
                 }
 
                 if (onItemSizeChanged) {
