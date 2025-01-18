@@ -1,6 +1,7 @@
 import { LegendList } from "@legendapp/list";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useState } from "react";
-import { Button, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Button, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Message = {
@@ -27,6 +28,7 @@ const defaultChatMessages: Message[] = [
 const ChatExample = () => {
     const [messages, setMessages] = useState<Message[]>(defaultChatMessages);
     const [inputText, setInputText] = useState("");
+    const headerHeight = Platform.OS === "ios" ? useHeaderHeight() : 0;
 
     const sendMessage = () => {
         const text = inputText || "Empty message";
@@ -52,7 +54,7 @@ const ChatExample = () => {
 
     return (
         <SafeAreaView style={styles.container} edges={["bottom"]}>
-            <KeyboardAvoidingView style={styles.container} behavior="padding">
+            <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={headerHeight}>
                 <LegendList
                     data={messages}
                     contentContainerStyle={styles.contentContainer}

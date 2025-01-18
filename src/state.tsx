@@ -15,9 +15,10 @@ export type ListenerType =
     | "numContainers"
     | "numContainersPooled"
     | `containerItemKey${number}`
-    | `containerAnimatedData${number}`
-    | `lastLaidOutCoordinate`
-    | 'scrollBrake'
+    | `containerItemData${number}`
+    | `containerPosition${number}`
+    | `containerColumn${number}`
+    | `containerDidLayout${number}`
     | "numColumns"
     | `lastItemKey`
     | "totalSize"
@@ -25,9 +26,8 @@ export type ListenerType =
     | "stylePaddingTop"
     | "scrollAdjust"
     | "headerSize"
-    | "footerSize"
-    | "anchorPosition"
-    | "otherAxisSize";
+    | "footerSize";
+// | "otherAxisSize";
 
 export interface StateContext {
     listeners: Map<ListenerType, Set<(value: any) => void>>;
@@ -58,12 +58,17 @@ export function useStateContext() {
     return React.useContext(ContextState)!;
 }
 
+function createSelectorFunctions<T>(ctx: StateContext, signalName: ListenerType) {
+    return {
+        subscribe: (cb: (value: any) => void) => listen$(ctx, signalName, cb),
+        get: () => peek$(ctx, signalName) as T,
+    };
+}
+
 export function use$<T>(signalName: ListenerType): T {
     const ctx = React.useContext(ContextState)!;
-    const value = useSyncExternalStore(
-        (onStoreChange) => listen$(ctx, signalName, onStoreChange),
-        () => ctx.values.get(signalName),
-    );
+    const { subscribe, get } = React.useMemo(() => createSelectorFunctions<T>(ctx, signalName), []);
+    const value = useSyncExternalStore<T>(subscribe, get);
 
     return value;
 }

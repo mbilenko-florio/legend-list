@@ -47,6 +47,10 @@ const data: ListElement[] = [
         title: "🚧🚧🚧Infinite chat🚧🚧🚧",
         url: "/chat-infinite",
     },
+    {
+        title: "Mutable elements",
+        url: "/mutable-cells",
+    },
     // Add more items as needed
 ].map(
     (v, i) =>
@@ -73,10 +77,13 @@ const ListElements = () => {
     return (
         <SafeAreaView style={styles.container}>
             <LegendList
-                estimatedItemSize={80}
+                estimatedItemSize={60}
                 data={data}
                 renderItem={({ item }) => <ListItem {...item} />}
                 keyExtractor={(item) => item.id.toString()}
+                onItemSizeChanged={(info) => {
+                    console.log("item size changed", info);
+                }}
             />
         </SafeAreaView>
     );
@@ -88,6 +95,7 @@ const styles = StyleSheet.create({
     },
     item: {
         padding: 16,
+        height: 60,
         borderBottomColor: "#ccc",
         borderBottomWidth: 1,
         width: "100%",

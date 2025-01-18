@@ -4,10 +4,9 @@ import {
     type LayoutChangeEvent,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
-    type ScrollView as ScrollViewType,
+    type ScrollView,
     View,
 } from "react-native";
-
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { Containers } from "./Containers";
 import { peek$, set$, useStateContext } from "./state";
@@ -26,7 +25,7 @@ interface ListComponentProps
     > {
     horizontal: boolean;
     initialContentOffset: number | undefined;
-    refScroller: React.MutableRefObject<ScrollViewType>;
+    refScrollView: React.Ref<ScrollView>;
     getRenderedItem: (key: string, containerId: number) => ReactNode;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
@@ -52,6 +51,7 @@ export const ListComponent = React.memo(function ListComponent({
     recycleItems,
     ItemSeparatorComponent,
     alignItemsAtEnd,
+    waitForInitialLayout,
     handleScroll,
     onLayout,
     ListHeaderComponent,
@@ -62,7 +62,7 @@ export const ListComponent = React.memo(function ListComponent({
     ListEmptyComponentStyle,
     getRenderedItem,
     updateItemSize,
-    refScroller,
+    refScrollView,
     maintainVisibleContentPosition,
     ...rest
 }: ListComponentProps) {
@@ -85,11 +85,11 @@ export const ListComponent = React.memo(function ListComponent({
     //     return StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>;
     // }, [otherAxisSize]);
 
-    const scrollBrake = useValue$("scrollBrake");
+    //const scrollBrake = useValue$("scrollBrake");
 
      const additionalSize = useAnimatedStyle(() => {
-        console.log("animScrollAdjust", scrollBrake.value);
-        return { marginTop: animScrollAdjust.value + scrollBrake.value, paddingTop: animPaddingTop.value };
+       // console.log("animScrollAdjust", scrollBrake.value);
+        return { marginTop: animScrollAdjust.value, paddingTop: animPaddingTop.value };
      });
 
 
@@ -116,7 +116,7 @@ export const ListComponent = React.memo(function ListComponent({
                         : { x: 0, y: initialContentOffset }
                     : undefined
             }
-            ref={refScroller}
+            ref={refScrollView}
         >
             <Animated.View style={additionalSize} />
             {ListHeaderComponent && (
@@ -134,14 +134,13 @@ export const ListComponent = React.memo(function ListComponent({
                 </Animated.View>
             )}
             {ListEmptyComponent && (
-                <Animated.View style={ListEmptyComponentStyle}>
-                    {getComponent(ListEmptyComponent)}
-                </Animated.View>
+                <Animated.View style={ListEmptyComponentStyle}>{getComponent(ListEmptyComponent)}</Animated.View>
             )}
 
             <Containers
                 horizontal={horizontal!}
                 recycleItems={recycleItems!}
+                waitForInitialLayout={waitForInitialLayout}
                 getRenderedItem={getRenderedItem}
                 ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
                 updateItemSize={updateItemSize}

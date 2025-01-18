@@ -1,17 +1,17 @@
 import type { ComponentProps, ReactNode } from 'react';
 import type { ScrollResponderMixin, ScrollViewComponent } from 'react-native';
 import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
+import type Animated from 'react-native-reanimated';
 import type { ScrollAdjustHandler } from './ScrollAdjustHandler';
 
-export type LegendListProps<ItemT> = Omit<
-    ComponentProps<typeof ScrollView>,
-    'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition' | 'stickyHeaderIndices'
-> & {
+export type LegendListPropsBase<
+    ItemT,
+    TScrollView extends ComponentProps<typeof ScrollView> | ComponentProps<typeof Animated.ScrollView>
+> = Omit<TScrollView, 'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition' | 'stickyHeaderIndices'> & {
     data: ArrayLike<any> & ItemT[];
     initialScrollOffset?: number;
     initialScrollIndex?: number;
     drawDistance?: number;
-    initialNumContainers?: number;
     recycleItems?: boolean;
     onEndReachedThreshold?: number | null | undefined;
     onStartReachedThreshold?: number | null | undefined;
@@ -20,6 +20,8 @@ export type LegendListProps<ItemT> = Omit<
     alignItemsAtEnd?: boolean;
     maintainVisibleContentPosition?: boolean;
     numColumns?: number;
+    refScrollView?: React.Ref<ScrollView>;
+    waitForInitialLayout?: boolean;
     // in most cases providing a constant value for item size enough
     estimatedItemSize?: number;
     // in case you have distinct item sizes, you can provide a function to get the size of an item
@@ -40,13 +42,22 @@ export type LegendListProps<ItemT> = Omit<
     viewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs | undefined;
     viewabilityConfig?: ViewabilityConfig;
     onViewableItemsChanged?: OnViewableItemsChanged | undefined;
+    onItemSizeChanged?: (info: {
+        size: number;
+        previous: number;
+        index: number;
+        itemKey: string;
+        itemData: ItemT;
+    }) => void;
 };
+
+export type LegendListProps<ItemT> = LegendListPropsBase<ItemT, ComponentProps<typeof ScrollView>>;
 
 export interface InternalState {
     anchorElement?: {
         id: string;
         coordinate: number;
-    }
+    };
     belowAnchorElementPositions?: Map<string, number>;
     rowHeights: Map<number, number>;
     positions: Map<string, number>;
@@ -81,12 +92,13 @@ export interface InternalState {
     timeoutSizeMessage: any;
     nativeMarginTop: number;
     indexByKey: Map<string, number>;
-    contentSize: { width: number; height: number };
     viewabilityConfigCallbackPairs: ViewabilityConfigCallbackPairs | undefined;
     renderItem: (props: LegendListRenderItemProps<any>) => ReactNode;
     scrollHistory: Array<{ scroll: number; time: number }>;
     scrollTimer: Timer | undefined;
     startReachedBlockedByTimer: boolean;
+    layoutsPending: Set<number>;
+    scrollForNextCalculateItemsInView: { top: number; bottom: number } | undefined;
 }
 
 export interface ViewableRange<T> {
