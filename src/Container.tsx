@@ -10,6 +10,7 @@ export const Container = ({
     horizontal,
     getRenderedItem,
     updateItemSize,
+    waitForInitialLayout,
     ItemSeparatorComponent,
 }: {
     id: number;
@@ -21,7 +22,7 @@ export const Container = ({
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
-    const position = use$<AnchoredPosition>(`containerPosition${id}`) || ANCHORED_POSITION_OUT_OF_VIEW; 
+    const position = use$<AnchoredPosition>(`containerPosition${id}`) || ANCHORED_POSITION_OUT_OF_VIEW;
     const column = use$<number>(`containerColumn${id}`) || 0;
     const numColumns = use$<number>("numColumns");
 
@@ -43,6 +44,11 @@ export const Container = ({
               width: otherAxisSize,
               top: position.coordinate,
           };
+
+    if (waitForInitialLayout) {
+        const visible = use$<boolean>(`containerDidLayout${id}`);
+        style.opacity = visible ? 1 : 0;
+    }
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);

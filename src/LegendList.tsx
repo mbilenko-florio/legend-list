@@ -160,14 +160,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 indexByKey: new Map(),
                 scrollHistory: [],
                 scrollVelocity: 0,
-                sizesLaidOut: new Map(),
+                sizesLaidOut: __DEV__ ? new Map() : undefined,
                 timeoutSizeMessage: 0,
                 scrollTimer: undefined,
                 belowAnchorElementPositions: undefined,
                 rowHeights: new Map(),
                 startReachedBlockedByTimer: false,
                 scrollForNextCalculateItemsInView: undefined,
-                layoutsPending: false,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -604,9 +603,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            if (layoutsPending) {
-                set$(ctx, "didFirstMeasure", true);
-                state.layoutsPending = false;
+            if (layoutsPending.size > 0) {
+                for (const containerId of layoutsPending) {
+                    set$(ctx, `containerDidLayout${containerId}`, true);
+                }
+                layoutsPending.clear();
             }
 
             if (refState.current!.viewabilityConfigCallbackPairs) {
@@ -968,10 +969,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const row = Math.floor(index / numColumns);
             const prevSize = getRowHeight(row);
 
-            sizesLaidOut.set(itemKey, size);
-            const firstRenderPending = !peek$<number>(ctx, "didFirstMeasure");
-            if (firstRenderPending) {
-                state.layoutsPending = true;
+            const measured = peek$(ctx, `containerDidLayout${containerId}`);
+            if (!measured) {
+                state.layoutsPending.add(containerId);
             }
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
@@ -1029,7 +1029,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const scrollVelocity = state.scrollVelocity;
                 // Calculate positions if not currently scrolling and have a calculate already pending
                 if (!state.animFrameLayout && (Number.isNaN(scrollVelocity) || Math.abs(scrollVelocity) < 1)) {
-                    if (!peek$(ctx, "didFirstMeasure")) {
+                    if (!peek$(ctx, `containerDidLayout${containerId}`)) {
                         state.animFrameLayout = requestAnimationFrame(() => {
                             state.animFrameLayout = null;
                             calculateItemsInView(state.scrollVelocity);
@@ -1042,6 +1042,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 if (onItemSizeChanged) {
                     onItemSizeChanged({ size, previous: prevSize, index, itemKey, itemData: data[index] });
                 }
+            } else {
+                // Size is the same as estimated so mark it as laid out
+                set$(ctx, `containerDidLayout${containerId}`, true);
             }
         }, []);
 

@@ -42,9 +42,7 @@ export const Containers = React.memo(function Containers({
         );
     }
 
-    const style: StyleProp<ViewStyle> = horizontal
-        ? { width: animSize }
-        : { height: animSize};
+    const style: StyleProp<ViewStyle> = horizontal ? { width: animSize } : { height: animSize };
 
     return <Animated.View style={style}>{containers}</Animated.View>;
 });

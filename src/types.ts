@@ -70,7 +70,7 @@ export interface InternalState {
     positions: Map<string, number>;
     columns: Map<string, number>;
     sizes: Map<string, number>;
-    sizesLaidOut: Map<string, number>;
+    sizesLaidOut?: Map<string, number>;
     pendingAdjust: number;
     animFrameLayout: any;
     isStartReached: boolean;
@@ -103,7 +103,7 @@ export interface InternalState {
     scrollHistory: Array<{ scroll: number; time: number }>;
     scrollTimer: Timer | undefined;
     startReachedBlockedByTimer: boolean;
-    layoutsPending: boolean;
+    layoutsPending: Set<number>;
     scrollForNextCalculateItemsInView: { top: number; bottom: number } | undefined;
 }
 
