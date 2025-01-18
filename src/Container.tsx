@@ -45,6 +45,7 @@ export const Container = ({
               top: position.coordinate,
           };
 
+    console.log(waitForInitialLayout)
     if (waitForInitialLayout) {
         const visible = use$<boolean>(`containerDidLayout${id}`);
         style.opacity = visible ? 1 : 0;

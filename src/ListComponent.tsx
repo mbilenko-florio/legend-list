@@ -90,7 +90,7 @@ export const ListComponent = React.memo(function ListComponent({
     return (
         <ScrollView
             {...rest}
-            style={[style]}
+            style={style}
             maintainVisibleContentPosition={maintainVisibleContentPosition ? { minIndexForVisible: 0 } : undefined}
             contentContainerStyle={[
                 contentContainerStyle,
