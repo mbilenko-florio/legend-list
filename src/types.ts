@@ -54,7 +54,7 @@ export type LegendListPropsBase<
 
 export type AnchoredPosition = {
     type: 'top' | 'bottom';
-    coordinate: number; // used fro display
+    relativeCoordinate: number; // used for display
     top: number; // used for calculating the position of the container
 }
 

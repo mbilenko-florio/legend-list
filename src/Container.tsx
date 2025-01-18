@@ -35,17 +35,17 @@ export const Container = ({
               top: otherAxisPos,
               bottom: numColumns > 1 ? null : 0,
               height: otherAxisSize,
-              left: position.coordinate,
+              left: position.relativeCoordinate,
           }
         : {
               position: "absolute",
               left: otherAxisPos,
               right: numColumns > 1 ? null : 0,
               width: otherAxisSize,
-              top: position.coordinate,
+              top: position.relativeCoordinate,
           };
 
-    console.log(waitForInitialLayout)
+    console.log(waitForInitialLayout);
     if (waitForInitialLayout) {
         const visible = use$<boolean>(`containerDidLayout${id}`);
         style.opacity = visible ? 1 : 0;
@@ -57,10 +57,11 @@ export const Container = ({
 
     const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
 
+    // Use a reactive View to ensure the container element itself
+    // is not rendered when style changes, only the style prop.
+    // This is a big perf boost to do less work rendering.
+
     if (position.type === "bottom") {
-        // Use a reactive View to ensure the container element itself
-        // is not rendered when style changes, only the style prop.
-        // This is a big perf boost to do less work rendering.
         return (
             <View style={style}>
                 <View

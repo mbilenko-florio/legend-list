@@ -570,7 +570,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         } else {
                             const pos: AnchoredPosition = {
                                 type: "top",
-                                coordinate: positions.get(id) || 0,
+                                relativeCoordinate: positions.get(id) || 0,
                                 top: positions.get(id) || 0,
                             };
                             const column = columns.get(id) || 1;
@@ -581,14 +581,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 if (nextPosition == null) {
                                     throw new Error("Next position is null, that should not happen");
                                 }
-                                pos.coordinate = nextPosition;
+                                pos.relativeCoordinate = nextPosition;
                                 pos.type = "bottom";
                             }
                             const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
                             const prevData = peek$(ctx, `containerItemData${i}`);
 
-                            if (pos.coordinate > POSITION_OUT_OF_VIEW && pos.top !== prevPos.top) {
+                            if (pos.relativeCoordinate > POSITION_OUT_OF_VIEW && pos.top !== prevPos.top) {
                                 set$(ctx, `containerPosition${i}`, pos);
                             }
                             if (column >= 0 && column !== prevColumn) {
