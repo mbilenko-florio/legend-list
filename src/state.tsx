@@ -28,6 +28,7 @@ export type ListenerType =
     | "headerSize"
     | "footerSize" 
     | "didFirstMeasure"
+    | "maintainVisibleContentPosition"
 // | "otherAxisSize";
 
 export interface StateContext {

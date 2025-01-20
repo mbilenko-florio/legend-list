@@ -186,6 +186,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             set$(ctx, "scrollAdjust", 0);
+            set$(ctx, "maintainVisibleContentPosition", maintainVisibleContentPosition);
         }
 
         const getAnchorElementIndex = () => {
@@ -580,7 +581,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 const rowHeight = getRowHeight(currentRow);
                                 const elementHeight = getItemSize(id, itemIndex, data[i]);
                                 const diff = rowHeight - elementHeight; // difference between row height and element height
-                                console.log("diff", diff,rowHeight,elementHeight);
                                 pos.relativeCoordinate = pos.top + getRowHeight(currentRow) - diff;
                                 pos.type = "bottom";
                             }

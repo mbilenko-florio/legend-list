@@ -33,6 +33,7 @@ interface ListComponentProps
     onLayout: (event: LayoutChangeEvent) => void;
     maintainVisibleContentPosition: boolean;
     renderScrollComponent?: (props: ScrollViewProps) => React.ReactElement<ScrollViewProps>;
+
 }
 
 const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {

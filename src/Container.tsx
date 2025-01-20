@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import type { DimensionValue, LayoutChangeEvent, StyleProp, ViewStyle } from "react-native";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
 import { peek$, use$, useStateContext } from "./state";
@@ -23,6 +23,7 @@ export const Container = ({
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
+    const maintainVisibleContentPosition = use$<boolean>("maintainVisibleContentPosition");
     const position = use$<AnchoredPosition>(`containerPosition${id}`) || ANCHORED_POSITION_OUT_OF_VIEW;
     const column = use$<number>(`containerColumn${id}`) || 0;
     const numColumns = use$<number>("numColumns");
@@ -46,8 +47,6 @@ export const Container = ({
               top: position.relativeCoordinate,
           };
 
-      
-
     if (waitForInitialLayout) {
         const visible = use$<boolean>(`containerDidLayout${id}`);
         style.opacity = visible ? 1 : 0;
@@ -65,7 +64,7 @@ export const Container = ({
             // Round to nearest quater pixel to avoid accumulating rounding errors
             const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
             updateItemSize(id, key, size);
-            
+
             // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
             // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
         }
@@ -78,10 +77,15 @@ export const Container = ({
         </React.Fragment>
     );
 
-    if (position.type === "bottom") {
+    // If maintainVisibleContentPosition is enabled, we need a way items to grow upwards
+    if (maintainVisibleContentPosition) {
+        const anchorStyle: StyleProp<ViewStyle> =
+            position.type === "top"
+                ? { position: "absolute", top: 0, left: 0, right: 0 }
+                : { position: "absolute", bottom: 0, left: 0, right: 0 };
         return (
             <LeanView style={style}>
-                <LeanView style={[{ position: "absolute", bottom: 0, left: 0, right: 0 }]} onLayout={onLayout}>
+                <LeanView style={anchorStyle} onLayout={onLayout}>
                     {contentFragment}
                 </LeanView>
             </LeanView>
