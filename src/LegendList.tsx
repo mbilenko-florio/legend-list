@@ -54,7 +54,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             initialScrollIndex,
             initialScrollOffset,
             horizontal,
-            initialNumContainers,
             drawDistance = 250,
             recycleItems = false,
             onEndReachedThreshold = 0.5,
@@ -530,7 +529,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                             if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
                                 console.warn(
-                                    "[legend-list] No container to recycle, consider increasing initialContainers or estimatedItemSize. numContainers:",
+                                    "[legend-list] No container to recycle, so creating one on demand. This can be a performance issue and is likely caused by the estimatedItemSize being too small. Consider increasing estimatedItemSize. numContainers:",
                                     numContainers,
                                 );
                             }
@@ -943,9 +942,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // Allocate containers
             const scrollLength = refState.current!.scrollLength;
             const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]) ?? DEFAULT_ITEM_SIZE;
-            const numContainers =
-                (initialNumContainers || Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize)) *
-                numColumnsProp;
+            const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
                 set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);

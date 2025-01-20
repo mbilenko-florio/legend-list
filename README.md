@@ -14,6 +14,10 @@ In addition to normal FlatList features:
 -   `maintainScrollAtEnd`: If true and scroll is within `maintainScrollAtEndThreshold * screen height` then changing items or heights will scroll to the bottom. This can be useful for chat interfaces.
 -   `recycleItems` prop enables toggling recycling of list items. If enabled it will reuse item components for improved performance, but it will reuse any local state in items. So if you have local state in items you likely want this disabled.
 
+## Documentation
+
+See the [documentation site](https://www.legendapp.com/open-source/list) for the full documentation.
+
 ## Usage
 
 ## Install
@@ -41,7 +45,6 @@ interface PropsOptional {
     initialScrollOffset?: number;
     initialScrollIndex?: number;
     drawDistance?: number;
-    initialContainers?: number;
     recycleItems?: boolean;
     onEndReachedThreshold?: number | null | undefined;
     maintainScrollAtEnd?: boolean;

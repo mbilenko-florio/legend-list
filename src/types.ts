@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react';
-import type { ScrollResponderMixin, ScrollViewComponent } from 'react-native';
+import type { ScrollResponderMixin, ScrollViewComponent, ScrollViewProps } from 'react-native';
 import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
 import type Animated from 'react-native-reanimated';
 import type { ScrollAdjustHandler } from './ScrollAdjustHandler';
@@ -12,7 +12,6 @@ export type LegendListPropsBase<
     initialScrollOffset?: number;
     initialScrollIndex?: number;
     drawDistance?: number;
-    initialNumContainers?: number;
     recycleItems?: boolean;
     onEndReachedThreshold?: number | null | undefined;
     onStartReachedThreshold?: number | null | undefined;
@@ -50,6 +49,11 @@ export type LegendListPropsBase<
         itemKey: string;
         itemData: ItemT;
     }) => void;
+    /**
+     * Render custom ScrollView component.
+     * @default (props) => <ScrollView {...props} />
+     */
+    renderScrollComponent?: (props: ScrollViewProps) => React.ReactElement<ScrollViewProps>;
 };
 
 export type AnchoredPosition = {
