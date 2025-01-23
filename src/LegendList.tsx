@@ -167,6 +167,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 startReachedBlockedByTimer: false,
                 layoutsPending: new Set(),
                 scrollForNextCalculateItemsInView: undefined,
+                enableScrollForNextCalculateItemsInView: true,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -256,7 +257,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             let rowHeight = 0;
             const startEl = n * numColumnsProp;
-            for (let i = startEl; i < startEl + numColumnsProp; i++) {
+            for (let i = startEl; i < startEl + numColumnsProp && i < data.length; i++) {
                 const id = getId(i);
                 const size = getItemSize(id, i, data[i]);
                 rowHeight = Math.max(rowHeight, size);
@@ -329,8 +330,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
 
             // Check precomputed scroll range to see if we can skip this check
-            if (refState.current!.scrollForNextCalculateItemsInView) {
-                const { top, bottom } = refState.current!.scrollForNextCalculateItemsInView;
+            if (state.scrollForNextCalculateItemsInView) {
+                const { top, bottom } = state.scrollForNextCalculateItemsInView;
                 if (scroll > top && scroll < bottom) {
                     return;
                 }
@@ -446,7 +447,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
 
-            Object.assign(refState.current!, {
+            Object.assign(state, {
                 startBuffered,
                 startBufferedId,
                 startNoBuffer,
@@ -460,13 +461,15 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const nextBottom = Math.floor(
                 endBuffered ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
             );
-            refState.current!.scrollForNextCalculateItemsInView =
-                nextTop >= 0 && nextBottom >= 0
-                    ? {
-                          top: nextTop,
-                          bottom: nextBottom,
-                      }
-                    : undefined;
+            if (state.enableScrollForNextCalculateItemsInView) {
+                state.scrollForNextCalculateItemsInView =
+                    nextTop >= 0 && nextBottom >= 0
+                        ? {
+                              top: nextTop,
+                              bottom: nextBottom,
+                          }
+                        : undefined;
+            }
 
             // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, scroll);
 
@@ -501,7 +504,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 break;
                             }
 
-                            const index = refState.current?.indexByKey.get(key)!;
+                            const index = state.indexByKey.get(key)!;
                             const pos = peek$<AnchoredPosition>(ctx, `containerPosition${u}`).top;
 
                             if (index < startBuffered || index > endBuffered) {
@@ -514,14 +517,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         }
                         if (furthestIndex >= 0) {
                             set$(ctx, `containerItemKey${furthestIndex}`, id);
-                            const index = refState.current?.indexByKey.get(id)!;
+                            const index = state.indexByKey.get(id)!;
                             set$(ctx, `containerItemData${furthestIndex}`, data[index]);
                         } else {
                             const containerId = numContainers;
 
                             numContainers++;
                             set$(ctx, `containerItemKey${containerId}`, id);
-                            const index = refState.current?.indexByKey.get(id)!;
+                            const index = state.indexByKey.get(id)!;
                             set$(ctx, `containerItemData${containerId}`, data[index]);
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
@@ -550,7 +553,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // but it likely would have little impact. Remove this comment if not worth doing.
                 for (let i = 0; i < numContainers; i++) {
                     const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
-                    const itemIndex = refState.current?.indexByKey.get(itemKey)!;
+                    const itemIndex = state.indexByKey.get(itemKey)!;
                     const item = data[itemIndex];
                     if (item) {
                         const id = getId(itemIndex);
@@ -611,11 +614,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 layoutsPending.clear();
             }
 
-            if (refState.current!.viewabilityConfigCallbackPairs) {
+            if (state.viewabilityConfigCallbackPairs) {
                 updateViewableItems(
-                    refState.current!,
+                    state,
                     ctx,
-                    refState.current!.viewabilityConfigCallbackPairs,
+                    state.viewabilityConfigCallbackPairs,
                     getId,
                     scrollLength,
                     startNoBuffer!,
@@ -795,10 +798,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     if (maintainVisibleContentPosition && anchorElementIndex !== undefined && i < anchorElementIndex) {
                         totalSizeBelowIndex += maxSizeInRow;
                     }
+
                     totalSize += maxSizeInRow;
                     column = 1;
                     maxSizeInRow = 0;
                 }
+            }
+
+            // If have any height leftover from a row that doesn't extend through the last column
+            // add it to total size
+            if (maxSizeInRow > 0) {
+                totalSize += maxSizeInRow;
             }
             addTotalSize(null, totalSize, totalSizeBelowIndex);
         }
@@ -937,10 +947,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, []);
 
         useInit(() => {
-            refState.current!.viewabilityConfigCallbackPairs = setupViewability(props);
+            const state = refState.current!;
+            const viewability = setupViewability(props);
+            state.viewabilityConfigCallbackPairs = viewability;
+            state.enableScrollForNextCalculateItemsInView = !viewability;
 
             // Allocate containers
-            const scrollLength = refState.current!.scrollLength;
+            const scrollLength = state.scrollLength;
             const averageItemSize = estimatedItemSize ?? getEstimatedItemSize?.(0, data[0]) ?? DEFAULT_ITEM_SIZE;
             const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
 
@@ -952,7 +965,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             set$(ctx, "numContainers", numContainers);
             set$(ctx, "numContainersPooled", numContainers * 2);
 
-            calculateItemsInView(refState.current!.scrollVelocity);
+            calculateItemsInView(state.scrollVelocity);
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
@@ -983,7 +996,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const column = columns.get(itemKey);
                     const loopStart = index - (column! - 1);
                     let nextMaxSizeInRow = 0;
-                    for (let i = loopStart; i < loopStart + numColumns; i++) {
+                    for (let i = loopStart; i < loopStart + numColumns && i < data.length; i++) {
                         const id = getId(i)!;
                         const size = getItemSize(id, i, data[i]);
                         nextMaxSizeInRow = Math.max(nextMaxSizeInRow, size);

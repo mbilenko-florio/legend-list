@@ -109,6 +109,7 @@ export interface InternalState {
     startReachedBlockedByTimer: boolean;
     layoutsPending: Set<number>;
     scrollForNextCalculateItemsInView: { top: number; bottom: number } | undefined;
+    enableScrollForNextCalculateItemsInView: boolean;
 }
 
 export interface ViewableRange<T> {
