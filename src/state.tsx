@@ -18,7 +18,6 @@ export type ListenerType =
     | `containerPosition${number}`
     | `containerColumn${number}`
     | `containerDidLayout${number}`
-    | `containerVisible${number}`
     | "numColumns"
     | `lastItemKey`
     | "totalSize"
