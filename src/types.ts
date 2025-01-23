@@ -54,6 +54,7 @@ export type LegendListPropsBase<
      * @default (props) => <ScrollView {...props} />
      */
     renderScrollComponent?: (props: ScrollViewProps) => React.ReactElement<ScrollViewProps>;
+    extraData?: any;
 };
 
 export type AnchoredPosition = {

@@ -51,6 +51,10 @@ const data: ListElement[] = [
         title: "Mutable elements",
         url: "/mutable-cells",
     },
+    {
+        title: "Extra data",
+        url: "/extra-data",
+    },
     // Add more items as needed
 ].map(
     (v, i) =>

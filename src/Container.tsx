@@ -55,8 +55,9 @@ export const Container = ({
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
     const data = use$<string>(`containerItemData${id}`); // to detect data changes
+    const extraData = use$<string>("extraData"); // to detect extraData changes
 
-    const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data]);
+    const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data, extraData]);
 
     const onLayout = (event: LayoutChangeEvent) => {
         const key = peek$<string>(ctx, `containerItemKey${id}`);

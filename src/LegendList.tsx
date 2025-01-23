@@ -74,6 +74,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             onItemSizeChanged,
             scrollEventThrottle,
             refScrollView,
+            extraData,
             ...rest
         } = props;
         const { style, contentContainerStyle } = props;
@@ -188,6 +189,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             set$(ctx, "scrollAdjust", 0);
             set$(ctx, "maintainVisibleContentPosition", maintainVisibleContentPosition);
+            set$(ctx, "extraData", extraData);
         }
 
         const getAnchorElementIndex = () => {
@@ -457,9 +459,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             // Precompute the scroll that will be needed for the range to change
             // so it can be skipped if not needed
-            const nextTop = Math.ceil(startBuffered ? positions.get(startBufferedId!)! + scrollBuffer : 0);
+            const nextTop = Math.ceil(startBuffered !== null ? positions.get(startBufferedId!)! + scrollBuffer : 0);
             const nextBottom = Math.floor(
-                endBuffered ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
+                endBuffered !== null ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
             );
             if (state.enableScrollForNextCalculateItemsInView) {
                 state.scrollForNextCalculateItemsInView =
@@ -816,6 +818,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         useEffect(() => {
             checkResetContainers(/*reset*/ !isFirst);
         }, [isFirst, data, numColumnsProp]);
+
+        useEffect(() => {
+            set$(ctx, "extraData", extraData);
+        }, [extraData]);
 
         refState.current.renderItem = renderItem!;
         const lastItemKey = getId(data[data.length - 1]);
