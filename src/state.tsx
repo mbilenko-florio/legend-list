@@ -27,7 +27,6 @@ export type ListenerType =
     | "scrollAdjust"
     | "headerSize"
     | "footerSize" 
-    | "didFirstMeasure"
     | "maintainVisibleContentPosition"
 // | "otherAxisSize";
 
