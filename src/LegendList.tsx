@@ -74,6 +74,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             onItemSizeChanged,
             scrollEventThrottle,
             refScrollView,
+            waitForInitialLayout=true,
             extraData,
             ...rest
         } = props;
@@ -1215,7 +1216,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 ListEmptyComponent={data.length === 0 ? ListEmptyComponent : undefined}
                 maintainVisibleContentPosition={maintainVisibleContentPosition}
                 scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
-                waitForInitialLayout={true}
+                waitForInitialLayout={waitForInitialLayout}
                 style={style}
             />
         );
