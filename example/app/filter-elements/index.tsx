@@ -29,6 +29,8 @@ function FilteredCards({ numColumns = 1 }: CardsProps) {
 
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
+            <FilterInput />
+            <View style={{flexGrow:1}} >
             <LegendList
                 ref={listRef}
                 style={[StyleSheet.absoluteFill, styles.scrollContainer]}
@@ -38,11 +40,9 @@ function FilteredCards({ numColumns = 1 }: CardsProps) {
                 keyExtractor={(item) => `id${item.id}`}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={DRAW_DISTANCE}
-                maintainVisibleContentPosition
+                //maintainVisibleContentPosition
                 recycleItems={true}
                 numColumns={numColumns}
-                ListHeaderComponent={<FilterInput/>}
-                ListHeaderComponentStyle={styles.listHeader}
                 ListFooterComponent={<View />}
                 ListFooterComponentStyle={styles.listHeader}
                 ListEmptyComponentStyle={{ flex: 1 }}
@@ -52,11 +52,12 @@ function FilteredCards({ numColumns = 1 }: CardsProps) {
                     </View>
                 }
             />
+            </View>
         </View>
     );
 }
 
-export default function CardsWrapper({numColumns = 1}: CardsProps) {
+export default function CardsWrapper({ numColumns = 1 }: CardsProps) {
     return (
         <CardsDataProvider
             initialData={
@@ -71,11 +72,11 @@ export default function CardsWrapper({numColumns = 1}: CardsProps) {
 }
 
 const FilterInput = () => {
-    const {filter, setFilter} = useCardData();
+    const { filter, setFilter } = useCardData();
     return (
         <TextInput
             placeholder="Filter"
-            style={{ backgroundColor: "white", padding: 8, margin: 8 }}
+            style={{ backgroundColor: "white", padding: 8, margin: 8, height: 40 }}
             value={filter}
             onChangeText={setFilter}
             keyboardType="numeric"
@@ -101,7 +102,6 @@ const styles = StyleSheet.create({
     },
     outerContainer: {
         backgroundColor: "#456",
-        bottom: 0,
     },
     scrollContainer: {},
     listContainer: {
