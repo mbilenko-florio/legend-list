@@ -1,12 +1,10 @@
 import { renderItem } from "@/app/cards-renderItem";
-import { DO_SCROLL_TEST, DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constants/constants";
-import { useScrollTest } from "@/constants/useScrollTest";
+import { DRAW_DISTANCE, ESTIMATED_ITEM_LENGTH } from "@/constants/constants";
 import { LegendList, type LegendListRef } from "@legendapp/list";
-import { useRef } from "react";
-import { LogBox, StyleSheet, Text, TextInput, View } from "react-native";
+import { useNavigation } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { Button, StyleSheet, Text, TextInput, View } from "react-native";
 import { CardsDataProvider, useCardData } from "./filter-data-provider";
-
-LogBox.ignoreLogs(["Open debugger"]);
 
 interface CardsProps {
     numColumns?: number;
@@ -15,43 +13,49 @@ interface CardsProps {
 function FilteredCards({ numColumns = 1 }: CardsProps) {
     const listRef = useRef<LegendListRef>(null);
     const { data } = useCardData();
+    const navigation = useNavigation();
+    const [mvcp, setMvcp] = useState(false);
 
-    if (DO_SCROLL_TEST) {
-        useScrollTest((offset) => {
-            listRef.current?.scrollToOffset({
-                offset: offset,
-                animated: true,
-            });
+    useEffect(() => {
+        navigation.setOptions({
+            title: "Filter",
+            headerRight: () => (
+                <Button
+                    title={`${mvcp ? "✓" : ""}MVCP`}
+                    onPress={() => {
+                        setMvcp((prev) => !prev);
+                    }}
+                    color={mvcp ? "#00e" : "black"}
+                />
+            ),
         });
-    }
-
-    console.log("rendering cards", data.length);
+    }, [mvcp]);
 
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
             <FilterInput />
-            <View style={{flexGrow:1}} >
-            <LegendList
-                ref={listRef}
-                style={[StyleSheet.absoluteFill, styles.scrollContainer]}
-                contentContainerStyle={styles.listContainer}
-                data={data}
-                renderItem={renderItem}
-                keyExtractor={(item) => `id${item.id}`}
-                estimatedItemSize={ESTIMATED_ITEM_LENGTH}
-                drawDistance={DRAW_DISTANCE}
-                //maintainVisibleContentPosition
-                recycleItems={true}
-                numColumns={numColumns}
-                ListFooterComponent={<View />}
-                ListFooterComponentStyle={styles.listHeader}
-                ListEmptyComponentStyle={{ flex: 1 }}
-                ListEmptyComponent={
-                    <View style={styles.listEmpty}>
-                        <Text style={{ color: "white" }}>Empty</Text>
-                    </View>
-                }
-            />
+            <View style={{ flexGrow: 1 }}>
+                <LegendList
+                    ref={listRef}
+                    style={[StyleSheet.absoluteFill, styles.scrollContainer]}
+                    contentContainerStyle={styles.listContainer}
+                    data={data}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => `id${item.id}`}
+                    estimatedItemSize={ESTIMATED_ITEM_LENGTH}
+                    drawDistance={DRAW_DISTANCE}
+                    maintainVisibleContentPosition={mvcp}
+                    recycleItems={true}
+                    numColumns={numColumns}
+                    ListFooterComponent={<View />}
+                    ListFooterComponentStyle={styles.listHeader}
+                    ListEmptyComponentStyle={{ flex: 1 }}
+                    ListEmptyComponent={
+                        <View style={styles.listEmpty}>
+                            <Text style={{ color: "white" }}>Empty</Text>
+                        </View>
+                    }
+                />
             </View>
         </View>
     );

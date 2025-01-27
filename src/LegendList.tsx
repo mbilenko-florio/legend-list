@@ -73,8 +73,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         } = props;
         const { style, contentContainerStyle } = props;
 
-        console.log("LegendListInner");
-
         const ctx = useStateContext();
 
         const refScroller = useRef<ScrollView>(null) as React.MutableRefObject<ScrollView>;
@@ -119,6 +117,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             return 0;
         };
+
+        const chooseAnchorElement = () => {};
 
         const initialContentOffset = initialScrollOffset ?? useMemo(calculateInitialOffset, []);
 
@@ -179,7 +179,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         id: getId(0),
                     };
                 } else {
-                    // TODO: allow anchorElement to defined at the later point of time when data is available
                     console.warn("[legend-list] maintainVisibleContentPosition was not able to find an anchor element");
                 }
             }
@@ -301,7 +300,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return res;
         };
 
-        const calculateItemsInView = useCallback((speed: number) => {
+        const calculateItemsInView = useCallback((speed: number, recursive = false) => {
             const state = refState.current!;
             const {
                 data,
@@ -390,8 +389,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const getInitialTop = (i: number): number => {
                 const id = getId(i)!;
                 let topOffset = 0;
-                if (positions.get(id)) {
+                if (positions.get(id) != null) {
                     topOffset = positions.get(id)!;
+                } else {
+                    topOffset = calculateInitialOffset(i);
                 }
                 if (id === state.anchorElement?.id) {
                     topOffset = initialContentOffset || 0;
@@ -468,7 +469,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         : undefined;
             }
 
-            // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, scroll);
+            // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, startBufferedId);
 
             if (startBuffered !== null && endBuffered !== null) {
                 const prevNumContainers = ctx.values.get("numContainers") as number;
@@ -768,12 +769,46 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // save positions for items that are still in the list at the same indices
                 // throw out everything else
                 if (refState.current.positions.get(key) != null && refState.current.indexByKey.get(key) === i) {
+                    console.log(`Transfering position for key: ${key}`);
                     newPositions.set(key, refState.current.positions.get(key)!);
                 }
             }
             // getAnchorElementIndex needs indexByKey, build it first
             refState.current.indexByKey = indexByKey;
             refState.current.positions = newPositions;
+            console.log("maintainVisibleContentPosition", maintainVisibleContentPosition);
+
+            // check if anchorElement is still in the list
+            if (maintainVisibleContentPosition) {
+                if (
+                    refState.current.anchorElement == null ||
+                    indexByKey.get(refState.current.anchorElement.id) == null
+                ) {
+                    if (data.length) {
+                        const newAnchorElement = {
+                            coordinate: 0,
+                            id: getId(0),
+                        };
+                        console.log("Creating new anchorElement", newAnchorElement);
+                        refState.current.anchorElement = newAnchorElement;
+                        refState.current.belowAnchorElementPositions?.clear();
+                    }
+                }
+            }
+            // if maintainVisibleContentPosition not used, reset startBufferedId
+            if (!maintainVisibleContentPosition) {
+                if (
+                    refState.current.startBufferedId != null &&
+                    newPositions.get(refState.current.startBufferedId) == null
+                ) {
+                    if (data.length) {
+                        refState.current.startBufferedId = getId(0);
+                    } else {
+                        refState.current.startBufferedId = undefined;
+                    }
+                }
+            }
+
             const anchorElementIndex = getAnchorElementIndex();
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
