@@ -51,6 +51,10 @@ const data: ListElement[] = [
         title: "Mutable elements",
         url: "/mutable-cells",
     },
+    {
+        title: "Extra data",
+        url: "/extra-data",
+    },
     // Add more items as needed
 ].map(
     (v, i) =>
@@ -97,6 +101,7 @@ const styles = StyleSheet.create({
     },
     item: {
         padding: 16,
+        height: 60,
         borderBottomColor: "#ccc",
         borderBottomWidth: 1,
         width: "100%",

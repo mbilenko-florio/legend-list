@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useMemo } from "react";
 import * as React from "react";
 import {
     Animated,
@@ -6,13 +6,14 @@ import {
     type NativeScrollEvent,
     type NativeSyntheticEvent,
     ScrollView,
+    type ScrollViewProps,
     View,
 } from "react-native";
 import { Containers } from "./Containers";
+import { FlashListContainers } from "./flash-list/Containers";
 import { peek$, set$, useStateContext } from "./state";
 import type { LegendListProps } from "./types";
 import { useValue$ } from "./useValue$";
-import { FlashListContainers } from "./flash-list/Containers";
 
 interface ListComponentProps
     extends Omit<
@@ -36,6 +37,8 @@ interface ListComponentProps
     maintainVisibleContentPosition: boolean;
     useFlashListContainers: boolean;
     SkeletonComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
+    renderScrollComponent?: (props: ScrollViewProps) => React.ReactElement<ScrollViewProps>;
+
 }
 
 const getComponent = (Component: React.ComponentType<any> | React.ReactElement) => {
@@ -73,11 +76,20 @@ export const ListComponent = React.memo(function ListComponent({
     maintainVisibleContentPosition,
     useFlashListContainers,
     SkeletonComponent,
+    renderScrollComponent,
     ...rest
 }: ListComponentProps) {
     const ctx = useStateContext();
     const animPaddingTop = useValue$("paddingTop");
     const animScrollAdjust = useValue$("scrollAdjust");
+
+    // Use renderScrollComponent if provided, otherwise a regular ScrollView
+    const ScrollComponent = renderScrollComponent
+        ? useMemo(
+              () => React.forwardRef((props, ref) => renderScrollComponent({ ...props, ref } as any)),
+              [renderScrollComponent],
+          )
+        : ScrollView;
 
     // TODO: Try this again? This had bad behaviorof sometimes setting the min size to greater than
     // the screen size
@@ -99,7 +111,7 @@ export const ListComponent = React.memo(function ListComponent({
     const ContainersComponent = useFlashListContainers ? FlashListContainers: Containers;
 
     return (
-        <ScrollView
+        <ScrollComponent
             {...rest}
             style={style}
             maintainVisibleContentPosition={maintainVisibleContentPosition ? { minIndexForVisible: 0 } : undefined}
@@ -121,7 +133,7 @@ export const ListComponent = React.memo(function ListComponent({
                         : { x: 0, y: initialContentOffset }
                     : undefined
             }
-            ref={refScrollView}
+            ref={refScrollView as any}
         >
             <Animated.View style={additionalSize} />
             {ListHeaderComponent && (
@@ -154,6 +166,6 @@ export const ListComponent = React.memo(function ListComponent({
                 SkeletonComponent={SkeletonComponent}
             />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
-        </ScrollView>
+        </ScrollComponent>
     );
 });

@@ -1,15 +1,7 @@
 import Cards from "@/app/(tabs)/cards";
-import {} from "@/app/cards-renderItem";
-import {} from "@/constants/constants";
-import {} from "@legendapp/list";
-import {} from "react";
 import { LogBox, Platform, StyleSheet } from "react-native";
 
 LogBox.ignoreLogs(["Open debugger"]);
-
-interface CardsProps {
-    numColumns?: number;
-}
 
 export default function CardsColumns() {
     return <Cards numColumns={2} />;
