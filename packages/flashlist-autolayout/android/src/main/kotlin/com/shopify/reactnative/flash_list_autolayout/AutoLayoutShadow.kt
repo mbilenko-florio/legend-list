@@ -64,7 +64,7 @@ class AutoLayoutShadow {
                             if (!isNeighbourSkeleton && isModified) {
                                 // not interested in skeleton views
                                 modifiedItems.add(neighbour)
-                               // Log.d("LEGENDLIST", "->adjusting neighbour     neighbour.top ${neighbour.top} bottom ${neighbour.bottom}" )
+                                //Log.d("LEGENDLIST", "->adjusting neighbour     neighbour.top ${neighbour.top} bottom ${neighbour.bottom} ${neighbour.left} ${neighbour.right}" )
                             }
 
                         }
@@ -98,7 +98,7 @@ class AutoLayoutShadow {
 
 
                             if (!isNeighbourSkeleton && isModified) {
-                                Log.d("LEGENDLIST", "->adjusting neighbour  neighbour.top ${neighbour.top} bottom ${neighbour.bottom}" )
+                                //Log.d("LEGENDLIST", "->adjusting neighbour  neighbour.top ${neighbour.top} bottom ${neighbour.bottom}" )
                                 modifiedItems.add(neighbour)
                             }
                         }
@@ -119,10 +119,22 @@ class AutoLayoutShadow {
     /** Offset provided by react can be one frame behind the real one, it's important that this method is called with offset taken directly from
      * scrollview object */
     fun computeBlankFromGivenOffset(actualScrollOffset: Int, distanceFromWindowStart: Int, distanceFromWindowEnd: Int): Int {
-        val actualScrollOffset = actualScrollOffset - offsetFromStart;
+
+        //Log.i("LEGENDLIST", "${actualScrollOffset}")
+        //val actualScrollOffset = actualScrollOffset - offsetFromStart;
+        //Log.i("LEGENDLIST", "${actualScrollOffset} lmb ${lastMaxBound} ws${windowSize}")
         blankOffsetAtStart = lastMinBound - actualScrollOffset - distanceFromWindowStart
-        blankOffsetAtEnd = actualScrollOffset + windowSize - renderOffset - lastMaxBound - distanceFromWindowEnd
-        return kotlin.math.max(blankOffsetAtStart, blankOffsetAtEnd)
+        blankOffsetAtEnd = actualScrollOffset + windowSize - lastMaxBound
+
+        if (blankOffsetAtEnd > 0) {
+
+            Log.d(
+                "LEGENDLIST",
+                "blank ${blankOffsetAtEnd} $actualScrollOffset $windowSize $lastMaxBound"
+            )
+            return blankOffsetAtEnd;
+        }
+        return 0;//kotlin.math.max(blankOffsetAtStart, blankOffsetAtEnd)
     }
 
     /** It's important to avoid correcting views outside the render window. An item that isn't being recycled might still remain in the view tree. If views outside get considered then gaps between

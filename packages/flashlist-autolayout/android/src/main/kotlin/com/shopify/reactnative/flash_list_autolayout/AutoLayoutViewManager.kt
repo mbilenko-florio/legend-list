@@ -47,17 +47,17 @@ class AutoLayoutViewManager: ViewGroupManager<AutoLayoutView>(), ALAutoLayoutVie
 
     @ReactProp(name = "scrollOffset")
     override fun setScrollOffset(view: AutoLayoutView, scrollOffset: Double) {
-        view.alShadow.scrollOffset = convertToPixelLayout(scrollOffset, view.pixelDensity)
+        //view.alShadow.scrollOffset = convertToPixelLayout(scrollOffset, view.pixelDensity)
     }
 
     @ReactProp(name = "windowSize")
     override fun setWindowSize(view: AutoLayoutView, windowSize: Double) {
-        view.alShadow.windowSize = convertToPixelLayout(windowSize, view.pixelDensity)
+        //view.alShadow.windowSize = convertToPixelLayout(windowSize, view.pixelDensity)
     }
 
     @ReactProp(name = "renderAheadOffset")
     override fun setRenderAheadOffset(view: AutoLayoutView, renderOffset: Double) {
-        view.alShadow.renderOffset = convertToPixelLayout(renderOffset, view.pixelDensity)
+        //view.alShadow.renderOffset = convertToPixelLayout(renderOffset, view.pixelDensity)
     }
 
     @ReactProp(name = "enableInstrumentation")

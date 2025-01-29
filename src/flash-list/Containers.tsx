@@ -1,9 +1,9 @@
 
-import { use$ } from "../state";
-import { useValue$ } from "../useValue$";
 import { AutoLayoutView, CellContainer } from "flashlist-autolayout";
 import React from "react";
-import { Animated, Dimensions, StyleProp, View, ViewStyle } from "react-native";
+import { Animated, type StyleProp, type ViewStyle } from "react-native";
+import { use$ } from "../state";
+import { useValue$ } from "../useValue$";
 import { Container } from "./Container";
 
 const AutoLayoutViewAnimated = Animated.createAnimatedComponent(AutoLayoutView);
@@ -23,6 +23,7 @@ export const FlashListContainers = React.memo(function Containers({
     horizontal,
     recycleItems,
     ItemSeparatorComponent,
+    updateItemSize,
     updateItemPosition,
     allContainersUpdated,
     getRenderedItem,
@@ -40,6 +41,7 @@ export const FlashListContainers = React.memo(function Containers({
                 recycleItems={recycleItems}
                 horizontal={horizontal}
                 getRenderedItem={getRenderedItem}
+                updateItemSize={updateItemSize}
                 // specifying inline separator makes Containers rerender on each data change
                 // should we do memo of ItemSeparatorComponent?
                 ItemSeparatorComponent={ItemSeparatorComponent}
@@ -76,28 +78,26 @@ export const FlashListContainers = React.memo(function Containers({
 
     const style: StyleProp<ViewStyle> = horizontal ? { width: animSize } : { height: animSize };
 
+    console.log("Render containers")
+
     return (
         <AutoLayoutViewAnimated
             style={style}
             disableAutoLayout={false}
-            onBlankAreaEvent={(evt) => {
-                // console.log("Blank area event", evt);
-            }}
-            onLayout={(p) => {
-                //console.log("layout", p.nativeEvent.layout);
-            }}
-            windowSize={709}
-            onAutoLayout={(evt) => {
-                // does this really make sense?
-                // onLayout comes much earlier
-                // is there case where layout events come out of order?
-                // console.log("Auto layout event", evt);
-                for (let i=0;i<evt.layouts.length;i++) {
-                    const { key, y, height } = evt.layouts[i];
-                    updateItemPosition(key, y, height);
-                }
-                allContainersUpdated();
-            }}
+            windowSize={0}
+            // Looks like layouts are delivered too late(during render)
+            // and container onlayout works much better!
+            // onAutoLayout={(evt) => {
+            //     // does this really make sense?
+            //     // onLayout comes much earlier
+            //     // is there case where layout events come out of order?
+            //     // console.log("Auto layout event", evt);
+            //     for (let i=0;i<evt.layouts.length;i++) {
+            //         const { key, y, height } = evt.layouts[i];
+            //         updateItemPosition(key, y, height);
+            //     }
+            //     allContainersUpdated();
+            // }}
         >
             {containers}
         </AutoLayoutViewAnimated>

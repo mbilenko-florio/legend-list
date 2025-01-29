@@ -198,6 +198,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             set$(ctx, "scrollAdjust", 0);
             set$(ctx, "maintainVisibleContentPosition", maintainVisibleContentPosition);
             set$(ctx, "extraData", extraData);
+            set$(ctx, 'indexByKey', new Map())
         }
 
         const getAnchorElementIndex = () => {
@@ -802,6 +803,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
             // getAnchorElementIndex needs indexByKey, build it first
             refState.current.indexByKey = indexByKey;
+            setTimeout(() => {
+                set$(ctx, "indexByKey", indexByKey);
+            },0);
+          
 
           
             const anchorElementIndex = getAnchorElementIndex();

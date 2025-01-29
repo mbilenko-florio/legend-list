@@ -41,7 +41,7 @@ export default function Cards({ numColumns = 1 }: CardsProps) {
                 keyExtractor={(item) => `id${item.id}`}
                 estimatedItemSize={ESTIMATED_ITEM_LENGTH}
                 drawDistance={DRAW_DISTANCE}
-                maintainVisibleContentPosition
+                //maintainVisibleContentPosition
                 recycleItems={true}
                 numColumns={numColumns}
                 // initialScrollIndex={50}
@@ -61,6 +61,7 @@ export default function Cards({ numColumns = 1 }: CardsProps) {
                     </View>
                 }
                 useFlashListContainers={true}
+                waitForInitialLayout={false}
                 // viewabilityConfigCallbackPairs={[
                 //     {
                 //         viewabilityConfig: { id: "viewability", viewAreaCoveragePercentThreshold: 50 },

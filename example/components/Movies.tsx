@@ -139,6 +139,7 @@ const MovieRow = ({
                     // ref={listRef}
                     //   onMomentumScrollBegin={onMomentumScrollBegin}
                     //   onScroll={onScroll}
+                    waitForInitialLayout={false}
                     drawDistance={100}
                     recycleItems={true}
                     useFlashListContainers
@@ -184,6 +185,7 @@ const Movies = ({ isLegend, recycleItems }: { isLegend: boolean; recycleItems?: 
             )}
             contentContainerStyle={listStyles.container}
             drawDistance={DRAW_DISTANCE}
+            waitForInitialLayout={false}
             recycleItems={recycleItems}
             useFlashListContainers
             //SkeletonComponent={SkeletonComponent}
