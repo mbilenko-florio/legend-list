@@ -56,6 +56,10 @@ const data: ListElement[] = [
         url: "/extra-data",
     },
     {
+        title: "Countries List",
+        url: "/countries",
+    },
+    {
         title: "Filter elements",
         url: "/filter-elements",
     },
