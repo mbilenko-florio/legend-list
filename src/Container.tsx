@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type ViewStyle } from "react-native";
 import { peek$, use$, useStateContext } from "./state";
 
@@ -52,8 +52,29 @@ export const Container = ({
     const itemKey = use$<string>(`containerItemKey${id}`);
     const data = use$<string>(`containerItemData${id}`); // to detect data changes
     const extraData = use$<string>("extraData"); // to detect extraData changes
+    const refLastSize = useRef<number>();
 
-    const renderedItem = useMemo(() => itemKey !== undefined && getRenderedItem(itemKey, id), [itemKey, data, extraData]);
+    const renderedItem = useMemo(
+        () => itemKey !== undefined && getRenderedItem(itemKey, id),
+        [itemKey, data, extraData],
+    );
+    let didLayout = false;
+
+    useEffect(() => {
+        // Catch a rare bug where a container is reused and is the exact same size as the previous item
+        // so it does not fire an onLayout, so we need to trigger it manually.
+        // TODO: There must be a better way to do this?
+        if (itemKey) {
+            const timeout = setTimeout(() => {
+                if (!didLayout && refLastSize.current) {
+                    updateItemSize(id, itemKey, refLastSize.current);
+                }
+            }, 16);
+            return () => {
+                clearTimeout(timeout);
+            };
+        }
+    }, [itemKey]);
 
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
@@ -64,9 +85,12 @@ export const Container = ({
             onLayout={(event: LayoutChangeEvent) => {
                 const key = peek$<string>(ctx, `containerItemKey${id}`);
                 if (key !== undefined) {
+                    didLayout = true;
+
                     // Round to nearest quater pixel to avoid accumulating rounding errors
                     const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
 
+                    refLastSize.current = size;
                     updateItemSize(id, key, size);
 
                     // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
