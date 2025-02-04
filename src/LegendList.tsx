@@ -22,14 +22,20 @@ import {
 } from "react-native";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
+import { ANCHORED_POSITION_OUT_OF_VIEW, POSITION_OUT_OF_VIEW } from "./constants";
 import { type ListenerType, StateProvider, listen$, peek$, set$, useStateContext } from "./state";
-import type { LegendListRecyclingState, LegendListRef, ViewabilityAmountCallback, ViewabilityCallback } from "./types";
+import type {
+    AnchoredPosition,
+    LegendListRecyclingState,
+    LegendListRef,
+    ViewabilityAmountCallback,
+    ViewabilityCallback,
+} from "./types";
 import type { InternalState, LegendListProps } from "./types";
 import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_DRAW_DISTANCE = 250;
-const POSITION_OUT_OF_VIEW = -10000000;
 const DEFAULT_ITEM_SIZE = 100;
 
 export const LegendList: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement =
@@ -68,6 +74,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             onItemSizeChanged,
             scrollEventThrottle,
             refScrollView,
+            waitForInitialLayout=true,
             extraData,
             ...rest
         } = props;
@@ -183,6 +190,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 }
             }
             set$(ctx, "scrollAdjust", 0);
+            set$(ctx, "maintainVisibleContentPosition", maintainVisibleContentPosition);
             set$(ctx, "extraData", extraData);
         }
 
@@ -517,7 +525,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
 
                             const index = state.indexByKey.get(key)!;
-                            const pos = peek$<number>(ctx, `containerPosition${u}`);
+                            const pos = peek$<AnchoredPosition>(ctx, `containerPosition${u}`).top;
 
                             if (index < startBuffered || index > endBuffered) {
                                 const distance = Math.abs(pos - top);
@@ -540,7 +548,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             set$(ctx, `containerItemData${containerId}`, data[index]);
 
                             // TODO: This may not be necessary as it'll get a new one in the next loop?
-                            set$(ctx, `containerPosition${containerId}`, POSITION_OUT_OF_VIEW);
+                            set$(ctx, `containerPosition${containerId}`, ANCHORED_POSITION_OUT_OF_VIEW);
                             set$(ctx, `containerColumn${containerId}`, -1);
 
                             if (__DEV__ && numContainers > peek$<number>(ctx, "numContainersPooled")) {
@@ -572,7 +580,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         if (itemKey !== id || itemIndex < startBuffered || itemIndex > endBuffered) {
                             // This is fairly complex because we want to avoid setting container position if it's not even in view
                             // because it will trigger a render
-                            const prevPos = peek$<number>(ctx, `containerPosition${i}`);
+                            const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`).top;
                             const pos = positions.get(id) || 0;
                             const size = getItemSize(id, itemIndex, data[i]);
 
@@ -580,21 +588,37 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                                 (pos + size >= scroll && pos <= scrollBottom) ||
                                 (prevPos + size >= scroll && prevPos <= scrollBottom)
                             ) {
-                                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                                set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                             }
                         } else {
-                            const pos = positions.get(id) || 0;
+                            const pos: AnchoredPosition = {
+                                type: "top",
+                                relativeCoordinate: positions.get(id) || 0,
+                                top: positions.get(id) || 0,
+                            };
                             const column = columns.get(id) || 1;
-                            const prevPos = peek$(ctx, `containerPosition${i}`);
+
+                            // anchor elements to the bottom if element is below anchor
+                            if (maintainVisibleContentPosition && itemIndex < anchorElementIndex) {
+                                const currentRow = Math.floor(itemIndex / numColumnsProp);
+                                const rowHeight = getRowHeight(currentRow);
+                                const elementHeight = getItemSize(id, itemIndex, data[i]);
+                                const diff = rowHeight - elementHeight; // difference between row height and element height
+                                pos.relativeCoordinate = pos.top + getRowHeight(currentRow) - diff;
+                                pos.type = "bottom";
+                            }
+
+                            const prevPos = peek$<AnchoredPosition>(ctx, `containerPosition${i}`);
                             const prevColumn = peek$(ctx, `containerColumn${i}`);
                             const prevData = peek$(ctx, `containerItemData${i}`);
 
-                            if (pos > POSITION_OUT_OF_VIEW && pos !== prevPos) {
+                            if (pos.relativeCoordinate > POSITION_OUT_OF_VIEW && pos.top !== prevPos.top) {
                                 set$(ctx, `containerPosition${i}`, pos);
                             }
                             if (column >= 0 && column !== prevColumn) {
                                 set$(ctx, `containerColumn${i}`, column);
                             }
+
                             if (prevData !== item) {
                                 set$(ctx, `containerItemData${i}`, data[itemIndex]);
                             }
@@ -734,7 +758,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
                         if (!keyExtractorProp || (itemKey && state.indexByKey.get(itemKey) === undefined)) {
                             set$(ctx, `containerItemKey${i}`, undefined);
-                            set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                            set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                             set$(ctx, `containerColumn${i}`, -1);
                         }
                     }
@@ -999,7 +1023,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
-                set$(ctx, `containerPosition${i}`, POSITION_OUT_OF_VIEW);
+                set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                 set$(ctx, `containerColumn${i}`, -1);
             }
 
@@ -1015,7 +1039,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return;
             }
             const state = refState.current!;
-            const { sizes, indexByKey, idsInFirstRender, columns, sizesLaidOut } = state;
+            const { sizes, indexByKey, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
             const numColumns = peek$<number>(ctx, "numColumns");
 
@@ -1250,6 +1274,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 ListEmptyComponent={data.length === 0 ? ListEmptyComponent : undefined}
                 maintainVisibleContentPosition={maintainVisibleContentPosition}
                 scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
+                waitForInitialLayout={waitForInitialLayout}
                 style={style}
             />
         );

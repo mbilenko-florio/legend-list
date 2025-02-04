@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { type DimensionValue, type LayoutChangeEvent, type StyleProp, View, type ViewStyle } from "react-native";
+import type { DimensionValue, LayoutChangeEvent, StyleProp, ViewStyle } from "react-native";
+import { LeanView } from "./LeanView";
+import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
 import { peek$, use$, useStateContext } from "./state";
+import type { AnchoredPosition } from "./types";
 
 export const Container = ({
     id,
@@ -20,27 +23,28 @@ export const Container = ({
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
     const ctx = useStateContext();
-    const position = use$<number>(`containerPosition${id}`);
+    const maintainVisibleContentPosition = use$<boolean>("maintainVisibleContentPosition");
+    const position = use$<AnchoredPosition>(`containerPosition${id}`) || ANCHORED_POSITION_OUT_OF_VIEW;
     const column = use$<number>(`containerColumn${id}`) || 0;
     const numColumns = use$<number>("numColumns");
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
     const otherAxisSize: DimensionValue | undefined = numColumns > 1 ? `${(1 / numColumns) * 100}%` : undefined;
+
     const style: StyleProp<ViewStyle> = horizontal
         ? {
-              flexDirection: "row",
               position: "absolute",
               top: otherAxisPos,
               bottom: numColumns > 1 ? null : 0,
               height: otherAxisSize,
-              left: position,
+              left: position.relativeCoordinate,
           }
         : {
               position: "absolute",
               left: otherAxisPos,
               right: numColumns > 1 ? null : 0,
               width: otherAxisSize,
-              top: position,
+              top: position.relativeCoordinate,
           };
 
     if (waitForInitialLayout) {
@@ -58,7 +62,7 @@ export const Container = ({
         () => itemKey !== undefined && getRenderedItem(itemKey, id),
         [itemKey, data, extraData],
     );
-    let didLayout = false;
+    const didLayout = false;
 
     useEffect(() => {
         // Catch a rare bug where a container is reused and is the exact same size as the previous item
@@ -77,32 +81,45 @@ export const Container = ({
         }
     }, [itemKey]);
 
+    const onLayout = (event: LayoutChangeEvent) => {
+        const key = peek$<string>(ctx, `containerItemKey${id}`);
+        if (key !== undefined) {
+            // Round to nearest quater pixel to avoid accumulating rounding errors
+            const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
+            updateItemSize(id, key, size);
+
+            // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
+            // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
+        }
+    };
+
+    const contentFragment = (
+        <React.Fragment key={recycleItems ? undefined : itemKey}>
+            {renderedItem}
+            {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
+        </React.Fragment>
+    );
+
+    // If maintainVisibleContentPosition is enabled, we need a way items to grow upwards
+    if (maintainVisibleContentPosition) {
+        const anchorStyle: StyleProp<ViewStyle> =
+            position.type === "top"
+                ? { position: "absolute", top: 0, left: 0, right: 0 }
+                : { position: "absolute", bottom: 0, left: 0, right: 0 };
+        return (
+            <LeanView style={style}>
+                <LeanView style={anchorStyle} onLayout={onLayout}>
+                    {contentFragment}
+                </LeanView>
+            </LeanView>
+        );
+    }
     // Use a reactive View to ensure the container element itself
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
     return (
-        <View
-            style={style}
-            onLayout={(event: LayoutChangeEvent) => {
-                const key = peek$<string>(ctx, `containerItemKey${id}`);
-                if (key !== undefined) {
-                    didLayout = true;
-
-                    // Round to nearest quater pixel to avoid accumulating rounding errors
-                    const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
-
-                    refLastSize.current = size;
-                    updateItemSize(id, key, size);
-
-                    // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
-                    // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
-                }
-            }}
-        >
-            <React.Fragment key={recycleItems ? undefined : itemKey}>
-                {renderedItem}
-                {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
-            </React.Fragment>
-        </View>
+        <LeanView style={style} onLayout={onLayout}>
+            {contentFragment}
+        </LeanView>
     );
 };

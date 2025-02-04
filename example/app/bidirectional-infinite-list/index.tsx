@@ -52,7 +52,7 @@ export default function BidirectionalInfiniteList() {
     //     }, 2000);
     // }, []);
 
-    const { top, bottom } = useSafeAreaInsets();
+    const { bottom } = useSafeAreaInsets();
 
     return (
         <View style={[StyleSheet.absoluteFill, styles.outerContainer]} key="legendlist">
@@ -76,7 +76,6 @@ export default function BidirectionalInfiniteList() {
                 drawDistance={DRAW_DISTANCE}
                 maintainVisibleContentPosition
                 recycleItems={true}
-                ListHeaderComponent={<View style={{ height: top }} />}
                 ListFooterComponent={<View style={{ height: bottom }} />}
                 onStartReached={(props) => {
                     const time = performance.now();
