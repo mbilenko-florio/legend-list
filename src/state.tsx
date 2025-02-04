@@ -10,14 +10,11 @@ import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, Viewability
 // once for each unique name. So we don't need to manage a Set of listeners or dispose them,
 // which saves needing useEffect hooks or managing listeners in a Set.
 
+
 export type ListenerType =
     | "numContainers"
     | "numContainersPooled"
-    | `containerItemKey${number}`
-    | `containerItemData${number}`
-    | `containerPosition${number}`
-    | `containerColumn${number}`
-    | `containerDidLayout${number}`
+    | `containerInfo${number}`
     | "extraData"
     | "numColumns"
     | "lastItemKey"
