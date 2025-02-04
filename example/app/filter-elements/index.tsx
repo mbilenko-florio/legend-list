@@ -15,6 +15,7 @@ function FilteredCards({ numColumns = 1 }: CardsProps) {
     const { data } = useCardData();
     const navigation = useNavigation();
     const [mvcp, setMvcp] = useState(false);
+    const [key, setKey] = useState(0);
 
     useEffect(() => {
         navigation.setOptions({
@@ -24,6 +25,7 @@ function FilteredCards({ numColumns = 1 }: CardsProps) {
                     title={`${mvcp ? "✓" : ""}MVCP`}
                     onPress={() => {
                         setMvcp((prev) => !prev);
+                        setKey((prev) => prev + 1);
                     }}
                     color={mvcp ? "#00e" : "black"}
                 />
@@ -36,6 +38,7 @@ function FilteredCards({ numColumns = 1 }: CardsProps) {
             <FilterInput />
             <View style={{ flexGrow: 1 }}>
                 <LegendList
+                    key={key} // LegendList react weird on the changing of maintainVisibleContentPosition on the fly, make sure to remount the list
                     ref={listRef}
                     style={[StyleSheet.absoluteFill, styles.scrollContainer]}
                     contentContainerStyle={styles.listContainer}

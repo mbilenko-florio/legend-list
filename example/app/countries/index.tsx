@@ -1,3 +1,4 @@
+
 import { LegendList } from "@legendapp/list";
 import { type TCountryCode, countries, getEmojiFlag } from "countries-list";
 import { useMemo, useState } from "react";
@@ -83,7 +84,9 @@ const App = () => {
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
                     extraData={selectedId}
-                    estimatedItemSize={120}
+                    estimatedItemSize={72}
+                   // scrollEventThrottle={16}
+                    drawDistance={250}
                 />
             </SafeAreaView>
         </SafeAreaProvider>
