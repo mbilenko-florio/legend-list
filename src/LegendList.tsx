@@ -815,7 +815,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         };
                         refState.current.anchorElement = newAnchorElement;
                         refState.current.belowAnchorElementPositions?.clear();
-                    
+                        // reset scroll to 0 and schedule rerender
                         refScroller.current!.scrollTo({x:0, y:0, animated: false });
                         setTimeout(() => {
                             calculateItemsInView(0);
@@ -825,7 +825,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
                 }
             } else {
-                // if maintainVisibleContentPosition not used, reset startBufferedId
+                // if maintainVisibleContentPosition not used, reset startBufferedId if it's not in the list
                 if (
                     refState.current.startBufferedId != null &&
                     newPositions.get(refState.current.startBufferedId) == null
@@ -835,6 +835,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     } else {
                         refState.current.startBufferedId = undefined;
                     }
+                    // reset scroll to 0 and schedule rerender
                     refScroller.current!.scrollTo({x:0, y:0, animated: false });
                     setTimeout(() => {
                         calculateItemsInView(0);
