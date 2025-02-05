@@ -130,8 +130,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return 0;
         };
 
-        const chooseAnchorElement = () => {};
-
         const initialContentOffset = initialScrollOffset ?? useMemo(calculateInitialOffset, []);
 
         if (!refState.current) {
@@ -313,7 +311,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return res;
         };
 
-        const calculateItemsInView = useCallback((speed: number, recursive = false) => {
+        const calculateItemsInView = useCallback((speed: number) => {
             const state = refState.current!;
             const {
                 data,
