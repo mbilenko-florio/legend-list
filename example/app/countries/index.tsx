@@ -1,4 +1,3 @@
-
 import { LegendList } from "@legendapp/list";
 import { type TCountryCode, countries, getEmojiFlag } from "countries-list";
 import { useMemo, useState } from "react";
@@ -84,9 +83,7 @@ const App = () => {
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
                     extraData={selectedId}
-                    estimatedItemSize={72}
-                   // scrollEventThrottle={16}
-                    drawDistance={250}
+                    estimatedItemSize={70}
                 />
             </SafeAreaView>
         </SafeAreaProvider>
@@ -121,7 +118,14 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#fff",
         borderRadius: 12,
-        elevation: 3,
+        //     shadowColor: "#000",
+        //     shadowOffset: {
+        //         width: 0,
+        //         height: 2,
+        //     },
+        //     shadowOpacity: 0.1,
+        //     shadowRadius: 3,
+        //     elevation: 3,
     },
     selectedItem: {
         backgroundColor: "#e3f2fd",

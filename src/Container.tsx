@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import type { DimensionValue, LayoutChangeEvent, StyleProp, ViewStyle } from "react-native";
+import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
 import { peek$, use$, useStateContext } from "./state";
@@ -18,7 +19,7 @@ export const Container = ({
     recycleItems?: boolean;
     horizontal: boolean;
     waitForInitialLayout: boolean | undefined;
-    getRenderedItem: (key: string, containerId: number) => React.ReactNode;
+    getRenderedItem: (key: string) => { index: number; renderedItem: React.ReactNode } | null;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
@@ -54,7 +55,7 @@ export const Container = ({
 
     const lastItemKey = use$<string>("lastItemKey");
     const itemKey = use$<string>(`containerItemKey${id}`);
-    const data = use$<string>(`containerItemData${id}`); // to detect data changes
+    const data = use$<any>(`containerItemData${id}`); // to detect data changes
     const extraData = use$<string>("extraData"); // to detect extraData changes
     const refLastSize = useRef<number>();
 
@@ -93,10 +94,17 @@ export const Container = ({
         }
     };
 
+    const contextValue = useMemo(
+        () => ({ containerId: id, itemKey, index: index!, value: data }),
+        [id, itemKey, index, data],
+    );
+
     const contentFragment = (
         <React.Fragment key={recycleItems ? undefined : itemKey}>
-            {renderedItem}
-            {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
+            <ContextContainer.Provider value={contextValue}>
+                {renderedItem}
+                {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
+            </ContextContainer.Provider>
         </React.Fragment>
     );
 
