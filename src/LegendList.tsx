@@ -400,10 +400,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const getInitialTop = (i: number): number => {
                 const id = getId(i)!;
                 let topOffset = 0;
-                if (positions.get(id) != null) {
+                if (positions.get(id)) {
                     topOffset = positions.get(id)!;
-                } else {
-                    topOffset = calculateInitialOffset(i);
                 }
                 if (id === state.anchorElement?.id) {
                     topOffset = initialContentOffset || 0;
@@ -464,21 +462,21 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 endNoBuffer,
             });
 
-            // // Precompute the scroll that will be needed for the range to change
-            // // so it can be skipped if not needed
-            // const nextTop = Math.ceil(startBuffered !== null ? positions.get(startBufferedId!)! + scrollBuffer : 0);
-            // const nextBottom = Math.floor(
-            //     endBuffered !== null ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
-            // );
-            // if (state.enableScrollForNextCalculateItemsInView) {
-            //     state.scrollForNextCalculateItemsInView =
-            //         nextTop >= 0 && nextBottom >= 0
-            //             ? {
-            //                   top: nextTop,
-            //                   bottom: nextBottom,
-            //               }
-            //             : undefined;
-            // }
+            // Precompute the scroll that will be needed for the range to change
+            // so it can be skipped if not needed
+            const nextTop = Math.ceil(startBuffered !== null ? positions.get(startBufferedId!)! + scrollBuffer : 0);
+            const nextBottom = Math.floor(
+                endBuffered !== null ? (positions.get(getId(endBuffered! + 1))! || 0) - scrollLength - scrollBuffer : 0,
+            );
+            if (state.enableScrollForNextCalculateItemsInView) {
+                state.scrollForNextCalculateItemsInView =
+                    nextTop >= 0 && nextBottom >= 0
+                        ? {
+                              top: nextTop,
+                              bottom: nextBottom,
+                          }
+                        : undefined;
+            }
 
             // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, startBufferedId);
 
