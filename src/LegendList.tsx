@@ -817,6 +817,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         refState.current.belowAnchorElementPositions?.clear();
                     
                         refScroller.current!.scrollTo({x:0, y:0, animated: false });
+                        setTimeout(() => {
+                            calculateItemsInView(0);
+                        },0);
                     } else {
                         refState.current.startBufferedId = undefined;
                     }
@@ -833,6 +836,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         refState.current.startBufferedId = undefined;
                     }
                     refScroller.current!.scrollTo({x:0, y:0, animated: false });
+                    setTimeout(() => {
+                        calculateItemsInView(0);
+                    },0);
                 }
             }
 
