@@ -813,14 +813,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             coordinate: 0,
                             id: getId(0),
                         };
-                        console.log("Creating new anchorElement", newAnchorElement);
                         refState.current.anchorElement = newAnchorElement;
                         refState.current.belowAnchorElementPositions?.clear();
+                    
+                        refScroller.current!.scrollTo({x:0, y:0, animated: false });
                     }
                 }
-            }
-            // if maintainVisibleContentPosition not used, reset startBufferedId
-            if (!maintainVisibleContentPosition) {
+            } else {
+                // if maintainVisibleContentPosition not used, reset startBufferedId
                 if (
                     refState.current.startBufferedId != null &&
                     newPositions.get(refState.current.startBufferedId) == null
@@ -830,6 +830,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     } else {
                         refState.current.startBufferedId = undefined;
                     }
+                    refScroller.current!.scrollTo({x:0, y:0, animated: false });
                 }
             }
 
