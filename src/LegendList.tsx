@@ -336,21 +336,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll = scrollState - previousScrollAdjust - topPad ;
-
-
-            let scrollBufferTop = scrollBuffer;
-            let scrollBufferBottom = scrollBuffer;
-
-
-            if (scrollExtra > 8) {
-                scrollBufferTop = 0;
-                scrollBufferBottom = scrollBuffer + scrollExtra*0;
-            } 
-            if (scrollExtra < -8) {
-                scrollBufferTop = scrollBuffer - scrollExtra*0;
-                scrollBufferBottom = 0;
-            }
+            const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
 
             // Check precomputed scroll range to see if we can skip this check
             if (state.scrollForNextCalculateItemsInView) {
@@ -449,7 +435,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 if (startNoBuffer === null && top + size > scroll) {
                     startNoBuffer = i;
                 }
-                if (startBuffered === null && top + size > scroll - scrollBufferTop) {
+                if (startBuffered === null && top + size > scroll - scrollBuffer) {
                     startBuffered = i;
                     startBufferedId = id;
                 }
@@ -457,7 +443,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     if (top <= scrollBottom) {
                         endNoBuffer = i;
                     }
-                    if (top <= scrollBottom + scrollBufferBottom) {
+                    if (top <= scrollBottom + scrollBuffer) {
                         endBuffered = i;
                     } else {
                         break;
