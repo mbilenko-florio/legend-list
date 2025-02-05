@@ -819,7 +819,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             // getAnchorElementIndex needs indexByKey, build it first
             refState.current.indexByKey = indexByKey;
             refState.current.positions = newPositions;
-            console.log("maintainVisibleContentPosition", maintainVisibleContentPosition);
 
             // check if anchorElement is still in the list
             if (maintainVisibleContentPosition) {
