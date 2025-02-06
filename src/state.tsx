@@ -18,8 +18,9 @@ export type ListenerType =
     | `containerPosition${number}`
     | `containerColumn${number}`
     | `containerDidLayout${number}`
+    | "extraData"
     | "numColumns"
-    | `lastItemKey`
+    | "lastItemKey"
     | "totalSize"
     | "paddingTop"
     | "stylePaddingTop"
