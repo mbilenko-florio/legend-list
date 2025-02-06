@@ -75,7 +75,6 @@ export const Container = ({
             const timeout = setTimeout(() => {
                 if (!didLayout && refLastSize.current) {
                     updateItemSize(id, itemKey, refLastSize.current);
-                    console.log("Force update!", itemKey)
                 }
             }, 16);
             return () => {
