@@ -27,6 +27,7 @@ export type ListenerType =
     | "scrollAdjust"
     | "headerSize"
     | "footerSize"
+    | "maintainVisibleContentPosition"
     | "currentStickyHeaderKey";
 // | "otherAxisSize";
 
