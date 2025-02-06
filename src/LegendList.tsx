@@ -794,7 +794,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // save positions for items that are still in the list at the same indices
                 // throw out everything else
                 if (refState.current.positions.get(key) != null && refState.current.indexByKey.get(key) === i) {
-                    console.log(`Transfering position for key: ${key}`);
                     newPositions.set(key, refState.current.positions.get(key)!);
                 }
             }
