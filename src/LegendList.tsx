@@ -304,7 +304,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const res = state.belowAnchorElementPositions!.get(id);
 
             if (res === undefined) {
-                throw new Error("Undefined position below achor");
+                console.log(state.belowAnchorElementPositions);
+                // throw new Error(`Undefined position below achor ${id} ${state.anchorElement.id}`);
+                return 0;
             }
             return res;
         };
@@ -776,17 +778,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         };
 
-        const isFirst = !refState.current.renderItem;
-        // Run first time and whenever data changes
-        if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
-            if (!keyExtractorProp && !isFirst && data !== refState.current.data) {
-                // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
-                refState.current.sizes.clear();
-                refState.current.positions.clear();
-            }
-
-            refState.current.data = data;
-
+        const calcTotalSizes = () => {
             let totalSize = 0;
             let totalSizeBelowIndex = 0;
             const indexByKey = new Map();
@@ -873,6 +865,28 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 totalSize += maxSizeInRow;
             }
             addTotalSize(null, totalSize, totalSizeBelowIndex);
+        };
+
+        const isFirst = !refState.current.renderItem;
+        // Run first time and whenever data changes
+        if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
+            if (!keyExtractorProp && !isFirst && data !== refState.current.data) {
+                // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
+                refState.current.sizes.clear();
+                refState.current.positions.clear();
+            }
+
+            refState.current.data = data;
+
+            const indexByKey = new Map();
+
+            for (let i = 0; i < data.length; i++) {
+                const key = getId(i);
+                indexByKey.set(key, i);
+            }
+            // getAnchorElementIndex needs indexByKey, build it first
+            refState.current.indexByKey = indexByKey;
+            calcTotalSizes();
         }
 
         useEffect(() => {
@@ -1143,8 +1157,26 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 const scrollToIndex = ({ index, animated }: Parameters<LegendListRef["scrollToIndex"]>[0]) => {
                     // naive implementation to search element by index
                     // TODO: create some accurate search algorithm
-                    const offsetObj = calculateInitialOffset(index);
-                    const offset = horizontal ? { x: offsetObj, y: 0 } : { x: 0, y: offsetObj };
+                    let firstIndexOffset = calculateInitialOffset(index);
+                    if (maintainVisibleContentPosition) {
+                        const id = getId(index);
+                        refState.current!.anchorElement = { id, coordinate: firstIndexOffset };
+                        refState.current!.belowAnchorElementPositions?.clear();
+                        buildElementPositionsBelowAnchor();
+                        console.log("===========", firstIndexOffset, id);
+                        refState.current!.startBufferedId = id;
+                        calcTotalSizes();
+                        const adjust = peek$<number>(ctx, "scrollAdjust");
+                        console.log("adjust", adjust);
+
+                        //firstIndexOffset += adjust;
+
+                        // setTimeout(() => {
+                        //     calculateItemsInView(0);
+                        // }, 0);
+                    }
+
+                    const offset = horizontal ? { x: firstIndexOffset, y: 0 } : { x: 0, y: firstIndexOffset };
                     refScroller.current!.scrollTo({ ...offset, animated });
                 };
                 return {
