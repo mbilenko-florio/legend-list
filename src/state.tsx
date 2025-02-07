@@ -14,6 +14,7 @@ import type { ViewAmountToken, ViewToken, ViewabilityAmountCallback, Viewability
 export type ListenerType =
     | "numContainers"
     | "numContainersPooled"
+    | "containersDidLayout"
     | `containerInfo${number}`
     | "extraData"
     | "numColumns"

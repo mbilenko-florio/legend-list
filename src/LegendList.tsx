@@ -16,20 +16,17 @@ import {
     type NativeSyntheticEvent,
     Platform,
     type ScrollView,
+    StyleSheet,
 } from "react-native";
-import {
-} from "./ContextContainer";
+import {} from "./ContextContainer";
 import { ListComponent } from "./ListComponent";
 import { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 import { ANCHORED_POSITION_OUT_OF_VIEW, POSITION_OUT_OF_VIEW } from "./constants";
 import { StateProvider, peek$, set$, useStateContext } from "./state";
-import type {
-    AnchoredPosition,
-    ContainerData,
-    LegendListRef,
-} from "./types";
+import type { AnchoredPosition, ContainerData, LegendListRef } from "./types";
 import type { InternalState, LegendListProps } from "./types";
-import { updateViewableItems } from "./viewability";
+import { useInit } from "./useInit";
+import { setupViewability, updateViewableItems } from "./viewability";
 
 const DEFAULT_DRAW_DISTANCE = 250;
 const DEFAULT_ITEM_SIZE = 100;
@@ -484,6 +481,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             // console.log("start", startBuffered, startNoBuffer, endNoBuffer, endBuffered, startBufferedId);
 
+            const pendingChanges = new Map<number, ContainerData>();
+
             if (startBuffered !== null && endBuffered !== null) {
                 const prevNumContainers = ctx.values.get("numContainers") as number;
                 let numContainers = prevNumContainers;
@@ -508,10 +507,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         // Note that since this is only checking top it may not be 100% accurate but that's fine.
 
                         for (let u = 0; u < numContainers; u++) {
-                            const {itemKey: key, position} = pendingChanges.get(u) || (peek$<ContainerData>(ctx, `containerInfo${u}`) || {
-                                position: ANCHORED_POSITION_OUT_OF_VIEW,
-                                itemKey: undefined
-                            });
+                            const { itemKey: key, position } = pendingChanges.get(u) ||
+                                peek$<ContainerData>(ctx, `containerInfo${u}`) || {
+                                    position: ANCHORED_POSITION_OUT_OF_VIEW,
+                                    itemKey: undefined,
+                                };
                             // Hasn't been allocated yet, just use it
                             if (key === undefined) {
                                 furthestIndex = u;
@@ -530,14 +530,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
                         }
                         if (furthestIndex >= 0) {
-                            const container = (peek$<ContainerData>(ctx, `containerInfo${furthestIndex}`)) || {
+                            const container = peek$<ContainerData>(ctx, `containerInfo${furthestIndex}`) || {
                                 position: ANCHORED_POSITION_OUT_OF_VIEW,
                                 column: -1,
                             };
                             const index = state.indexByKey.get(id)!;
-                            const newData = { ...container, itemKey:id, data: data[index] }
+                            const newData = { ...container, itemKey: id, data: data[index] };
                             pendingChanges.set(furthestIndex, newData);
-                          
                         } else {
                             const containerId = numContainers;
 
@@ -822,12 +821,12 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             refState.current.data = data;
 
-            const totalSize = 0;
+            let totalSize = 0;
             const totalSizeBelowIndex = 0;
             const indexByKey = new Map();
             const newPositions = new Map();
-            const column = 1;
-            const maxSizeInRow = 0;
+            let column = 1;
+            let maxSizeInRow = 0;
 
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
@@ -910,11 +909,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             addTotalSize(null, totalSize, totalSizeBelowIndex);
         }
 
-        useEffect(() => {
+        React.useEffect(() => {
             checkResetContainers(/*reset*/ !isFirst);
         }, [isFirst, data, numColumnsProp]);
 
-        useEffect(() => {
+        React.useEffect(() => {
             set$(ctx, "extraData", extraData);
         }, [extraData]);
 
@@ -932,7 +931,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         if (isFirst) {
             initalizeStateVars();
         }
-        useEffect(initalizeStateVars, [lastItemKey, numColumnsProp, stylePaddingTop]);
+        React.useEffect(initalizeStateVars, [lastItemKey, numColumnsProp, stylePaddingTop]);
 
         const getRenderedItem = useCallback((key: string) => {
             const state = refState.current;
@@ -964,7 +963,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const renderedItem = refState.current!.renderItem?.({
                 item: data[index],
                 index,
-               
             });
 
             return { index, renderedItem };
@@ -982,7 +980,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
-                set$(ctx, `containerInfo$i`, {
+                set$(ctx, `containerInfo${i}`, {
                     itemKey: undefined,
                     position: ANCHORED_POSITION_OUT_OF_VIEW,
                     column: -1,
@@ -1238,4 +1236,4 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 style={style}
             />
         );
-    }) as <T>(props: LegendListProps<T> & ref?: ForwardedRef<LegendListRef> ) => ReactElement;
+    });
