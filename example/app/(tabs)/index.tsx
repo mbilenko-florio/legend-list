@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { LegendList } from "@legendapp/list";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { Link, type LinkProps } from "expo-router";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type ListElement = {
@@ -103,7 +103,7 @@ const ListElements = () => {
                     console.log("item size changed", info);
                 }}
                 ListFooterComponent={<View />}
-                ListFooterComponentStyle={{ height }}
+                ListFooterComponentStyle={{ height: Platform.OS === "ios" ? height : 0 }}
             />
         </SafeAreaView>
     );

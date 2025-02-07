@@ -61,7 +61,7 @@ export type AnchoredPosition = {
     type: 'top' | 'bottom';
     relativeCoordinate: number; // used for display
     top: number; // used for calculating the position of the container
-}
+};
 
 export type ContainerData = {
     itemKey?: string;
@@ -86,7 +86,7 @@ export interface InternalState {
     sizes: Map<string, number>;
     sizesLaidOut: Map<string, number> | undefined;
     pendingAdjust: number;
-    animFrameLayout: any;
+    waitingForMicrotask: any;
     isStartReached: boolean;
     isEndReached: boolean;
     isAtBottom: boolean;
@@ -117,7 +117,6 @@ export interface InternalState {
     scrollHistory: Array<{ scroll: number; time: number }>;
     scrollTimer: Timer | undefined;
     startReachedBlockedByTimer: boolean;
-    layoutsPending: Set<number>;
     scrollForNextCalculateItemsInView: { top: number; bottom: number } | undefined;
     enableScrollForNextCalculateItemsInView: boolean;
 }

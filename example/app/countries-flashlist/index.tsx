@@ -1,4 +1,4 @@
-import { LegendList } from "@legendapp/list";
+import { FlashList } from "@shopify/flash-list";
 import { type TCountryCode, countries, getEmojiFlag } from "countries-list";
 import { useMemo, useState } from "react";
 import { Pressable, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
@@ -78,12 +78,15 @@ const App = () => {
                         autoCorrect={false}
                     />
                 </View>
-                <LegendList
+                <FlashList
                     data={filteredData}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
                     extraData={selectedId}
                     estimatedItemSize={70}
+                    //scrollEventThrottle={200}
+                    drawDistance={125}
+                    disableAutoLayout
                 />
             </SafeAreaView>
         </SafeAreaProvider>
@@ -118,14 +121,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#fff",
         borderRadius: 12,
-        //     shadowColor: "#000",
-        //     shadowOffset: {
-        //         width: 0,
-        //         height: 2,
-        //     },
-        //     shadowOpacity: 0.1,
-        //     shadowRadius: 3,
-        //     elevation: 3,
+        // elevation: 3,
     },
     selectedItem: {
         // backgroundColor: "#e3f2fd",

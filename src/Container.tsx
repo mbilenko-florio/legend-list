@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef } from "react";
-import type { DimensionValue, LayoutChangeEvent, StyleProp, ViewStyle } from "react-native";
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import type { DimensionValue, LayoutChangeEvent, StyleProp, View, ViewStyle } from "react-native";
+import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
 import { peek$, use$, useStateContext } from "./state";
@@ -9,7 +10,6 @@ export const Container = ({
     id,
     recycleItems,
     horizontal,
-    waitForInitialLayout,
     getRenderedItem,
     updateItemSize,
     ItemSeparatorComponent,
@@ -17,8 +17,7 @@ export const Container = ({
     id: number;
     recycleItems?: boolean;
     horizontal: boolean;
-    waitForInitialLayout: boolean | undefined;
-    getRenderedItem: (key: string, containerId: number) => React.ReactNode;
+    getRenderedItem: (key: string) => { index: number; renderedItem: React.ReactNode } | null;
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
@@ -45,6 +44,7 @@ export const Container = ({
 
     const style: StyleProp<ViewStyle> = horizontal
         ? {
+              flexDirection: ItemSeparatorComponent ? "row" : undefined,
               position: "absolute",
               top: otherAxisPos,
               bottom: numColumns > 1 ? null : 0,
@@ -59,18 +59,15 @@ export const Container = ({
               top: position.relativeCoordinate,
           };
 
-    if (waitForInitialLayout) {
-        style.opacity = visible ? 1 : 0;
-    }
-
-    const lastItemKey = use$<string>("lastItemKey");
     const extraData = use$<string>("extraData"); // to detect extraData changes
     const refLastSize = useRef<number>();
 
-    const renderedItem = useMemo(
-        () => itemKey !== undefined && getRenderedItem(itemKey, id),
+    const renderedItemInfo = useMemo(
+        () => itemKey !== undefined && getRenderedItem(itemKey),
         [itemKey, data, extraData],
     );
+    const { index, renderedItem } = renderedItemInfo || {};
+
     const didLayout = false;
 
     useEffect(() => {
@@ -81,7 +78,6 @@ export const Container = ({
             const timeout = setTimeout(() => {
                 if (!didLayout && refLastSize.current) {
                     updateItemSize(id, itemKey, refLastSize.current);
-                    console.log("Force update!", itemKey)
                 }
             }, 16);
             return () => {
@@ -102,10 +98,32 @@ export const Container = ({
         }
     };
 
+    const ref = useRef<View>(null);
+    useLayoutEffect(() => {
+        if (itemKey) {
+            // @ts-expect-error unstable_getBoundingClientRect is unstable and only on Fabric
+            const measured = ref.current?.unstable_getBoundingClientRect?.();
+            if (measured) {
+                const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
+
+                if (size) {
+                    updateItemSize(id, itemKey, size);
+                }
+            }
+        }
+    }, [itemKey]);
+
+    const contextValue = useMemo(
+        () => ({ containerId: id, itemKey, index: index!, value: data }),
+        [id, itemKey, index, data],
+    );
+
     const contentFragment = (
         <React.Fragment key={recycleItems ? undefined : itemKey}>
-            {renderedItem}
-            {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
+            <ContextContainer.Provider value={contextValue}>
+                {renderedItem}
+                {renderedItem && ItemSeparatorComponent && itemKey !== lastItemKey && ItemSeparatorComponent}
+            </ContextContainer.Provider>
         </React.Fragment>
     );
 
@@ -116,7 +134,7 @@ export const Container = ({
                 ? { position: "absolute", top: 0, left: 0, right: 0 }
                 : { position: "absolute", bottom: 0, left: 0, right: 0 };
         return (
-            <LeanView style={style}>
+            <LeanView style={style} ref={ref}>
                 <LeanView style={anchorStyle} onLayout={onLayout}>
                     {contentFragment}
                 </LeanView>
@@ -127,7 +145,7 @@ export const Container = ({
     // is not rendered when style changes, only the style prop.
     // This is a big perf boost to do less work rendering.
     return (
-        <LeanView style={style} onLayout={onLayout}>
+        <LeanView style={style} onLayout={onLayout} ref={ref}>
             {contentFragment}
         </LeanView>
     );
