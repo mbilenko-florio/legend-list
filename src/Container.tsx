@@ -32,6 +32,7 @@ export const Container = ({
 
     const style: StyleProp<ViewStyle> = horizontal
         ? {
+              flexDirection: ItemSeparatorComponent ? "row" : undefined,
               position: "absolute",
               top: otherAxisPos,
               bottom: numColumns > 1 ? null : 0,
