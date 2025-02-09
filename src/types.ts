@@ -8,7 +8,7 @@ export type LegendListPropsBase<
     ItemT,
     TScrollView extends ComponentProps<typeof ScrollView> | ComponentProps<typeof Animated.ScrollView>
 > = Omit<TScrollView, 'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition' | 'stickyHeaderIndices'> & {
-    data: ArrayLike<any> & ItemT[];
+    data: ReadonlyArray<ItemT>;
     initialScrollOffset?: number;
     initialScrollIndex?: number;
     drawDistance?: number;
