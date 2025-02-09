@@ -85,7 +85,8 @@ export const Container = ({
         if (key !== undefined) {
             // Round to nearest quater pixel to avoid accumulating rounding errors
             const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
-            updateItemSize(id, key, size);
+            //updateItemSize(id, key, size);
+            // console.log("onLayout", itemKey, size, performance.now());
 
             // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
             // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
@@ -96,14 +97,15 @@ export const Container = ({
     if (isNewArchitecture) {
         useLayoutEffect(() => {
             if (itemKey) {
-                let size: number | undefined = undefined;
-                ref.current?.measure?.((x, y, width, height) => {
-                    size = Math.floor(horizontal ? width : height * 8) / 8;
-                });
+                const measured = ref.current?.unstable_getBoundingClientRect?.();
+            if (measured) {
+                const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
 
                 if (size) {
+                    //console.log("useLayoutEffect",itemKey,size, performance.now());
                     updateItemSize(id, itemKey, size);
                 }
+            }
             }
         }, [itemKey]);
     }
@@ -129,8 +131,8 @@ export const Container = ({
                 ? { position: "absolute", top: 0, left: 0, right: 0 }
                 : { position: "absolute", bottom: 0, left: 0, right: 0 };
         return (
-            <LeanView style={style} ref={ref}>
-                <LeanView style={anchorStyle} onLayout={onLayout}>
+            <LeanView style={style}>
+                <LeanView style={anchorStyle} onLayout={onLayout} ref={ref}>
                     {contentFragment}
                 </LeanView>
             </LeanView>
