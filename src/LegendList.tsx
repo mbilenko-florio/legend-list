@@ -870,7 +870,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, [extraData]);
 
         refState.current.renderItem = renderItem!;
-        const lastItemKey = getId(data[data.length - 1]);
+        const lastItemKey = getId(data.length - 1);
         // TODO: This needs to support horizontal and other ways of defining padding
         const stylePaddingTop =
             StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;

@@ -82,7 +82,7 @@ export interface InternalState {
     isEndReached: boolean;
     isAtBottom: boolean;
     isAtTop: boolean;
-    data: any[];
+    data: readonly any[];
     idsInFirstRender: Set<string>;
     hasScrolled: boolean;
     scrollLength: number;
