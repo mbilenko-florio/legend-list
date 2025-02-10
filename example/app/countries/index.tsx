@@ -84,6 +84,7 @@ const App = () => {
                     keyExtractor={(item) => item.id}
                     extraData={selectedId}
                     estimatedItemSize={70}
+                    recycleItems
                 />
             </SafeAreaView>
         </SafeAreaProvider>

@@ -85,6 +85,10 @@ export const Container = ({
         if (key !== undefined) {
             // Round to nearest quater pixel to avoid accumulating rounding errors
             const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
+            if (size === 0) {
+                console.log("[WARN] Container 0 height reported, possible bug in LegendList", id, key);
+                return;
+            }
             updateItemSize(id, key, size);
 
             // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
@@ -129,8 +133,8 @@ export const Container = ({
                 ? { position: "absolute", top: 0, left: 0, right: 0 }
                 : { position: "absolute", bottom: 0, left: 0, right: 0 };
         return (
-            <LeanView style={style} ref={ref}>
-                <LeanView style={anchorStyle} onLayout={onLayout}>
+            <LeanView style={style}>
+                <LeanView style={anchorStyle} onLayout={onLayout} ref={ref}>
                     {contentFragment}
                 </LeanView>
             </LeanView>
