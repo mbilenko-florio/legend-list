@@ -324,17 +324,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
             const scroll = scrollState - previousScrollAdjust - topPad ;
 
-            const scrollBufferTop = scrollBuffer;
-            const scrollBufferBottom = scrollBuffer;
+            let scrollBufferTop = scrollBuffer;
+            let scrollBufferBottom = scrollBuffer;
 
-            // if (scrollExtra > 8) {
-            //     scrollBufferTop = 0;
-            //     scrollBufferBottom = scrollBuffer + scrollExtra * 2;
-            // }
-            // if (scrollExtra < -8) {
-            //     scrollBufferTop = scrollBuffer - scrollExtra * 2;
-            //     scrollBufferBottom = 0;
-            // }
+            if (scrollExtra > 8) {
+                scrollBufferTop = 0;
+                scrollBufferBottom = scrollBuffer + scrollExtra ;
+            }
+            if (scrollExtra < -8) {
+                scrollBufferTop = scrollBuffer - scrollExtra;
+                scrollBufferBottom = 0;
+            }
 
             // Check precomputed scroll range to see if we can skip this check
             if (state.scrollForNextCalculateItemsInView) {
@@ -1234,7 +1234,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 alignItemsAtEnd={alignItemsAtEnd}
                 ListEmptyComponent={data.length === 0 ? ListEmptyComponent : undefined}
                 maintainVisibleContentPosition={maintainVisibleContentPosition}
-                scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
+                scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : scrollEventThrottle)}
                 waitForInitialLayout={waitForInitialLayout}
                 style={style}
                 info={info}
