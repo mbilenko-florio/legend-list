@@ -649,7 +649,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             if (pendingChanges.size > 0) {
                 const pendingChangesArray = Array.from(pendingChanges.entries());
-                //pendingChangesArray.sort((a, b) => a[1].position.top - b[1].position.top);
+                pendingChangesArray.sort((a, b) => a[1].position.top - b[1].position.top);
 
                 //console.log("Pending Changes", pendingChangesArray.map((v) => v[1].position.top));
 
