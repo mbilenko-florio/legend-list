@@ -67,6 +67,7 @@ export const ListComponent = React.memo(function ListComponent({
     refScrollView,
     maintainVisibleContentPosition,
     renderScrollComponent,
+    info,
     ...rest
 }: ListComponentProps) {
     const ctx = useStateContext();
@@ -149,6 +150,7 @@ export const ListComponent = React.memo(function ListComponent({
                 getRenderedItem={getRenderedItem}
                 ItemSeparatorComponent={ItemSeparatorComponent && getComponent(ItemSeparatorComponent)}
                 updateItemSize={updateItemSize}
+                info={info}
             />
             {ListFooterComponent && <View style={ListFooterComponentStyle}>{getComponent(ListFooterComponent)}</View>}
         </ScrollComponent>

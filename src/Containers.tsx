@@ -20,13 +20,13 @@ export const Containers = React.memo(function Containers({
     waitForInitialLayout,
     updateItemSize,
     getRenderedItem,
+    info,
 }: ContainersProps) {
-    const numContainers = use$<number>("numContainersPooled");
     const animSize = useValue$("totalSize");
     const animOpacity = waitForInitialLayout ? useValue$("containersDidLayout", (value) => (value ? 1 : 0)) : undefined;
 
     const containers = [];
-    for (let i = 0; i < numContainers; i++) {
+    for (let i = 0; i < info.length; i++) {
         containers.push(
             <Container
                 id={i}
@@ -38,6 +38,7 @@ export const Containers = React.memo(function Containers({
                 // specifying inline separator makes Containers rerender on each data change
                 // should we do memo of ItemSeparatorComponent?
                 ItemSeparatorComponent={ItemSeparatorComponent}
+                item={info[i]}
             />,
         );
     }
@@ -45,6 +46,8 @@ export const Containers = React.memo(function Containers({
     const style: StyleProp<ViewStyle> = horizontal
         ? { width: animSize, opacity: animOpacity }
         : { height: animSize, opacity: animOpacity };
+
+  
 
     return <Animated.View style={style}>{containers}</Animated.View>;
 });

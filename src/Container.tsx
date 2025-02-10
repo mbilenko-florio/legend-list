@@ -1,18 +1,17 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import type { DimensionValue, LayoutChangeEvent, StyleProp, View, ViewStyle } from "react-native";
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
-import { peek$, use$, useStateContext } from "./state";
-import type { ContainerData } from "./types";
 
-export const Container = ({
+export const Container = React.memo(({
     id,
     recycleItems,
     horizontal,
     getRenderedItem,
     updateItemSize,
     ItemSeparatorComponent,
+    item,
 }: {
     id: number;
     recycleItems?: boolean;
@@ -21,10 +20,9 @@ export const Container = ({
     updateItemSize: (containerId: number, itemKey: string, size: number) => void;
     ItemSeparatorComponent?: React.ReactNode;
 }) => {
-    const ctx = useStateContext();
-    const numColumns = use$<number>("numColumns");
-    const maintainVisibleContentPosition = use$<boolean>("maintainVisibleContentPosition");
-    let info = use$<ContainerData>(`containerInfo${id}`);
+    const numColumns = 1
+    const maintainVisibleContentPosition = false;
+    let info = item;
     if (!info) {
         info = {
             position: ANCHORED_POSITION_OUT_OF_VIEW,
@@ -35,8 +33,10 @@ export const Container = ({
 
         }
     }
+    const itemRef = useRef<View>(null);
+    itemRef.current = info;
     console.log("Render", info.itemKey)
-   const {column, position, didLayout: visible, itemKey, data} = info;
+    const {column, position, didLayout: visible, itemKey, data} = info;
 
 
     const otherAxisPos: DimensionValue | undefined = numColumns > 1 ? `${((column - 1) / numColumns) * 100}%` : 0;
@@ -59,35 +59,35 @@ export const Container = ({
               top: position.relativeCoordinate,
           };
 
-    const extraData = use$<string>("extraData"); // to detect extraData changes
+    //const extraData = use$<string>("extraData"); // to detect extraData changes
     const refLastSize = useRef<number>();
 
     const renderedItemInfo = useMemo(
         () => itemKey !== undefined && getRenderedItem(itemKey),
-        [itemKey, data, extraData],
+        [itemKey, data],
     );
     const { index, renderedItem } = renderedItemInfo || {};
 
     const didLayout = false;
 
-    useEffect(() => {
-        // Catch a rare bug where a container is reused and is the exact same size as the previous item
-        // so it does not fire an onLayout, so we need to trigger it manually.
-        // TODO: There must be a better way to do this?
-        if (itemKey) {
-            const timeout = setTimeout(() => {
-                if (!didLayout && refLastSize.current) {
-                    updateItemSize(id, itemKey, refLastSize.current);
-                }
-            }, 16);
-            return () => {
-                clearTimeout(timeout);
-            };
-        }
-    }, [itemKey]);
+    // useEffect(() => {
+    //     // Catch a rare bug where a container is reused and is the exact same size as the previous item
+    //     // so it does not fire an onLayout, so we need to trigger it manually.
+    //     // TODO: There must be a better way to do this?
+    //     if (itemKey) {
+    //         const timeout = setTimeout(() => {
+    //             if (!didLayout && refLastSize.current) {
+    //                 updateItemSize(id, itemKey, refLastSize.current);
+    //             }
+    //         }, 16);
+    //         return () => {
+    //             clearTimeout(timeout);
+    //         };
+    //     }
+    // }, [itemKey]);
 
     const onLayout = (event: LayoutChangeEvent) => {
-        const container = peek$<ContainerData>(ctx, `containerInfo${id}`) || {};
+        const container = itemRef.current;
         if (container.itemKey !== undefined) {
             // Round to nearest quater pixel to avoid accumulating rounding errors
             const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
@@ -99,20 +99,7 @@ export const Container = ({
     };
 
     const ref = useRef<View>(null);
-    useLayoutEffect(() => {
-        if (itemKey) {
-            // @ts-expect-error unstable_getBoundingClientRect is unstable and only on Fabric
-            const measured = ref.current?.unstable_getBoundingClientRect?.();
-            if (measured) {
-                const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
-
-                if (size) {
-                    updateItemSize(id, itemKey, size);
-                }
-            }
-        }
-    }, [itemKey]);
-
+   
     const contextValue = useMemo(
         () => ({ containerId: id, itemKey, index: index!, value: data }),
         [id, itemKey, index, data],
@@ -149,4 +136,4 @@ export const Container = ({
             {contentFragment}
         </LeanView>
     );
-};
+});

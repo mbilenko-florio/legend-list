@@ -25,6 +25,7 @@ import { ANCHORED_POSITION_OUT_OF_VIEW, POSITION_OUT_OF_VIEW } from "./constants
 import { StateProvider, peek$, set$, useStateContext } from "./state";
 import type { AnchoredPosition, ContainerData, LegendListRef } from "./types";
 import type { InternalState, LegendListProps } from "./types";
+import { useContainerInfos } from "./useContainerInfos";
 import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
 
@@ -118,7 +119,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             return 0;
         };
 
-        const chooseAnchorElement = () => {};
+        const {info, setContainerInfo, setContainerInfos, peek} = useContainerInfos()
 
         const initialContentOffset = initialScrollOffset ?? useMemo(calculateInitialOffset, []);
 
@@ -321,7 +322,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll = scrollState - previousScrollAdjust - topPad - scrollExtra;
+            const scroll = scrollState - previousScrollAdjust - topPad ;
 
             const scrollBufferTop = scrollBuffer;
             const scrollBufferBottom = scrollBuffer;
@@ -491,7 +492,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     const id = getId(i)!;
                     // See if this item is already in a container
                     for (let j = 0; j < numContainers; j++) {
-                        const key = (peek$<ContainerData>(ctx, `containerInfo${j}`) || {}).itemKey;
+                        const key = (peek(j) || {}).itemKey;
                         if (key === id) {
                             isContained = true;
                             break;
@@ -508,7 +509,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                         for (let u = 0; u < numContainers; u++) {
                             const { itemKey: key, position } = pendingChanges.get(u) ||
-                                peek$<ContainerData>(ctx, `containerInfo${u}`) || {
+                                peek(u) || {
                                     position: ANCHORED_POSITION_OUT_OF_VIEW,
                                     itemKey: undefined,
                                 };
@@ -530,7 +531,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             }
                         }
                         if (furthestIndex >= 0) {
-                            const container = peek$<ContainerData>(ctx, `containerInfo${furthestIndex}`) || {
+                            const container = peek(furthestIndex) || {
                                 position: ANCHORED_POSITION_OUT_OF_VIEW,
                                 column: -1,
                             };
@@ -571,7 +572,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 // but it likely would have little impact. Remove this comment if not worth doing.
                 for (let i = 0; i < numContainers; i++) {
                     const container = pendingChanges.get(i) ||
-                        peek$<ContainerData>(ctx, `containerInfo${i}`) || {
+                        peek(i) || {
                             position: ANCHORED_POSITION_OUT_OF_VIEW,
                             column: -1,
                             data: undefined,
@@ -648,13 +649,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             if (pendingChanges.size > 0) {
                 const pendingChangesArray = Array.from(pendingChanges.entries());
-                pendingChangesArray.sort((a, b) => a[1].position.top - b[1].position.top);
+                //pendingChangesArray.sort((a, b) => a[1].position.top - b[1].position.top);
 
                 //console.log("Pending Changes", pendingChangesArray.map((v) => v[1].position.top));
 
-                for (const value of pendingChangesArray) {
-                    set$(ctx, `containerInfo${value[0]}`, value[1]);
-                }
+                setContainerInfos(pendingChangesArray);
+
+              
             }
 
             if (state.viewabilityConfigCallbackPairs) {
@@ -778,9 +779,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     // Reset containers that aren't used anymore because the data has changed
                     const numContainers = peek$<number>(ctx, "numContainers");
                     for (let i = 0; i < numContainers; i++) {
-                        const itemKey = peek$<ContainerData>(ctx, `containerInfo${i}`).itemKey;
+                        const itemKey = info[i].itemKey;
                         if (!keyExtractorProp || (itemKey && state.indexByKey.get(itemKey) === undefined)) {
-                            set$(ctx, `containerInfo${i}`, {
+                            setContainerInfo(i, {
                                 itemKey: undefined,
                                 position: ANCHORED_POSITION_OUT_OF_VIEW,
                                 column: -1,
@@ -813,6 +814,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const isFirst = !refState.current.renderItem;
         // Run first time and whenever data changes
         if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
+            console.log("Extra work!")
             if (!keyExtractorProp && !isFirst && data !== refState.current.data) {
                 // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
                 refState.current.sizes.clear();
@@ -969,6 +971,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, []);
 
         useInit(() => {
+            console.log("Useinit")
             const state = refState.current!;
             const viewability = setupViewability(props);
             state.viewabilityConfigCallbackPairs = viewability;
@@ -980,7 +983,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const numContainers = Math.ceil((scrollLength + scrollBuffer * 2) / averageItemSize) * numColumnsProp;
 
             for (let i = 0; i < numContainers; i++) {
-                set$(ctx, `containerInfo${i}`, {
+                setContainerInfo(i, {
                     itemKey: undefined,
                     position: ANCHORED_POSITION_OUT_OF_VIEW,
                     column: -1,
@@ -1234,6 +1237,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scrollEventThrottle={scrollEventThrottle ?? (Platform.OS === "web" ? 16 : undefined)}
                 waitForInitialLayout={waitForInitialLayout}
                 style={style}
+                info={info}
             />
         );
     });
