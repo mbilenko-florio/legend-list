@@ -80,23 +80,21 @@ export const Container = ({
         }
     }, [itemKey]);
 
-    const onLayout = isNewArchitecture
-        ? undefined
-        : (event: LayoutChangeEvent) => {
-              const key = peek$<string>(ctx, `containerItemKey${id}`);
-              if (key !== undefined) {
-                  // Round to nearest quater pixel to avoid accumulating rounding errors
-                  const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
-                  if (size === 0) {
-                      console.log("[WARN] Container 0 height reported, possible bug in LegendList", id, key);
-                      return;
-                  }
-                  updateItemSize(id, key, size);
+    const onLayout = (event: LayoutChangeEvent) => {
+        const key = peek$<string>(ctx, `containerItemKey${id}`);
+        if (key !== undefined) {
+            // Round to nearest quater pixel to avoid accumulating rounding errors
+            const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
+            if (size === 0) {
+                console.log("[WARN] Container 0 height reported, possible bug in LegendList", id, key);
+                return;
+            }
+            updateItemSize(id, key, size);
 
-                  // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
-                  // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
-              }
-          };
+            // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
+            // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
+        }
+    };
 
     const ref = useRef<View>(null);
     if (isNewArchitecture) {
