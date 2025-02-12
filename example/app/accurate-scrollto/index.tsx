@@ -51,7 +51,7 @@ export default function Cards({ numColumns = 1 }: CardsProps) {
                 data={data}
                 renderItem={renderItem}
                 keyExtractor={(item) => `id${item.id}`}
-                estimatedItemSize={ESTIMATED_ITEM_LENGTH}
+                estimatedItemSize={ESTIMATED_ITEM_LENGTH+120}
                 drawDistance={DRAW_DISTANCE}
                 maintainVisibleContentPosition
                 recycleItems={true}

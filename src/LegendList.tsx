@@ -346,7 +346,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 scrollBufferBottom = 0;
             }
 
-
             // Check precomputed scroll range to see if we can skip this check
             if (state.scrollForNextCalculateItemsInView) {
                 const { top, bottom } = state.scrollForNextCalculateItemsInView;
@@ -364,12 +363,23 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             let endBuffered: number | null = null;
 
             const originalStartId = startBufferedIdOrig && state.indexByKey.get(startBufferedIdOrig);
-          
+
             let loopStart = originalStartId || 0;
 
             const anchorElementIndex = getAnchorElementIndex()!;
 
-            console.log("ORIGINAL START ID", originalStartId,'id',startBufferedIdOrig, 'ls', loopStart, 'realscoll',scrollState,'EEFFS', scroll);
+            console.log(
+                "ORIGINAL START ID",
+                originalStartId,
+                "id",
+                startBufferedIdOrig,
+                "ls",
+                loopStart,
+                "realscoll",
+                scrollState,
+                "EEFFS",
+                scroll,
+            );
 
             // Go backwards from the last start position to find the first item that is in view
             // This is an optimization to avoid looping through all items, which could slow down
@@ -1176,7 +1186,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     if (maintainVisibleContentPosition) {
                         const id = getId(index);
-                        refState.current?.scrollAdjustHandler.requestAdjust(firstIndexOffset, () => {})
+                        refState.current?.scrollAdjustHandler.requestAdjust(firstIndexOffset, () => {});
                         console.log("---------------scrollToIndex", index, firstIndexOffset, id);
                         refState.current!.anchorElement = { id, coordinate: firstIndexOffset };
                         refState.current!.belowAnchorElementPositions?.clear();
@@ -1190,24 +1200,22 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         // const adjust = peek$<number>(ctx, "scrollAdjust");
                         // console.log("adjust", adjust);
 
-                        refState.current.scrollForNextCalculateItemsInView = undefined
-                        
+                        refState.current.scrollForNextCalculateItemsInView = undefined;
+
                         // console.log(refState.current)
 
                         // //firstIndexOffset += adjust;
-                        
+
                         // //setTimeout(() => {
                         calculateItemsInView(0);
                         // //  }, 0);
                         // setTimeout(() => {
-                        //   //  
+                        //   //
                         // },800)
-                        const offset = horizontal ? { x: 0, y: 0 } : { x: 0, y: 0 };
-                        refScroller.current!.scrollTo({ ...offset, animated });
-                    } else {
-                        const offset = horizontal ? { x: firstIndexOffset, y: 0 } : { x: 0, y: firstIndexOffset };
-                        refScroller.current!.scrollTo({ ...offset, animated });
                     }
+
+                    const offset = horizontal ? { x: firstIndexOffset, y: 0 } : { x: 0, y: firstIndexOffset };
+                    refScroller.current!.scrollTo({ ...offset, animated });
                 };
                 return {
                     getNativeScrollRef: () => refScroller.current!,
