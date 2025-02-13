@@ -397,6 +397,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
                 }
 
+                console.log("Backward pass", i)
+
                 const top = newPosition || positions.get(id)!;
 
                 if (top !== undefined) {
@@ -428,7 +430,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     topOffset = positions.get(id)!;
                 }
                 if (id === state.anchorElement?.id) {
-                    topOffset = initialContentOffset || 0;
+                    topOffset = state.anchorElement.coordinate;
                 }
                 return topOffset;
             };
@@ -440,7 +442,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 maxSizeInRow = Math.max(maxSizeInRow, size);
 
-                if (top === undefined) {
+                console.log("Forward pass", i)
+
+                if (top === undefined || id === state.anchorElement?.id) {
                     top = getInitialTop(i);
                 }
 
@@ -1186,36 +1190,50 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                     if (maintainVisibleContentPosition) {
                         const id = getId(index);
-                        refState.current?.scrollAdjustHandler.requestAdjust(firstIndexOffset, () => {});
+                        //refState.current?.scrollAdjustHandler.requestAdjust(firstIndexOffset, () => {});
                         console.log("---------------scrollToIndex", index, firstIndexOffset, id);
                         refState.current!.anchorElement = { id, coordinate: firstIndexOffset };
                         refState.current!.belowAnchorElementPositions?.clear();
-                        buildElementPositionsBelowAnchor();
+
                         refState.current!.positions.clear();
-                        refState.current?.positions.set(id, firstIndexOffset);
                         calcTotalSizes(true);
-                        // console.log("===========", firstIndexOffset, id);
-                        refState.current!.startBufferedId = id;
 
-                        // const adjust = peek$<number>(ctx, "scrollAdjust");
-                        // console.log("adjust", adjust);
+                        calculateItemsInView(0);
 
-                        refState.current.scrollForNextCalculateItemsInView = undefined;
+                        const offset = horizontal ? { x: firstIndexOffset, y: 0 } : { x: 0, y: firstIndexOffset };
+                        refScroller.current!.scrollTo({ ...offset, animated });
+
+                        const {
+                            data,
+                            indexByKey,
+                            positions,
+                            sizes,
+                            idsInFirstRender,
+                            belowAnchorElementPositions,
+                            ...rest
+                        } = refState.current!;
+
+                        console.log(positions);
+
+                        // // console.log("===========", firstIndexOffset, id);
+                        // refState.current!.startBufferedId = id;
+
+                        // // const adjust = peek$<number>(ctx, "scrollAdjust");
+                        // // console.log("adjust", adjust);
+
+                        // refState.current.scrollForNextCalculateItemsInView = undefined;
 
                         // console.log(refState.current)
 
                         // //firstIndexOffset += adjust;
 
                         // //setTimeout(() => {
-                        calculateItemsInView(0);
+
                         // //  }, 0);
                         // setTimeout(() => {
                         //   //
                         // },800)
                     }
-
-                    const offset = horizontal ? { x: firstIndexOffset, y: 0 } : { x: 0, y: firstIndexOffset };
-                    refScroller.current!.scrollTo({ ...offset, animated });
                 };
                 return {
                     getNativeScrollRef: () => refScroller.current!,
