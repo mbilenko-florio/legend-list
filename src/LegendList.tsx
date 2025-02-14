@@ -62,17 +62,25 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             renderItem,
             estimatedItemSize,
             getEstimatedItemSize,
-            onEndReached,
-            onStartReached,
             ListEmptyComponent,
             onItemSizeChanged,
             scrollEventThrottle,
             refScrollView,
             waitForInitialLayout = true,
             extraData,
+            onLayout: onLayoutProp,
             ...rest
         } = props;
         const { style, contentContainerStyle } = props;
+
+        const callbacks = useRef({
+            onStartReached: rest.onStartReached,
+            onEndReached: rest.onEndReached,
+        });
+
+        // ensure that the callbacks are updated
+        callbacks.current.onStartReached = rest.onStartReached;
+        callbacks.current.onEndReached = rest.onEndReached;
 
         const ctx = useStateContext();
 
@@ -205,7 +213,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     isAboveAnchor = true;
                 }
             }
-            const prev = state.totalSize;
             if (key === null) {
                 state.totalSize = add;
                 state.totalSizeBelowAnchor = totalSizeBelowAnchor;
@@ -322,14 +329,14 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
             const previousScrollAdjust = scrollAdjustHandler.getAppliedAdjust();
             const scrollExtra = Math.max(-16, Math.min(16, speed)) * 16;
-            const scroll = scrollState - previousScrollAdjust - topPad ;
+            const scroll = scrollState - previousScrollAdjust - topPad;
 
             let scrollBufferTop = scrollBuffer;
             let scrollBufferBottom = scrollBuffer;
 
             if (scrollExtra > 8) {
                 scrollBufferTop = 0;
-                scrollBufferBottom = scrollBuffer + scrollExtra ;
+                scrollBufferBottom = scrollBuffer + scrollExtra;
             }
             if (scrollExtra < -8) {
                 scrollBufferTop = scrollBuffer - scrollExtra;
@@ -724,6 +731,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
                 }
 
+                const { onEndReached } = callbacks.current;
+
                 if (onEndReached) {
                     if (!refState.current.isEndReached) {
                         if (distanceFromEnd < onEndReachedThreshold! * scrollLength) {
@@ -747,6 +756,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const { scrollLength, scroll } = refState.current;
             const distanceFromTop = scroll;
             refState.current.isAtTop = distanceFromTop < 0;
+
+            const { onStartReached } = callbacks.current;
 
             if (onStartReached) {
                 if (!refState.current.isStartReached && !refState.current!.startReachedBlockedByTimer) {
@@ -792,7 +803,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
 
                     if (!keyExtractorProp) {
-                        state.sizes.clear();
                         state.positions.clear();
                     }
 
@@ -816,8 +826,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
             console.log("Extra work!")
             if (!keyExtractorProp && !isFirst && data !== refState.current.data) {
-                // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset
-                refState.current.sizes.clear();
+                // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset.
+                // Note: don't want to clear sizes because if sizes don't change they won't update from onLayout
+                // so it's safer to fallback to previous sizes than to the estimate.
                 refState.current.positions.clear();
             }
 
@@ -832,6 +843,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
+                if (__DEV__) {
+                    if (indexByKey.has(key)) {
+                        console.error(
+                            `[legend-list] Error: Detected overlapping key (${key}) which causes missing items and gaps and other terrrible things. Check that keyExtractor returns unique values.`,
+                        );
+                    }
+                }
                 indexByKey.set(key, i);
                 // save positions for items that are still in the list at the same indices
                 // throw out everything else
@@ -920,7 +938,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         }, [extraData]);
 
         refState.current.renderItem = renderItem!;
-        const lastItemKey = getId(data[data.length - 1]);
+        const lastItemKey = data.length > 0 ? getId(data.length - 1) : undefined;
         // TODO: This needs to support horizontal and other ways of defining padding
         const stylePaddingTop =
             StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
@@ -1112,6 +1130,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     );
                 }
             }
+            if (onLayoutProp) {
+                onLayoutProp(event);
+            }
         }, []);
 
         const handleScroll = useCallback(
@@ -1187,9 +1208,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 };
                 return {
                     getNativeScrollRef: () => refScroller.current!,
-                    getScrollableNode: refScroller.current!.getScrollableNode,
-                    getScrollResponder: refScroller.current!.getScrollResponder,
-                    flashScrollIndicators: refScroller.current!.flashScrollIndicators,
+                    getScrollableNode: () => refScroller.current!.getScrollableNode(),
+                    getScrollResponder: () => refScroller.current!.getScrollResponder(),
+                    flashScrollIndicators: () => refScroller.current!.flashScrollIndicators(),
                     scrollToIndex,
                     scrollToOffset: ({ offset, animated }) => {
                         const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
@@ -1201,7 +1222,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             scrollToIndex({ index, animated });
                         }
                     },
-                    scrollToEnd: refScroller.current!.scrollToEnd,
+                    scrollToEnd: () => refScroller.current!.scrollToEnd(),
                 };
             },
             [],

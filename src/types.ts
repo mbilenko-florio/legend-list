@@ -8,7 +8,7 @@ export type LegendListPropsBase<
     ItemT,
     TScrollView extends ComponentProps<typeof ScrollView> | ComponentProps<typeof Animated.ScrollView>
 > = Omit<TScrollView, 'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition' | 'stickyHeaderIndices'> & {
-    data: ArrayLike<any> & ItemT[];
+    data: ReadonlyArray<ItemT>;
     initialScrollOffset?: number;
     initialScrollIndex?: number;
     drawDistance?: number;
@@ -37,7 +37,6 @@ export type LegendListPropsBase<
     ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
     ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined;
     ListEmptyComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
-    ListEmptyComponentStyle?: StyleProp<ViewStyle> | undefined;
     ItemSeparatorComponent?: React.ComponentType<any>;
     viewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs | undefined;
     viewabilityConfig?: ViewabilityConfig;
@@ -91,7 +90,7 @@ export interface InternalState {
     isEndReached: boolean;
     isAtBottom: boolean;
     isAtTop: boolean;
-    data: any[];
+    data: readonly any[];
     idsInFirstRender: Set<string>;
     hasScrolled: boolean;
     scrollLength: number;

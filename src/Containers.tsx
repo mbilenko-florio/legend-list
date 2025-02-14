@@ -21,7 +21,7 @@ export const Containers = React.memo(function Containers({
     getRenderedItem,
     info,
 }: ContainersProps) {
-    const animSize =  useValue$("totalSize");
+    const animSize = useValue$("totalSize", undefined, /*useMicrotask*/ true);
     const animOpacity = waitForInitialLayout ? useValue$("containersDidLayout", (value) => (value ? 1 : 0)) : undefined;
 
     const containers = [];

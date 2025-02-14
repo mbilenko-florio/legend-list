@@ -1,9 +1,11 @@
-import React, { useMemo, useRef } from "react";
+import React, { useLayoutEffect, useMemo, useRef } from "react";
 import type { DimensionValue, LayoutChangeEvent, StyleProp, View, ViewStyle } from "react-native";
 import { ContextContainer } from "./ContextContainer";
 import { LeanView } from "./LeanView";
 import { ANCHORED_POSITION_OUT_OF_VIEW } from "./constants";
 
+// @ts-expect-error nativeFabricUIManager is not defined in the global object types
+const isNewArchitecture = global.nativeFabricUIManager != null;
 export const Container = React.memo(({
     id,
     recycleItems,
@@ -68,30 +70,15 @@ export const Container = React.memo(({
     );
     const { index, renderedItem } = renderedItemInfo || {};
 
-    const didLayout = false;
-
-    // useEffect(() => {
-    //     // Catch a rare bug where a container is reused and is the exact same size as the previous item
-    //     // so it does not fire an onLayout, so we need to trigger it manually.
-    //     // TODO: There must be a better way to do this?
-    //     if (itemKey) {
-    //         const timeout = setTimeout(() => {
-    //             if (!didLayout && refLastSize.current) {
-    //                 updateItemSize(id, itemKey, refLastSize.current);
-    //             }
-    //         }, 16);
-    //         return () => {
-    //             clearTimeout(timeout);
-    //         };
-    //     }
-    // }, [itemKey]);
-
     const onLayout = (event: LayoutChangeEvent) => {
-        const container = itemRef.current;
-        if (container.itemKey !== undefined) {
+        if (itemKey !== undefined) {
             // Round to nearest quater pixel to avoid accumulating rounding errors
             const size = Math.floor(event.nativeEvent.layout[horizontal ? "width" : "height"] * 8) / 8;
-            updateItemSize(id, container.itemKey, size);
+            if (size === 0) {
+                console.log("[WARN] Container 0 height reported, possible bug in LegendList", id, itemKey);
+                return;
+            }
+            updateItemSize(id, itemKey, size);
 
             // const otherAxisSize = horizontal ? event.nativeEvent.layout.width : event.nativeEvent.layout.height;
             // set$(ctx, "otherAxisSize", Math.max(otherAxisSize, peek$(ctx, "otherAxisSize") || 0));
@@ -99,7 +86,22 @@ export const Container = React.memo(({
     };
 
     const ref = useRef<View>(null);
-   
+    if (isNewArchitecture) {
+        useLayoutEffect(() => {
+            if (itemKey !== undefined) {
+                // @ts-expect-error unstable_getBoundingClientRect is unstable and only on Fabric
+                const measured = ref.current?.unstable_getBoundingClientRect?.();
+                if (measured) {
+                    const size = Math.floor(measured[horizontal ? "width" : "height"] * 8) / 8;
+
+                    if (size) {
+                        updateItemSize(id, itemKey, size);
+                    }
+                }
+            }
+        }, [itemKey]);
+    }
+
     const contextValue = useMemo(
         () => ({ containerId: id, itemKey, index: index!, value: data }),
         [id, itemKey, index, data],
@@ -121,8 +123,8 @@ export const Container = React.memo(({
                 ? { position: "absolute", top: 0, left: 0, right: 0 }
                 : { position: "absolute", bottom: 0, left: 0, right: 0 };
         return (
-            <LeanView style={style} ref={ref}>
-                <LeanView style={anchorStyle} onLayout={onLayout}>
+            <LeanView style={style}>
+                <LeanView style={anchorStyle} onLayout={onLayout} ref={ref}>
                     {contentFragment}
                 </LeanView>
             </LeanView>

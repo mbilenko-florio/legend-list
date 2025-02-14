@@ -2,7 +2,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { LegendList } from "@legendapp/list";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { Link, type LinkProps } from "expo-router";
-import { Platform, Pressable, StyleSheet, View } from "react-native";
+import { useCallback } from "react";
+import { type LayoutChangeEvent, Platform, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type ListElement = {
@@ -92,6 +93,9 @@ const ListItem = ({ title, url }: ListElement) => (
 
 const ListElements = () => {
     const height = useBottomTabBarHeight();
+    const onLayout = useCallback((event: LayoutChangeEvent) => {
+        console.log("onlayout",event.nativeEvent.layout);
+    },[]);
     return (
         <SafeAreaView style={styles.container}>
             <LegendList
@@ -104,6 +108,7 @@ const ListElements = () => {
                 }}
                 ListFooterComponent={<View />}
                 ListFooterComponentStyle={{ height: Platform.OS === "ios" ? height : 0 }}
+                onLayout={onLayout}
             />
         </SafeAreaView>
     );

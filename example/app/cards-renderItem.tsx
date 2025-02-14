@@ -119,7 +119,7 @@ export const ItemCard = ({
     const refSwipeable = useRef<SwipeableMethods>();
 
     // A useState that resets when the item is recycled
-    const [isExpanded, setIsExpanded] = useRecyclingState ? useRecyclingState(() => false) : useState(() => false);
+    const [isExpanded, setIsExpanded] = useState(() => false);
 
     const swipeableState = useRef(false);
 

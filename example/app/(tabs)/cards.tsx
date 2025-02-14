@@ -54,7 +54,6 @@ export default function Cards({ numColumns = 1 }: CardsProps) {
                 ListHeaderComponentStyle={styles.listHeader}
                 ListFooterComponent={<View />}
                 ListFooterComponentStyle={styles.listHeader}
-                ListEmptyComponentStyle={{ flex: 1 }}
                 ListEmptyComponent={
                     <View style={styles.listEmpty}>
                         <Text style={{ color: "white" }}>Empty</Text>
