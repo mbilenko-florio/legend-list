@@ -435,8 +435,10 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return topOffset;
             };
 
+            let ls = loopStart - 10
+            if (ls < 0) ls = 0;
             // scan data forwards
-            for (let i = loopStart; i < data!.length; i++) {
+            for (let i = ls; i < data!.length; i++) {
                 const id = getId(i)!;
                 const size = getItemSize(id, i, data[i]);
 
@@ -1201,7 +1203,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         calculateItemsInView(0);
 
                         const offset = horizontal ? { x: firstIndexOffset, y: 0 } : { x: 0, y: firstIndexOffset };
-                        refScroller.current!.scrollTo({ ...offset, animated });
+                        refScroller.current!.scrollTo({ ...offset, animated: false });
 
                         const {
                             data,
