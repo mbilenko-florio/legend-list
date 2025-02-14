@@ -790,7 +790,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     // Reset containers that aren't used anymore because the data has changed
                     const numContainers = peek$<number>(ctx, "numContainers");
                     for (let i = 0; i < numContainers; i++) {
-                        const itemKey = info[i].itemKey;
+                        const itemKey = (info[i] || {}).itemKey;
                         if (!keyExtractorProp || (itemKey && state.indexByKey.get(itemKey) === undefined)) {
                             setContainerInfo(i, {
                                 itemKey: undefined,
