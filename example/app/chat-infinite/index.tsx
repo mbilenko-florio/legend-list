@@ -1,6 +1,7 @@
 import { LegendList } from "@legendapp/list";
 import { useHeaderHeight } from "@react-navigation/elements";
-import { useState } from "react";
+import { useNavigation } from "expo-router";
+import { useEffect, useState } from "react";
 import { Button, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from "react-native";
 import { RefreshControl } from "react-native-gesture-handler";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,18 +24,6 @@ const defaultChatMessages: Message[] = [
         sender: "user",
         timeStamp: Date.now() - MS_PER_SECOND * 5,
     },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "Are we there yet?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 4 },
-    { id: String(idCounter++), text: "How can I help you?", sender: "bot", timeStamp: Date.now() - MS_PER_SECOND * 3 },
 ];
 
 // TODO: under construction
@@ -68,6 +57,7 @@ const ChatExample = () => {
     const [refreshing, setRefreshing] = useState(false);
     const onRefresh = () => {
         console.log("onRefresh");
+        return;
         setRefreshing(true);
         setTimeout(() => {
             setMessages((prevData) => {
@@ -87,24 +77,33 @@ const ChatExample = () => {
         }, 500);
     };
 
-    // useEffect(() => {
-    //     setInterval(() => {
-    //         setMessages((prevData) => {
-    //             const initialIndex = Number.parseInt(prevData[0].id);
-    //             const newData = [
-    //                 ...Array.from({ length: 1 }, (_, i) => ({
-    //                     id: (initialIndex - i - 1).toString(),
-    //                     text: `Previous message${(initialIndex - i - 1).toString()}`,
-    //                     sender: "user" as MessageSide,
-    //                     timeStamp: Date.now() - MS_PER_SECOND * 5,
-    //                 })).reverse(),
-    //                 ...prevData,
-    //             ];
-    //             return newData;
-    //         });
-    //         setRefreshing(false);
-    //     }, 500);
-    // }, []);
+    const navigation = useNavigation();
+    useEffect(() => {
+        navigation.setOptions({
+            title: "Filter",
+            headerRight: () => (
+                <Button
+                    title="add "
+                    onPress={() => {
+                        setMessages((prevData) => {
+                            const initialIndex = Number.parseInt(prevData[0].id);
+                            const newData = [
+                                ...Array.from({ length: 1 }, (_, i) => ({
+                                    id: (initialIndex - i - 1).toString(),
+                                    text: `Previous message${(initialIndex - i - 1).toString()}`,
+                                    sender: "user" as MessageSide,
+                                    timeStamp: Date.now() - MS_PER_SECOND * 5,
+                                })).reverse(),
+                                ...prevData,
+                            ];
+                            return newData;
+                        });
+                        setRefreshing(false);
+                    }}
+                />
+            ),
+        });
+    }, []);
 
     const { top } = useSafeAreaInsets();
 
@@ -124,6 +123,7 @@ const ChatExample = () => {
                         console.log("onStartReached", props);
                         onRefresh();
                     }}
+                    initialScrollIndex={messages.length - 1}
                     recycleItems={true}
                     ListHeaderComponent={<View style={{ height: top }} />}
                     refreshControl={

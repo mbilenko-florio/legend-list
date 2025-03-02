@@ -20,8 +20,11 @@ export class ScrollAdjustHandler {
         this.pendingAdjust = adjust;
 
         const doAjdust = () => {
-            set$(this.context, "scrollAdjust", this.pendingAdjust);
-            onAdjusted(oldAdjustTop - this.pendingAdjust);
+            const paddingTop = peek$<number>(this.context, "paddingTop");
+            if (paddingTop === 0) {
+                set$(this.context, "scrollAdjust", this.pendingAdjust);
+                onAdjusted(oldAdjustTop - this.pendingAdjust);
+            }
             this.busy = false;
         };
         if (!this.busy) {

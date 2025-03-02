@@ -95,7 +95,7 @@ export const ListComponent = React.memo(function ListComponent({
     //     return StyleSheet.compose(extraStyle, styleProp) as StyleProp<ViewStyle>;
     // }, [otherAxisSize]);
 
-    const additionalSize = { marginTop: animScrollAdjust, paddingTop: animPaddingTop };
+    const additionalSize = { marginTop: animScrollAdjust, paddingTop: animPaddingTop, backgroundColor: "blue" };
 
     return (
         <ScrollComponent
