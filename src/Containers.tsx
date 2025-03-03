@@ -23,8 +23,6 @@ export const Containers = React.memo(function Containers({
 }: ContainersProps) {
     const ctx = useStateContext();
     const numContainers = use$<number>("numContainersPooled");
-    // const animSize = useValue$("totalSize", undefined, /*useMicrotask*/ true);
-    // const animOpacity = waitForInitialLayout ? useValue$("containersDidLayout", (value) => (value ? 1 : 0)) : undefined;
 
     const containers = [];
     for (let i = 0; i < numContainers; i++) {
@@ -48,7 +46,11 @@ export const Containers = React.memo(function Containers({
             $key={"totalSize"}
             $style={() => {
                 const size = peek$<number>(ctx, "totalSize");
-                return horizontal ? { width: size } : { height: size };
+                const containersDidLayout = peek$<boolean>(ctx, "containersDidLayout");
+                const opacity = waitForInitialLayout ? containersDidLayout : undefined;
+                return horizontal
+                    ? { width: size, opacity: opacity ? 1 : 0 }
+                    : { height: size, opacity: opacity ? 1 : 0 };
             }}
         >
             {containers}
