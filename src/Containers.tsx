@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Animated, type StyleProp, type ViewStyle } from "react-native";
+import {} from "react-native";
+import { $View } from "./$View";
 import { Container } from "./Container";
-import { use$ } from "./state";
-import { useValue$ } from "./useValue$";
+import { peek$, use$, useStateContext } from "./state";
 
 interface ContainersProps {
     horizontal: boolean;
@@ -21,9 +21,10 @@ export const Containers = React.memo(function Containers({
     updateItemSize,
     getRenderedItem,
 }: ContainersProps) {
+    const ctx = useStateContext();
     const numContainers = use$<number>("numContainersPooled");
-    const animSize = useValue$("totalSize", undefined, /*useMicrotask*/ true);
-    const animOpacity = waitForInitialLayout ? useValue$("containersDidLayout", (value) => (value ? 1 : 0)) : undefined;
+    // const animSize = useValue$("totalSize", undefined, /*useMicrotask*/ true);
+    // const animOpacity = waitForInitialLayout ? useValue$("containersDidLayout", (value) => (value ? 1 : 0)) : undefined;
 
     const containers = [];
     for (let i = 0; i < numContainers; i++) {
@@ -42,9 +43,15 @@ export const Containers = React.memo(function Containers({
         );
     }
 
-    const style: StyleProp<ViewStyle> = horizontal
-        ? { width: animSize, opacity: animOpacity }
-        : { height: animSize, opacity: animOpacity };
-
-    return <Animated.View style={style}>{containers}</Animated.View>;
+    return (
+        <$View
+            $key={"totalSize"}
+            $style={() => {
+                const size = peek$<number>(ctx, "totalSize");
+                return horizontal ? { width: size } : { height: size };
+            }}
+        >
+            {containers}
+        </$View>
+    );
 });

@@ -796,118 +796,138 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             }
         };
 
-        const isFirst = !refState.current.renderItem;
-        // Run first time and whenever data changes
-        if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
-            if (!keyExtractorProp && !isFirst && data !== refState.current.data) {
-                // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset.
-                // Note: don't want to clear sizes because if sizes don't change they won't update from onLayout
-                // so it's safer to fallback to previous sizes than to the estimate.
-                refState.current.positions.clear();
+        const initalizeStateVars = () => {
+            set$(ctx, "lastItemKey", lastItemKey);
+            set$(ctx, "numColumns", numColumnsProp);
+            set$(ctx, "stylePaddingTop", stylePaddingTop);
+        };
+
+        useEffect(() => {
+            if (!refState.current) {
+                return;
             }
+            const isFirst = !refState.current.renderItem;
+            // Run first time and whenever data changes
+            if (isFirst || data !== refState.current.data || numColumnsProp !== peek$<number>(ctx, "numColumns")) {
+                if (!keyExtractorProp && !isFirst && data !== refState.current.data) {
+                    // If we have no keyExtractor then we have no guarantees about previous item sizes so we have to reset.
+                    // Note: don't want to clear sizes because if sizes don't change they won't update from onLayout
+                    // so it's safer to fallback to previous sizes than to the estimate.
+                    refState.current.positions.clear();
+                }
 
-            refState.current.data = data;
+                refState.current.data = data;
 
-            let totalSize = 0;
-            let totalSizeBelowIndex = 0;
-            const indexByKey = new Map();
-            const newPositions = new Map();
-            let column = 1;
-            let maxSizeInRow = 0;
+                let totalSize = 0;
+                let totalSizeBelowIndex = 0;
+                const indexByKey = new Map();
+                const newPositions = new Map();
+                let column = 1;
+                let maxSizeInRow = 0;
 
-            for (let i = 0; i < data.length; i++) {
-                const key = getId(i);
-                if (__DEV__) {
-                    if (indexByKey.has(key)) {
-                        console.error(
-                            `[legend-list] Error: Detected overlapping key (${key}) which causes missing items and gaps and other terrrible things. Check that keyExtractor returns unique values.`,
-                        );
+                for (let i = 0; i < data.length; i++) {
+                    const key = getId(i);
+                    if (__DEV__) {
+                        if (indexByKey.has(key)) {
+                            console.error(
+                                `[legend-list] Error: Detected overlapping key (${key}) which causes missing items and gaps and other terrrible things. Check that keyExtractor returns unique values.`,
+                            );
+                        }
+                    }
+                    indexByKey.set(key, i);
+                    // save positions for items that are still in the list at the same indices
+                    // throw out everything else
+                    if (refState.current.positions.get(key) != null && refState.current.indexByKey.get(key) === i) {
+                        newPositions.set(key, refState.current.positions.get(key)!);
                     }
                 }
-                indexByKey.set(key, i);
-                // save positions for items that are still in the list at the same indices
-                // throw out everything else
-                if (refState.current.positions.get(key) != null && refState.current.indexByKey.get(key) === i) {
-                    newPositions.set(key, refState.current.positions.get(key)!);
-                }
-            }
-            // getAnchorElementIndex needs indexByKey, build it first
-            refState.current.indexByKey = indexByKey;
-            refState.current.positions = newPositions;
+                // getAnchorElementIndex needs indexByKey, build it first
+                refState.current.indexByKey = indexByKey;
+                refState.current.positions = newPositions;
 
-            if (!isFirst) {
-                // check if anchorElement is still in the list
-                if (maintainVisibleContentPosition) {
-                    if (
-                        refState.current.anchorElement == null ||
-                        indexByKey.get(refState.current.anchorElement.id) == null
-                    ) {
-                        if (data.length) {
-                            const newAnchorElement = {
-                                coordinate: 0,
-                                id: getId(0),
-                            };
-                            refState.current.anchorElement = newAnchorElement;
-                            refState.current.belowAnchorElementPositions?.clear();
+                if (!isFirst) {
+                    // check if anchorElement is still in the list
+                    if (maintainVisibleContentPosition) {
+                        if (
+                            refState.current.anchorElement == null ||
+                            indexByKey.get(refState.current.anchorElement.id) == null
+                        ) {
+                            if (data.length) {
+                                const newAnchorElement = {
+                                    coordinate: 0,
+                                    id: getId(0),
+                                };
+                                refState.current.anchorElement = newAnchorElement;
+                                refState.current.belowAnchorElementPositions?.clear();
+                                // reset scroll to 0 and schedule rerender
+                                refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
+                                setTimeout(() => {
+                                    calculateItemsInView(0);
+                                }, 0);
+                            } else {
+                                refState.current.startBufferedId = undefined;
+                            }
+                        }
+                    } else {
+                        // if maintainVisibleContentPosition not used, reset startBufferedId if it's not in the list
+                        if (
+                            refState.current.startBufferedId != null &&
+                            newPositions.get(refState.current.startBufferedId) == null
+                        ) {
+                            if (data.length) {
+                                refState.current.startBufferedId = getId(0);
+                            } else {
+                                refState.current.startBufferedId = undefined;
+                            }
                             // reset scroll to 0 and schedule rerender
                             refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
                             setTimeout(() => {
                                 calculateItemsInView(0);
                             }, 0);
-                        } else {
-                            refState.current.startBufferedId = undefined;
                         }
-                    }
-                } else {
-                    // if maintainVisibleContentPosition not used, reset startBufferedId if it's not in the list
-                    if (
-                        refState.current.startBufferedId != null &&
-                        newPositions.get(refState.current.startBufferedId) == null
-                    ) {
-                        if (data.length) {
-                            refState.current.startBufferedId = getId(0);
-                        } else {
-                            refState.current.startBufferedId = undefined;
-                        }
-                        // reset scroll to 0 and schedule rerender
-                        refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
-                        setTimeout(() => {
-                            calculateItemsInView(0);
-                        }, 0);
                     }
                 }
-            }
 
-            const anchorElementIndex = getAnchorElementIndex();
-            for (let i = 0; i < data.length; i++) {
-                const key = getId(i);
+                const anchorElementIndex = getAnchorElementIndex();
+                for (let i = 0; i < data.length; i++) {
+                    const key = getId(i);
 
-                const size = getItemSize(key, i, data[i]);
-                maxSizeInRow = Math.max(maxSizeInRow, size);
+                    const size = getItemSize(key, i, data[i]);
+                    maxSizeInRow = Math.max(maxSizeInRow, size);
 
-                column++;
-                if (column > numColumnsProp) {
-                    if (maintainVisibleContentPosition && anchorElementIndex !== undefined && i < anchorElementIndex) {
-                        totalSizeBelowIndex += maxSizeInRow;
+                    column++;
+                    if (column > numColumnsProp) {
+                        if (
+                            maintainVisibleContentPosition &&
+                            anchorElementIndex !== undefined &&
+                            i < anchorElementIndex
+                        ) {
+                            totalSizeBelowIndex += maxSizeInRow;
+                        }
+
+                        totalSize += maxSizeInRow;
+                        column = 1;
+                        maxSizeInRow = 0;
                     }
+                }
 
+                // If have any height leftover from a row that doesn't extend through the last column
+                // add it to total size
+                if (maxSizeInRow > 0) {
                     totalSize += maxSizeInRow;
-                    column = 1;
-                    maxSizeInRow = 0;
                 }
-            }
+                //setTimeout(() => {
 
-            // If have any height leftover from a row that doesn't extend through the last column
-            // add it to total size
-            if (maxSizeInRow > 0) {
-                totalSize += maxSizeInRow;
-            }
-            addTotalSize(null, totalSize, totalSizeBelowIndex);
-        }
+                addTotalSize(null, totalSize, totalSizeBelowIndex);
 
-        useEffect(() => {
+                //}, 0);
+            }
             checkResetContainers(/*reset*/ !isFirst);
-        }, [isFirst, data, numColumnsProp]);
+
+            if (isFirst) {
+                initalizeStateVars();
+            }
+        }, [data, numColumnsProp]);
 
         useEffect(() => {
             set$(ctx, "extraData", extraData);
@@ -919,14 +939,6 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         const stylePaddingTop =
             StyleSheet.flatten(style)?.paddingTop ?? StyleSheet.flatten(contentContainerStyle)?.paddingTop ?? 0;
 
-        const initalizeStateVars = () => {
-            set$(ctx, "lastItemKey", lastItemKey);
-            set$(ctx, "numColumns", numColumnsProp);
-            set$(ctx, "stylePaddingTop", stylePaddingTop);
-        };
-        if (isFirst) {
-            initalizeStateVars();
-        }
         useEffect(initalizeStateVars, [lastItemKey, numColumnsProp, stylePaddingTop]);
 
         const getRenderedItem = useCallback((key: string) => {
