@@ -1,4 +1,4 @@
-import { type StateContext, peek$ } from './state';
+import { type StateContext, peek$ } from "./state";
 import type {
     InternalState,
     LegendListProps,
@@ -7,7 +7,7 @@ import type {
     ViewabilityConfig,
     ViewabilityConfigCallbackPair,
     ViewabilityConfigCallbackPairs,
-} from './types';
+} from "./types";
 
 const mapViewabilityConfigCallbackPairs = new Map<
     string,
@@ -39,7 +39,7 @@ export function setupViewability(props: LegendListProps<any>): ViewabilityConfig
 
     if (viewabilityConfigCallbackPairs) {
         for (const pair of viewabilityConfigCallbackPairs) {
-            mapViewabilityConfigCallbackPairs.set(pair.viewabilityConfig.id, {
+            mapViewabilityConfigCallbackPairs.set(pair.viewabilityConfig.id!, {
                 viewableItems: [],
                 start: -1,
                 end: -1,
@@ -59,11 +59,11 @@ export function updateViewableItems(
     getId: (index: number) => string,
     scrollSize: number,
     start: number,
-    end: number
+    end: number,
 ) {
     for (const viewabilityConfigCallbackPair of viewabilityConfigCallbackPairs) {
         const viewabilityState = mapViewabilityConfigCallbackPairs.get(
-            viewabilityConfigCallbackPair.viewabilityConfig.id
+            viewabilityConfigCallbackPair.viewabilityConfig.id!,
         )!;
         viewabilityState.start = start;
         viewabilityState.end = end;
@@ -80,15 +80,15 @@ export function updateViewableItems(
 }
 
 function updateViewableItemsWithConfig(
-    data: any[],
+    data: readonly any[],
     viewabilityConfigCallbackPair: ViewabilityConfigCallbackPair,
     getId: (index: number) => string,
     state: InternalState,
     ctx: StateContext,
-    scrollSize: number
+    scrollSize: number,
 ) {
     const { viewabilityConfig, onViewableItemsChanged } = viewabilityConfigCallbackPair;
-    const configId = viewabilityConfig.id;
+    const configId = viewabilityConfig.id!;
     const viewabilityState = mapViewabilityConfigCallbackPairs.get(configId)!;
     const { viewableItems: previousViewableItems, start, previousStart, end, previousEnd } = viewabilityState;
 
@@ -152,10 +152,10 @@ function isViewable(
     key: string,
     scrollSize: number,
     item: any,
-    index: number
+    index: number,
 ) {
     const { sizes, positions, scroll } = state;
-    const topPad = (peek$<number>(ctx, 'stylePaddingTop') || 0) + (peek$<number>(ctx, 'headerSize') || 0);
+    const topPad = (peek$<number>(ctx, "stylePaddingTop") || 0) + (peek$<number>(ctx, "headerSize") || 0);
     const { itemVisiblePercentThreshold, viewAreaCoveragePercentThreshold } = viewabilityConfig;
     const viewAreaMode = viewAreaCoveragePercentThreshold != null;
     const viewablePercentThreshold = viewAreaMode ? viewAreaCoveragePercentThreshold : itemVisiblePercentThreshold;
@@ -195,7 +195,7 @@ function isViewable(
 }
 
 function findContainerId(ctx: StateContext, key: string) {
-    const numContainers = peek$<number>(ctx, 'numContainers');
+    const numContainers = peek$<number>(ctx, "numContainers");
     for (let i = 0; i < numContainers; i++) {
         const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
         if (itemKey === key) {

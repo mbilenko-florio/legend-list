@@ -52,7 +52,6 @@ function FilteredCards({ numColumns = 1 }: CardsProps) {
                     numColumns={numColumns}
                     ListFooterComponent={<View />}
                     ListFooterComponentStyle={styles.listHeader}
-                    ListEmptyComponentStyle={{ flex: 1 }}
                     ListEmptyComponent={
                         <View style={styles.listEmpty}>
                             <Text style={{ color: "white" }}>Empty</Text>

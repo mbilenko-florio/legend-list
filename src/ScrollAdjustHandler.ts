@@ -1,6 +1,5 @@
 import { type StateContext, peek$, set$ } from "./state";
 
-
 export class ScrollAdjustHandler {
     private appliedAdjust = 0;
     private pendingAdjust = 0;

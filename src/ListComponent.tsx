@@ -61,7 +61,6 @@ export const ListComponent = React.memo(function ListComponent({
     ListFooterComponent,
     ListFooterComponentStyle,
     ListEmptyComponent,
-    ListEmptyComponentStyle,
     getRenderedItem,
     updateItemSize,
     refScrollView,
@@ -102,7 +101,9 @@ export const ListComponent = React.memo(function ListComponent({
         <ScrollComponent
             {...rest}
             style={style}
-            maintainVisibleContentPosition={maintainVisibleContentPosition ? { minIndexForVisible: 0 } : undefined}
+            maintainVisibleContentPosition={
+                maintainVisibleContentPosition && !ListEmptyComponent ? { minIndexForVisible: 0 } : undefined
+            }
             contentContainerStyle={[
                 contentContainerStyle,
                 horizontal
@@ -138,9 +139,7 @@ export const ListComponent = React.memo(function ListComponent({
                     {getComponent(ListHeaderComponent)}
                 </Animated.View>
             )}
-            {ListEmptyComponent && (
-                <Animated.View style={ListEmptyComponentStyle}>{getComponent(ListEmptyComponent)}</Animated.View>
-            )}
+            {ListEmptyComponent && getComponent(ListEmptyComponent)}
 
             <Containers
                 horizontal={horizontal!}

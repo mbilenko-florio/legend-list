@@ -1,13 +1,13 @@
-import type { ComponentProps, ReactNode } from 'react';
-import type { ScrollResponderMixin, ScrollViewComponent, ScrollViewProps } from 'react-native';
-import type { ScrollView, StyleProp, ViewStyle } from 'react-native';
-import type Animated from 'react-native-reanimated';
-import type { ScrollAdjustHandler } from './ScrollAdjustHandler';
+import type { ComponentProps, ReactNode } from "react";
+import type { ScrollResponderMixin, ScrollViewComponent, ScrollViewProps } from "react-native";
+import type { ScrollView, StyleProp, ViewStyle } from "react-native";
+import type Animated from "react-native-reanimated";
+import type { ScrollAdjustHandler } from "./ScrollAdjustHandler";
 
 export type LegendListPropsBase<
     ItemT,
-    TScrollView extends ComponentProps<typeof ScrollView> | ComponentProps<typeof Animated.ScrollView>
-> = Omit<TScrollView, 'contentOffset' | 'contentInset' | 'maintainVisibleContentPosition' | 'stickyHeaderIndices'> & {
+    TScrollView extends ComponentProps<typeof ScrollView> | ComponentProps<typeof Animated.ScrollView>,
+> = Omit<TScrollView, "contentOffset" | "contentInset" | "maintainVisibleContentPosition" | "stickyHeaderIndices"> & {
     data: ReadonlyArray<ItemT>;
     initialScrollOffset?: number;
     initialScrollIndex?: number;
@@ -37,7 +37,6 @@ export type LegendListPropsBase<
     ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
     ListFooterComponentStyle?: StyleProp<ViewStyle> | undefined;
     ListEmptyComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
-    ListEmptyComponentStyle?: StyleProp<ViewStyle> | undefined;
     ItemSeparatorComponent?: React.ComponentType<any>;
     viewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs | undefined;
     viewabilityConfig?: ViewabilityConfig;
@@ -58,7 +57,7 @@ export type LegendListPropsBase<
 };
 
 export type AnchoredPosition = {
-    type: 'top' | 'bottom';
+    type: "top" | "bottom";
     relativeCoordinate: number; // used for display
     top: number; // used for calculating the position of the container
 };
@@ -110,6 +109,7 @@ export interface InternalState {
     startReachedBlockedByTimer: boolean;
     scrollForNextCalculateItemsInView: { top: number; bottom: number } | undefined;
     enableScrollForNextCalculateItemsInView: boolean;
+    minIndexSizeChanged: number | undefined;
 }
 
 export interface ViewableRange<T> {

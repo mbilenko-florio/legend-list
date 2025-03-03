@@ -79,7 +79,7 @@ export const Container = ({
     const ref = useRef<View>(null);
     if (isNewArchitecture) {
         useLayoutEffect(() => {
-            if (itemKey) {
+            if (itemKey !== undefined) {
                 // @ts-expect-error unstable_getBoundingClientRect is unstable and only on Fabric
                 const measured = ref.current?.unstable_getBoundingClientRect?.();
                 if (measured) {

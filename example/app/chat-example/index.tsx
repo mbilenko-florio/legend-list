@@ -59,7 +59,9 @@ const ChatExample = () => {
                     data={messages}
                     contentContainerStyle={styles.contentContainer}
                     keyExtractor={(item) => item.id}
-                    estimatedItemSize={80}
+                    estimatedItemSize={200}
+                    initialScrollIndex={messages.length - 1}
+                    maintainVisibleContentPosition
                     maintainScrollAtEnd
                     alignItemsAtEnd
                     renderItem={({ item }) => (

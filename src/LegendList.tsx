@@ -37,6 +37,7 @@ import type {
     ViewabilityCallback,
 } from "./types";
 import type { InternalState, LegendListProps } from "./types";
+import { useCombinedRef } from "./useCombinedRef";
 import { useInit } from "./useInit";
 import { setupViewability, updateViewableItems } from "./viewability";
 
@@ -73,21 +74,30 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             renderItem,
             estimatedItemSize,
             getEstimatedItemSize,
-            onEndReached,
-            onStartReached,
             ListEmptyComponent,
             onItemSizeChanged,
             scrollEventThrottle,
             refScrollView,
             waitForInitialLayout = true,
             extraData,
+            onLayout: onLayoutProp,
             ...rest
         } = props;
         const { style, contentContainerStyle } = props;
 
+        const callbacks = useRef({
+            onStartReached: rest.onStartReached,
+            onEndReached: rest.onEndReached,
+        });
+
+        // ensure that the callbacks are updated
+        callbacks.current.onStartReached = rest.onStartReached;
+        callbacks.current.onEndReached = rest.onEndReached;
+
         const ctx = useStateContext();
 
         const refScroller = useRef<ScrollView>(null) as React.MutableRefObject<ScrollView>;
+        const combinedRef = useCombinedRef(refScroller, refScrollView);
         const scrollBuffer = drawDistance ?? DEFAULT_DRAW_DISTANCE;
         const keyExtractor = keyExtractorProp ?? ((item, index) => index.toString());
 
@@ -174,6 +184,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 startReachedBlockedByTimer: false,
                 scrollForNextCalculateItemsInView: undefined,
                 enableScrollForNextCalculateItemsInView: true,
+                minIndexSizeChanged: 0,
             };
             refState.current!.idsInFirstRender = new Set(data.map((_: unknown, i: number) => getId(i)));
             if (maintainVisibleContentPosition) {
@@ -207,10 +218,11 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const addTotalSize = useCallback((key: string | null, add: number, totalSizeBelowAnchor: number) => {
             const state = refState.current!;
-            const index = key === null ? 0 : state.indexByKey.get(key)!;
+            const { scrollLength, indexByKey, anchorElement } = state;
+            const index = key === null ? 0 : indexByKey.get(key)!;
             let isAboveAnchor = false;
             if (maintainVisibleContentPosition) {
-                if (state.anchorElement && index < getAnchorElementIndex()!) {
+                if (anchorElement && index < getAnchorElementIndex()!) {
                     isAboveAnchor = true;
                 }
             }
@@ -226,24 +238,25 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             let applyAdjustValue = undefined;
 
+            const totalSize = state.totalSize;
+            let resultSize = totalSize;
+
             if (maintainVisibleContentPosition) {
-                const newAdjust = state.anchorElement!.coordinate - state.totalSizeBelowAnchor;
+                const newAdjust = anchorElement!.coordinate - state.totalSizeBelowAnchor;
                 applyAdjustValue = -newAdjust;
                 state.belowAnchorElementPositions = buildElementPositionsBelowAnchor();
                 state.rowHeights.clear();
+
+                if (applyAdjustValue !== undefined) {
+                    resultSize -= applyAdjustValue;
+                    refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff) => {
+                        // event state.scroll will contain invalid value, until next handleScroll
+                        // apply adjustment
+                        state.scroll -= diff;
+                    });
+                }
             }
 
-            const totalSize = state.totalSize;
-
-            let resultSize = totalSize;
-            if (applyAdjustValue !== undefined) {
-                resultSize -= applyAdjustValue;
-                refState.current!.scrollAdjustHandler.requestAdjust(applyAdjustValue, (diff) => {
-                    // event state.scroll will contain invalid value, until next handleScroll
-                    // apply adjustment
-                    state.scroll -= diff;
-                });
-            }
             set$(ctx, "totalSize", resultSize);
 
             if (alignItemsAtEnd) {
@@ -362,24 +375,16 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             let endNoBuffer: number | null = null;
             let endBuffered: number | null = null;
 
-            const originalStartId = startBufferedIdOrig && state.indexByKey.get(startBufferedIdOrig);
+            let loopStart: number = startBufferedIdOrig ? state.indexByKey.get(startBufferedIdOrig) || 0 : 0;
 
-            let loopStart = originalStartId || 0;
+            if (state.minIndexSizeChanged !== undefined) {
+                loopStart = Math.min(state.minIndexSizeChanged, loopStart);
+                state.minIndexSizeChanged = undefined;
+            }
 
             const anchorElementIndex = getAnchorElementIndex()!;
 
-            console.log(
-                "ORIGINAL START ID",
-                originalStartId,
-                "id",
-                startBufferedIdOrig,
-                "ls",
-                loopStart,
-                "realscoll",
-                scrollState,
-                "EEFFS",
-                scroll,
-            );
+            console.log("id", startBufferedIdOrig, "ls", loopStart, "realscoll", scrollState, "EEFFS", scroll);
 
             // Go backwards from the last start position to find the first item that is in view
             // This is an optimization to avoid looping through all items, which could slow down
@@ -397,7 +402,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     }
                 }
 
-                console.log("Backward pass", i)
+                console.log("Backward pass", i);
 
                 const top = newPosition || positions.get(id)!;
 
@@ -435,7 +440,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 return topOffset;
             };
 
-            let ls = loopStart - 10
+            let ls = loopStart - 10;
             if (ls < 0) ls = 0;
             // scan data forwards
             for (let i = ls; i < data!.length; i++) {
@@ -444,7 +449,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
                 maxSizeInRow = Math.max(maxSizeInRow, size);
 
-                console.log("Forward pass", i)
+                console.log("Forward pass", i);
 
                 if (top === undefined || id === state.anchorElement?.id) {
                     top = getInitialTop(i);
@@ -712,6 +717,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                     refState.current.isAtBottom = distanceFromEnd < scrollLength * maintainScrollAtEndThreshold;
                 }
 
+                const { onEndReached } = callbacks.current;
+
                 if (onEndReached) {
                     if (!refState.current.isEndReached) {
                         if (distanceFromEnd < onEndReachedThreshold! * scrollLength) {
@@ -735,6 +742,8 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             const { scrollLength, scroll } = refState.current;
             const distanceFromTop = scroll;
             refState.current.isAtTop = distanceFromTop < 0;
+
+            const { onStartReached } = callbacks.current;
 
             if (onStartReached) {
                 if (!refState.current.isStartReached && !refState.current!.startReachedBlockedByTimer) {
@@ -770,13 +779,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         const itemKey = peek$<string>(ctx, `containerItemKey${i}`);
                         if (!keyExtractorProp || (itemKey && state.indexByKey.get(itemKey) === undefined)) {
                             set$(ctx, `containerItemKey${i}`, undefined);
+                            set$(ctx, `containerItemData${i}`, undefined);
                             set$(ctx, `containerPosition${i}`, ANCHORED_POSITION_OUT_OF_VIEW);
                             set$(ctx, `containerColumn${i}`, -1);
                         }
                     }
 
                     if (!keyExtractorProp) {
-                        state.sizes.clear();
                         state.positions.clear();
                     }
 
@@ -809,6 +818,13 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
             for (let i = 0; i < data.length; i++) {
                 const key = getId(i);
+                if (__DEV__) {
+                    if (indexByKey.has(key)) {
+                        console.error(
+                            `[legend-list] Error: Detected overlapping key (${key}) which causes missing items and gaps and other terrrible things. Check that keyExtractor returns unique values.`,
+                        );
+                    }
+                }
                 indexByKey.set(key, i);
                 // save positions for items that are still in the list at the same indices
                 // throw out everything else
@@ -825,7 +841,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             refState.current.indexByKey = indexByKey;
             refState.current.positions = newPositions;
 
-            if (!forgetPositions) {
+            if (!forgetPositions && !isFirst) {
                 // check if anchorElement is still in the list
                 if (maintainVisibleContentPosition) {
                     if (
@@ -840,7 +856,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             refState.current.anchorElement = newAnchorElement;
                             refState.current.belowAnchorElementPositions?.clear();
                             // reset scroll to 0 and schedule rerender
-                            refScroller.current!.scrollTo({ x: 0, y: 0, animated: false });
+                            refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
                             setTimeout(() => {
                                 calculateItemsInView(0);
                             }, 0);
@@ -860,7 +876,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             refState.current.startBufferedId = undefined;
                         }
                         // reset scroll to 0 and schedule rerender
-                        refScroller.current!.scrollTo({ x: 0, y: 0, animated: false });
+                        refScroller.current?.scrollTo({ x: 0, y: 0, animated: false });
                         setTimeout(() => {
                             calculateItemsInView(0);
                         }, 0);
@@ -1004,23 +1020,23 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
         });
 
         const updateItemSize = useCallback((containerId: number, itemKey: string, size: number) => {
-            const data = refState.current?.data;
+            const state = refState.current!;
+            const { sizes, indexByKey, columns, sizesLaidOut, data } = state;
             if (!data) {
                 return;
             }
-            const state = refState.current!;
-            const { sizes, indexByKey, columns, sizesLaidOut } = state;
             const index = indexByKey.get(itemKey)!;
             const numColumns = peek$<number>(ctx, "numColumns");
 
-            const row = Math.floor(index / numColumns);
-            const prevSize = getRowHeight(row);
+            state.minIndexSizeChanged =
+                state.minIndexSizeChanged !== undefined ? Math.min(state.minIndexSizeChanged, index) : index;
+
+            const prevSize = getItemSize(itemKey, index, data as any);
 
             if (!prevSize || Math.abs(prevSize - size) > 0.5) {
                 let diff: number;
 
                 if (numColumns > 1) {
-                    const prevMaxSizeInRow = getRowHeight(row);
                     sizes.set(itemKey, size);
 
                     const column = columns.get(itemKey);
@@ -1032,7 +1048,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         nextMaxSizeInRow = Math.max(nextMaxSizeInRow, size);
                     }
 
-                    diff = nextMaxSizeInRow - prevMaxSizeInRow;
+                    diff = nextMaxSizeInRow - prevSize;
                 } else {
                     sizes.set(itemKey, size);
                     diff = size - prevSize;
@@ -1101,12 +1117,17 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
 
         const onLayout = useCallback((event: LayoutChangeEvent) => {
             const scrollLength = event.nativeEvent.layout[horizontal ? "width" : "height"];
+            const didChange = scrollLength !== refState.current!.scrollLength;
             refState.current!.scrollLength = scrollLength;
 
             doMaintainScrollAtEnd(false);
             doUpdatePaddingTop();
             checkAtBottom();
             checkAtTop();
+
+            if (didChange) {
+                calculateItemsInView(0);
+            }
 
             if (__DEV__) {
                 const isWidthZero = event.nativeEvent.layout.width === 0;
@@ -1116,6 +1137,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                         `[legend-list] List ${isWidthZero ? "width" : "height"} is 0. You may need to set a style or \`flex: \` for the list, because children are absolutely positioned.`,
                     );
                 }
+            }
+            if (onLayoutProp) {
+                onLayoutProp(event);
             }
         }, []);
 
@@ -1239,9 +1263,9 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 };
                 return {
                     getNativeScrollRef: () => refScroller.current!,
-                    getScrollableNode: refScroller.current!.getScrollableNode,
-                    getScrollResponder: refScroller.current!.getScrollResponder,
-                    flashScrollIndicators: refScroller.current!.flashScrollIndicators,
+                    getScrollableNode: () => refScroller.current!.getScrollableNode(),
+                    getScrollResponder: () => refScroller.current!.getScrollResponder(),
+                    flashScrollIndicators: () => refScroller.current!.flashScrollIndicators(),
                     scrollToIndex,
                     scrollToOffset: ({ offset, animated }) => {
                         const offsetObj = horizontal ? { x: offset, y: 0 } : { x: 0, y: offset };
@@ -1253,7 +1277,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                             scrollToIndex({ index, animated });
                         }
                     },
-                    scrollToEnd: refScroller.current!.scrollToEnd,
+                    scrollToEnd: () => refScroller.current!.scrollToEnd(),
                 };
             },
             [],
@@ -1263,20 +1287,7 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
             <ListComponent
                 {...rest}
                 horizontal={horizontal!}
-                refScrollView={(r) => {
-                    // Update both the internal ref and the ref passed in
-                    // TODO: It feels like we shouldn't have to do this, but the Reanimated
-                    // AnimatedLegendList was not working without it. Maybe it can be fixed a
-                    // different way in the future?
-                    refScroller.current = r!;
-                    if (refScrollView) {
-                        if (typeof refScrollView === "function") {
-                            refScrollView(r);
-                        } else {
-                            (refScrollView as any).current = r;
-                        }
-                    }
-                }}
+                refScrollView={combinedRef}
                 initialContentOffset={initialContentOffset}
                 getRenderedItem={getRenderedItem}
                 updateItemSize={updateItemSize}
@@ -1291,4 +1302,4 @@ const LegendListInner: <T>(props: LegendListProps<T> & { ref?: ForwardedRef<Lege
                 style={style}
             />
         );
-    }) as <T>(props: LegendListProps<T> & { ref?: ForwardedRef<LegendListRef> }) => ReactElement;
+    });
